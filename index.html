@@ -74,7 +74,7 @@
       <div class="header">
         <div>
           <h1>天市×indeedPLUS運用実績</h1>
-          <p class="muted" style="margin:8px 0 0;">ローカルParquet / DuckDB-Wasm版プロトタイプ</p>
+          <p class="muted" style="margin:8px 0 0;">ローカルParquet / DuckDB-Wasm版 置き換え候補v2</p>
         </div>
         <div class="toolbar">
           <label class="btn" for="folderInput">📁 フォルダを選択</label>
@@ -142,6 +142,25 @@
             <button class="tab active" data-mode="job" type="button">職種比較</button>
             <button class="tab" data-mode="prefecture" type="button">都道府県比較</button>
             <button class="tab" data-mode="month" type="button">月別推移</button>
+            <button class="tab" data-mode="period" type="button">期間A/B比較</button>
+          </div>
+        </div>
+        <div id="periodCompareControls" class="filters hidden" style="margin-bottom:14px;padding:14px;background:#fafaf9;border-radius:18px;border:1px solid #e7e5e4;">
+          <div class="field sm">
+            <label class="label" for="compareAFrom">期間A 開始</label>
+            <select id="compareAFrom"></select>
+          </div>
+          <div class="field sm">
+            <label class="label" for="compareATo">期間A 終了</label>
+            <select id="compareATo"></select>
+          </div>
+          <div class="field sm">
+            <label class="label" for="compareBFrom">期間B 開始</label>
+            <select id="compareBFrom"></select>
+          </div>
+          <div class="field sm">
+            <label class="label" for="compareBTo">期間B 終了</label>
+            <select id="compareBTo"></select>
           </div>
         </div>
         <div id="comparisonContent"></div>
@@ -162,7 +181,7 @@
       datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'),
       searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'),
       stats: document.getElementById('stats'), relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
-      comparisonContent: document.getElementById('comparisonContent'), log: document.getElementById('log')
+      comparisonContent: document.getElementById('comparisonContent'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), log: document.getElementById('log')
     };
 
     let dbPromise = null;
@@ -255,6 +274,21 @@
       els.periodTo.innerHTML = months.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
       els.periodFrom.value = months.includes(fromDefault) ? fromDefault : months[0];
       els.periodTo.value = months.includes(max) ? max : months[months.length - 1];
+
+      const opts = months.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+      els.compareAFrom.innerHTML = opts;
+      els.compareATo.innerHTML = opts;
+      els.compareBFrom.innerHTML = opts;
+      els.compareBTo.innerHTML = opts;
+
+      const bFrom = months.includes(fromDefault) ? fromDefault : months[0];
+      const bTo = months.includes(max) ? max : months[months.length - 1];
+      const aFromCandidate = addMonths(bFrom, -12);
+      const aToCandidate = addMonths(bTo, -12);
+      els.compareBFrom.value = bFrom;
+      els.compareBTo.value = bTo;
+      els.compareAFrom.value = months.includes(aFromCandidate) ? aFromCandidate : months[0];
+      els.compareATo.value = months.includes(aToCandidate) ? aToCandidate : (months.includes(addMonths(bFrom, -1)) ? addMonths(bFrom, -1) : months[0]);
     }
 
     function selectedMonths() { return monthsBetween(els.periodFrom.value, els.periodTo.value).filter(m => appState.availableMonths.includes(m)); }
@@ -322,7 +356,7 @@
         const relatedSql = `WITH src AS (SELECT * FROM ${source} ${where}), exploded AS (SELECT trim(candidate) AS related_job, "消化金額", "表示回数", "クリック数", "応募開始数", "応募数" FROM src, UNNEST(string_split(coalesce("関連職種", ''), '|')) AS t(candidate)) SELECT related_job, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM exploded WHERE related_job <> '' GROUP BY related_job ORDER BY count DESC, applies DESC, clicks DESC, related_job ASC LIMIT 500;`;
         const relatedRaw = await queryRows(conn, relatedSql);
         renderRelated(relatedRaw.filter(r => isUsefulCandidate(r.related_job)).slice(0,50));
-        await renderComparison(conn, source);
+        await renderComparison(conn, source, db);
         await conn.close();
         setStatus(`集計完了：${months[0]}〜${months[months.length-1]} / ${paths.length}ファイル`, 'ok');
       } catch (error) {
@@ -354,10 +388,16 @@
       els.relatedJobs.querySelectorAll('[data-job]').forEach(btn => btn.addEventListener('click', () => { const job = btn.dataset.job; selectedJobTitles = selectedJobTitles.includes(job) ? selectedJobTitles.filter(j => j !== job) : [...selectedJobTitles, job]; renderSelectedJobs(); refreshAll(); }));
     }
 
-    async function renderComparison(conn, source) {
+    async function renderComparison(conn, source, db) {
+      updateComparisonControls();
       if (comparisonMode === 'job') return renderJobComparison(conn, source);
       if (comparisonMode === 'prefecture') return renderPrefComparison(conn, source);
+      if (comparisonMode === 'period') return renderPeriodABComparison(conn, db);
       return renderMonthComparison(conn, source);
+    }
+
+    function updateComparisonControls() {
+      els.periodCompareControls.classList.toggle('hidden', comparisonMode !== 'period');
     }
 
     function metricHeaders() { return '<th>該当件数</th><th>消化金額</th><th>表示回数</th><th>クリック数</th><th>応募開始数</th><th>応募数</th><th>CVR</th><th>CPA</th>'; }
@@ -383,6 +423,56 @@
       renderTable('集計年月', rows);
     }
 
+    async function renderPeriodABComparison(conn, db) {
+      const monthsA = monthsBetween(els.compareAFrom.value, els.compareATo.value).filter(m => appState.availableMonths.includes(m));
+      const monthsB = monthsBetween(els.compareBFrom.value, els.compareBTo.value).filter(m => appState.availableMonths.includes(m));
+      if (!monthsA.length || !monthsB.length) {
+        els.comparisonContent.innerHTML = '<div class="empty">期間Aまたは期間Bの対象月がありません。</div>';
+        lastCopyRows = [];
+        els.copyBtn.disabled = true;
+        return;
+      }
+      const pathsA = await registerMonths(db, monthsA);
+      const pathsB = await registerMonths(db, monthsB);
+      const sourceA = readExpr(pathsA);
+      const sourceB = readExpr(pathsB);
+      const where = baseWhere();
+      const sql = `
+WITH a AS (SELECT * FROM ${sourceA} ${where}),
+     b AS (SELECT * FROM ${sourceB} ${where})
+SELECT ${sqlLiteral('期間A：' + monthsA[0] + '〜' + monthsA[monthsA.length - 1])} AS label,
+  COUNT(*) AS count,
+  COALESCE(SUM("消化金額"),0) AS cost,
+  COALESCE(SUM("表示回数"),0) AS impressions,
+  COALESCE(SUM("クリック数"),0) AS clicks,
+  COALESCE(SUM("応募開始数"),0) AS apply_starts,
+  COALESCE(SUM("応募数"),0) AS applies
+FROM a
+UNION ALL
+SELECT ${sqlLiteral('期間B：' + monthsB[0] + '〜' + monthsB[monthsB.length - 1])} AS label,
+  COUNT(*) AS count,
+  COALESCE(SUM("消化金額"),0) AS cost,
+  COALESCE(SUM("表示回数"),0) AS impressions,
+  COALESCE(SUM("クリック数"),0) AS clicks,
+  COALESCE(SUM("応募開始数"),0) AS apply_starts,
+  COALESCE(SUM("応募数"),0) AS applies
+FROM b;`.trim();
+      const rows = await queryRows(conn, sql);
+      if (rows.length >= 2) {
+        const a = rows[0], b = rows[1];
+        rows.push({
+          label: '差分：B − A',
+          count: Number(b.count || 0) - Number(a.count || 0),
+          cost: Number(b.cost || 0) - Number(a.cost || 0),
+          impressions: Number(b.impressions || 0) - Number(a.impressions || 0),
+          clicks: Number(b.clicks || 0) - Number(a.clicks || 0),
+          apply_starts: Number(b.apply_starts || 0) - Number(a.apply_starts || 0),
+          applies: Number(b.applies || 0) - Number(a.applies || 0)
+        });
+      }
+      renderTable('比較期間', rows);
+    }
+
     function renderTable(labelName, rows) {
       lastCopyRows = rows.map(row => ({ label: row.label, ...row, ...calcRates(row) }));
       els.copyBtn.disabled = rows.length === 0;
@@ -403,8 +493,8 @@
     els.copyBtn.addEventListener('click', copyTable);
     els.clearSelectedBtn.addEventListener('click', () => { selectedJobTitles = []; renderSelectedJobs(); refreshAll(); });
     [els.freeWordInput, els.locationInput].forEach(input => input.addEventListener('keydown', e => { if (e.key === 'Enter') { clearLog(); refreshAll(); } }));
-    [els.searchMode, els.campaignFilter, els.periodFrom, els.periodTo].forEach(el => el.addEventListener('change', () => { clearLog(); refreshAll(); }));
-    document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); comparisonMode = tab.dataset.mode; clearLog(); refreshAll(); }));
+    [els.searchMode, els.campaignFilter, els.periodFrom, els.periodTo, els.compareAFrom, els.compareATo, els.compareBFrom, els.compareBTo].forEach(el => el.addEventListener('change', () => { clearLog(); refreshAll(); }));
+    document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); comparisonMode = tab.dataset.mode; updateComparisonControls(); clearLog(); refreshAll(); }));
   </script>
 </body>
 </html>
