@@ -4,17 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>Indeed Parquet ローカル読込テスト</title>
+  <title>Indeed Parquet DuckDB-Wasm 集計テスト</title>
   <style>
     :root {
       --bg1: #fff7ed;
       --bg2: #fef3c7;
-      --card: rgba(255, 255, 255, 0.92);
+      --card: rgba(255,255,255,.94);
       --text: #44403c;
       --muted: #78716c;
       --line: #e7e5e4;
       --accent: #f97316;
-      --accent2: #0ea5e9;
+      --sky: #0ea5e9;
       --ok: #059669;
       --warn: #d97706;
       --bad: #e11d48;
@@ -29,41 +29,34 @@
       color: var(--text);
       background: linear-gradient(135deg, var(--bg1), var(--bg2));
     }
-    .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 18px 48px; }
-    .hero {
+    .wrap { max-width: 1260px; margin: 0 auto; padding: 28px 18px 48px; }
+    .hero, .card {
       background: var(--card);
       border: 4px solid #fff;
       border-radius: 32px;
       box-shadow: var(--shadow);
-      padding: 26px;
-      margin-bottom: 20px;
     }
+    .hero { padding: 26px; margin-bottom: 20px; }
+    .card { border-radius: var(--radius); padding: 20px; }
     h1 { margin: 0 0 8px; font-size: clamp(24px, 3vw, 36px); letter-spacing: .02em; }
     h2 { margin: 0 0 14px; font-size: 20px; }
+    h3 { margin: 0 0 10px; font-size: 16px; }
     p { line-height: 1.7; }
     .muted { color: var(--muted); }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
     .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
-    .card {
-      background: var(--card);
-      border: 4px solid #fff;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 20px;
-    }
     .span-12 { grid-column: span 12; }
     .span-8 { grid-column: span 8; }
     .span-6 { grid-column: span 6; }
     .span-4 { grid-column: span 4; }
-    @media (max-width: 860px) {
-      .span-8, .span-6, .span-4 { grid-column: span 12; }
-    }
-    .picker {
+    @media (max-width: 920px) { .span-8, .span-6, .span-4 { grid-column: span 12; } }
+    .picker, .actions, .filters {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
       align-items: center;
-      margin-top: 18px;
     }
+    .picker { margin-top: 18px; }
     input[type="file"] { display: none; }
     .btn {
       display: inline-flex;
@@ -78,11 +71,12 @@
       background: linear-gradient(180deg, #fb923c, #f97316);
       color: #fff;
       box-shadow: 0 5px 0 #c2410c;
-      transition: transform .08s ease, box-shadow .08s ease, filter .15s ease;
+      transition: transform .08s ease, box-shadow .08s ease, filter .15s ease, opacity .15s ease;
       text-decoration: none;
     }
     .btn:hover { filter: brightness(1.04); }
     .btn:active { transform: translateY(5px); box-shadow: none; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: 0 5px 0 #c2410c; }
     .btn.secondary { background: linear-gradient(180deg, #38bdf8, #0ea5e9); box-shadow: 0 5px 0 #0369a1; }
     .btn.ghost { background: #f5f5f4; color: #57534e; box-shadow: 0 5px 0 #d6d3d1; }
     .status {
@@ -99,19 +93,17 @@
     .status.ok { background: #d1fae5; color: #047857; }
     .status.warn { background: #fef3c7; color: #b45309; }
     .status.bad { background: #ffe4e6; color: #be123c; }
-    .kv { display: grid; grid-template-columns: 160px 1fr; gap: 8px 12px; font-size: 14px; }
+    .kv { display: grid; grid-template-columns: 170px 1fr; gap: 8px 12px; font-size: 14px; }
     .kv div:nth-child(odd) { color: var(--muted); font-weight: 800; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
     table { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; border-radius: 16px; font-size: 14px; }
     th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
-    th { background: #f5f5f4; font-size: 13px; color: #57534e; }
+    th { background: #f5f5f4; font-size: 13px; color: #57534e; position: sticky; top: 0; z-index: 1; }
     tr:last-child td { border-bottom: 0; }
-    .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+    .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 16px; background: #fff; max-height: 440px; }
     .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 9px; font-size: 12px; font-weight: 800; }
     .pill.ok { background: #d1fae5; color: #047857; }
     .pill.bad { background: #ffe4e6; color: #be123c; }
     .pill.warn { background: #fef3c7; color: #b45309; }
-    .list { margin: 0; padding-left: 18px; line-height: 1.8; }
     .hidden { display: none !important; }
     .log {
       white-space: pre-wrap;
@@ -120,18 +112,38 @@
       border-radius: 16px;
       padding: 14px;
       font-size: 12px;
-      max-height: 260px;
+      max-height: 320px;
       overflow: auto;
     }
+    .field { display: grid; gap: 6px; min-width: 190px; flex: 1; }
+    .field.small { flex: 0 0 170px; min-width: 150px; }
+    label.label { font-size: 13px; font-weight: 900; color: #57534e; }
+    input[type="text"], select {
+      width: 100%;
+      border: 3px solid #fff;
+      background: #fafaf9;
+      border-radius: 16px;
+      padding: 11px 12px;
+      font-weight: 700;
+      color: #44403c;
+      outline: none;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,.05);
+    }
+    input[type="text"]:focus, select:focus { border-color: #7dd3fc; background: #fff; }
+    .stat-grid { display: grid; grid-template-columns: repeat(6, minmax(130px, 1fr)); gap: 12px; }
+    @media (max-width: 920px) { .stat-grid { grid-template-columns: repeat(2, minmax(130px, 1fr)); } }
+    .stat { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 14px; }
+    .stat-title { font-size: 12px; color: var(--muted); font-weight: 900; }
+    .stat-value { margin-top: 6px; font-size: 22px; font-weight: 950; }
   </style>
 </head>
 <body>
   <main class="wrap">
     <section class="hero">
-      <h1>Indeed Parquet ローカル読込テスト</h1>
+      <h1>Indeed Parquet DuckDB-Wasm 集計テスト</h1>
       <p class="muted">
-        GitHub Pages上で、ローカルの <span class="mono">indeedマージレポート / output_dataset</span> フォルダを選択し、
-        <span class="mono">manifest.json</span> と <span class="mono">fact/*.parquet</span> の存在を確認するための検証用HTMLです。
+        第2段階の検証版です。ローカルフォルダから <span class="mono">manifest.json</span> を読み、
+        選択月の <span class="mono">fact_YYYYMM.parquet</span> をDuckDB-Wasmへ登録してSQL集計します。
       </p>
       <div class="picker">
         <label class="btn" for="folderInput">📁 フォルダを選択</label>
@@ -142,7 +154,7 @@
       </div>
       <p class="muted" style="font-size:13px;margin-bottom:0;">
         選択対象は <span class="mono">indeedマージレポート</span> でも <span class="mono">output_dataset</span> でも構いません。
-        この検証版ではParquetの中身はまだ読みません。次段階でDuckDB-Wasm集計を追加します。
+        DuckDB-Wasm本体はCDNから読み込みます。
       </p>
     </section>
 
@@ -153,22 +165,72 @@
       </div>
       <div class="card span-4">
         <h2>読み込み判定</h2>
-        <ul id="checks" class="list"></ul>
+        <div id="checks"></div>
       </div>
 
       <div class="card span-12">
-        <h2>初期読み込み対象月（最新月から直近12か月）</h2>
-        <p class="muted" style="margin-top:-6px;">manifest.json の month_max または fact_files の最大月を基準に判定します。</p>
+        <h2>SQL集計テスト</h2>
+        <div class="filters">
+          <div class="field small">
+            <label class="label" for="monthSelect">対象月</label>
+            <select id="monthSelect"></select>
+          </div>
+          <div class="field">
+            <label class="label" for="freeWordInput">フリーワード（タイトル検索）</label>
+            <input id="freeWordInput" type="text" placeholder="例：接客 販売" />
+          </div>
+          <div class="field">
+            <label class="label" for="locationInput">勤務地（都道府県＋市区町村）</label>
+            <input id="locationInput" type="text" placeholder="例：東京 新宿" />
+          </div>
+          <div class="field small">
+            <label class="label" for="searchMode">検索モード</label>
+            <select id="searchMode">
+              <option value="OR">OR</option>
+              <option value="AND">AND</option>
+            </select>
+          </div>
+          <div class="field small">
+            <label class="label">&nbsp;</label>
+            <button id="runQueryBtn" class="btn" type="button" disabled>集計を実行</button>
+          </div>
+        </div>
+        <p class="muted" style="font-size:13px;">
+          まずは1か月分だけを対象に、合計指標と関連職種候補を確認します。次段階で複数月集計・期間比較へ拡張します。
+        </p>
+      </div>
+
+      <div class="card span-12 hidden" id="statsCard">
+        <h2>集計結果</h2>
+        <div id="statGrid" class="stat-grid"></div>
+      </div>
+
+      <div class="card span-12 hidden" id="relatedCard">
+        <h2>関連職種候補 上位50件</h2>
+        <p class="muted" style="margin-top:-6px;">関連職種列を「|」で分割し、件数順で表示します。空欄・短すぎる語・記号だけの語・一部の英数字ノイズは除外しています。</p>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>month_key</th>
-                <th>manifest上のpath</th>
-                <th>選択フォルダ内の存在</th>
-                <th>行数</th>
+                <th>関連職種</th>
+                <th>該当件数</th>
+                <th>消化金額</th>
+                <th>表示回数</th>
+                <th>クリック数</th>
+                <th>応募開始数</th>
+                <th>応募数</th>
               </tr>
             </thead>
+            <tbody id="relatedRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card span-6">
+        <h2>対象月ファイル</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>month_key</th><th>path</th><th>存在</th><th>rows</th></tr></thead>
             <tbody id="monthRows"></tbody>
           </table>
         </div>
@@ -184,44 +246,98 @@
         </div>
       </div>
 
-      <div class="card span-6">
-        <h2>検出ファイル概要</h2>
-        <div id="fileSummary" class="kv"></div>
-      </div>
-
       <div class="card span-12">
-        <h2>診断ログ</h2>
+        <h2>診断ログ / SQL</h2>
         <div id="log" class="log"></div>
       </div>
     </section>
   </main>
 
-  <script>
+  <script type="module">
+    import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm/+esm";
+
     const els = {
       folderInput: document.getElementById('folderInput'),
       resetBtn: document.getElementById('resetBtn'),
       copyBtn: document.getElementById('copyBtn'),
+      runQueryBtn: document.getElementById('runQueryBtn'),
       mainStatus: document.getElementById('mainStatus'),
       resultArea: document.getElementById('resultArea'),
       datasetInfo: document.getElementById('datasetInfo'),
       checks: document.getElementById('checks'),
+      monthSelect: document.getElementById('monthSelect'),
+      freeWordInput: document.getElementById('freeWordInput'),
+      locationInput: document.getElementById('locationInput'),
+      searchMode: document.getElementById('searchMode'),
       monthRows: document.getElementById('monthRows'),
       schemaRows: document.getElementById('schemaRows'),
-      fileSummary: document.getElementById('fileSummary'),
+      statsCard: document.getElementById('statsCard'),
+      statGrid: document.getElementById('statGrid'),
+      relatedCard: document.getElementById('relatedCard'),
+      relatedRows: document.getElementById('relatedRows'),
       log: document.getElementById('log'),
     };
 
     let latestReportText = '';
+    let dbPromise = null;
+    let appState = null;
+    let sessionId = 0;
+    const registeredFiles = new Set();
 
     function setStatus(text, type = '') {
       els.mainStatus.textContent = text;
       els.mainStatus.className = `status ${type}`.trim();
     }
 
+    function log(message) {
+      const text = typeof message === 'string' ? message : JSON.stringify(message, null, 2);
+      els.log.textContent += (els.log.textContent ? '\n' : '') + text;
+      els.log.scrollTop = els.log.scrollHeight;
+      latestReportText = els.log.textContent;
+      els.copyBtn.disabled = !latestReportText;
+    }
+
+    function clearLog() {
+      els.log.textContent = '';
+      latestReportText = '';
+      els.copyBtn.disabled = true;
+    }
+
     function esc(value) {
       return String(value ?? '').replace(/[&<>'"]/g, ch => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
       }[ch]));
+    }
+
+    function fmtNum(value, digits = 0) {
+      if (value === null || value === undefined || value === '') return '-';
+      const n = typeof value === 'bigint' ? Number(value) : Number(value);
+      if (!Number.isFinite(n)) return String(value);
+      return n.toLocaleString('ja-JP', { maximumFractionDigits: digits, minimumFractionDigits: digits });
+    }
+
+    function toPlainValue(value) {
+      if (typeof value === 'bigint') return Number(value);
+      if (value && typeof value === 'object' && typeof value.valueOf === 'function') {
+        const v = value.valueOf();
+        if (typeof v !== 'object') return v;
+      }
+      return value;
+    }
+
+    function tableToRows(table) {
+      const fields = table.schema.fields.map(f => f.name);
+      return table.toArray().map(row => {
+        if (row && typeof row.toJSON === 'function') {
+          const json = row.toJSON();
+          const out = {};
+          Object.keys(json).forEach(k => out[k] = toPlainValue(json[k]));
+          return out;
+        }
+        const out = {};
+        fields.forEach(name => out[name] = toPlainValue(row[name]));
+        return out;
+      });
     }
 
     function filePath(file) {
@@ -236,7 +352,6 @@
       const candidates = files
         .map(file => ({ file, path: normalizePath(filePath(file)) }))
         .filter(item => item.path.endsWith('manifest.json'));
-
       return (
         candidates.find(item => item.path.endsWith('/output_dataset/manifest.json')) ||
         candidates.find(item => item.path === 'output_dataset/manifest.json') ||
@@ -256,9 +371,7 @@
 
     function relativeToDataset(path, datasetPrefix) {
       const normalized = normalizePath(path);
-      if (datasetPrefix && normalized.startsWith(datasetPrefix)) {
-        return normalized.slice(datasetPrefix.length);
-      }
+      if (datasetPrefix && normalized.startsWith(datasetPrefix)) return normalized.slice(datasetPrefix.length);
       return normalized;
     }
 
@@ -276,69 +389,249 @@
     function defaultLast12Months(monthMax) {
       if (!monthMax) return [];
       const months = [];
-      for (let i = 11; i >= 0; i--) {
-        months.push(addMonths(monthMax, -i));
-      }
+      for (let i = 11; i >= 0; i--) months.push(addMonths(monthMax, -i));
       return months;
     }
 
     function maxMonthFromFactFiles(factFiles) {
-      const months = (factFiles || [])
-        .map(f => Number(f.month_key))
-        .filter(v => Number.isFinite(v));
+      const months = (factFiles || []).map(f => Number(f.month_key)).filter(Number.isFinite);
       return months.length ? Math.max(...months) : null;
     }
 
     function renderKv(container, pairs) {
-      container.innerHTML = pairs.map(([k, v]) => `
-        <div>${esc(k)}</div><div>${v}</div>
-      `).join('');
+      container.innerHTML = pairs.map(([k, v]) => `<div>${esc(k)}</div><div>${v}</div>`).join('');
     }
 
     function renderChecks(items) {
       els.checks.innerHTML = items.map(item => {
         const cls = item.ok ? 'ok' : (item.warn ? 'warn' : 'bad');
         const label = item.ok ? 'OK' : (item.warn ? '注意' : 'NG');
-        return `<li><span class="pill ${cls}">${label}</span> ${esc(item.text)}</li>`;
+        return `<p style="margin:.35rem 0;"><span class="pill ${cls}">${label}</span> ${esc(item.text)}</p>`;
       }).join('');
     }
 
-    function buildReport({ files, manifestItem, manifest, datasetPrefix, defaultMonths, factFileMap, selectedFileMap, missingDefaultFacts }) {
-      const lines = [];
-      lines.push('Indeed Parquet ローカル読込テスト 診断結果');
-      lines.push('='.repeat(40));
-      lines.push(`診断日時: ${new Date().toLocaleString('ja-JP')}`);
-      lines.push(`選択ファイル数: ${files.length}`);
-      lines.push(`manifest検出パス: ${manifestItem ? manifestItem.path : '未検出'}`);
-      lines.push(`datasetPrefix: ${datasetPrefix || '未判定'}`);
-      lines.push('');
-      lines.push('[manifest]');
-      lines.push(`dataset_name: ${manifest.dataset_name ?? ''}`);
-      lines.push(`schema_version: ${manifest.schema_version ?? ''}`);
-      lines.push(`generated_at: ${manifest.generated_at ?? ''}`);
-      lines.push(`month_min: ${manifest.month_min ?? ''}`);
-      lines.push(`month_max: ${manifest.month_max ?? ''}`);
-      lines.push(`total_fact_rows: ${manifest.total_fact_rows ?? ''}`);
-      lines.push(`fact_files: ${(manifest.fact_files || []).length}`);
-      lines.push('');
-      lines.push('[初期対象月]');
-      defaultMonths.forEach(month => {
-        const info = factFileMap.get(String(month));
-        const exists = info ? selectedFileMap.has(normalizePath(info.path)) : false;
-        lines.push(`${month}\t${info ? info.path : '(manifestに無し)'}\t${exists ? '存在' : '不足'}\t${info?.rows ?? ''}`);
-      });
-      if (missingDefaultFacts.length) {
-        lines.push('');
-        lines.push('[不足ファイル]');
-        missingDefaultFacts.forEach(item => lines.push(`${item.month}\t${item.path}`));
+    function splitKeywords(text) {
+      return String(text || '').split(/[\s　]+/).map(s => s.trim()).filter(Boolean);
+    }
+
+    function sqlLiteral(value) {
+      return `'${String(value).replaceAll("'", "''")}'`;
+    }
+
+    function buildWhereClause() {
+      const mode = els.searchMode.value === 'AND' ? ' AND ' : ' OR ';
+      const clauses = [];
+      const freeWords = splitKeywords(els.freeWordInput.value);
+      const locations = splitKeywords(els.locationInput.value);
+
+      if (freeWords.length) {
+        clauses.push('(' + freeWords.map(kw => `"タイトル" LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')');
       }
-      return lines.join('\n');
+      if (locations.length) {
+        clauses.push('(' + locations.map(kw => `concat(coalesce("都道府県", ''), coalesce("市区町村", '')) LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')');
+      }
+      return clauses.length ? 'WHERE ' + clauses.join(' AND ') : '';
+    }
+
+    function isUsefulCandidate(value) {
+      const v = String(value || '').trim();
+      if (!v) return false;
+      if (v.length <= 1) return false;
+      if (!/[一-龥々〆ヵヶぁ-ゖァ-ヺーA-Za-z0-9]/.test(v)) return false;
+      const lower = v.toLowerCase();
+      const whitelist = new Set(['it', 'ai', 'pr', 'ec', 'pc', 'dx']);
+      if (/^[a-z0-9]{1,2}$/i.test(v) && !whitelist.has(lower)) return false;
+      return true;
+    }
+
+    async function getDb() {
+      if (dbPromise) return dbPromise;
+      dbPromise = (async () => {
+        setStatus('DuckDB初期化中...', 'warn');
+        log('[DuckDB] 初期化開始');
+        const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
+        const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
+        log(`[DuckDB] selected bundle mainModule=${bundle.mainModule}`);
+
+        const workerUrl = URL.createObjectURL(
+          new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
+        );
+        const worker = new Worker(workerUrl);
+        const logger = new duckdb.ConsoleLogger();
+        const db = new duckdb.AsyncDuckDB(logger, worker);
+        await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+        URL.revokeObjectURL(workerUrl);
+        log('[DuckDB] 初期化完了');
+        return db;
+      })();
+      return dbPromise;
+    }
+
+    async function registerMonthFile(db, month) {
+      const state = appState;
+      const info = state.factFileMap.get(String(month));
+      if (!info) throw new Error(`manifest上に month_key=${month} のfactファイルがありません。`);
+      const relPath = normalizePath(info.path);
+      const file = state.selectedFileMap.get(relPath);
+      if (!file) throw new Error(`選択フォルダ内に ${relPath} が見つかりません。`);
+
+      const virtualPath = `session_${state.sessionId}_${relPath.replaceAll('/', '_')}`;
+      if (!registeredFiles.has(virtualPath)) {
+        log(`[DuckDB] registerFileBuffer: ${relPath} (${fmtNum(file.size)} bytes) -> ${virtualPath}`);
+        const buffer = await file.arrayBuffer();
+        await db.registerFileBuffer(virtualPath, new Uint8Array(buffer));
+        registeredFiles.add(virtualPath);
+      }
+      return virtualPath;
+    }
+
+    function renderStats(row) {
+      const clicks = Number(row.clicks || 0);
+      const applies = Number(row.applies || 0);
+      const impressions = Number(row.impressions || 0);
+      const cost = Number(row.cost || 0);
+      const cvr = clicks > 0 ? applies / clicks * 100 : null;
+      const ctr = impressions > 0 ? clicks / impressions * 100 : null;
+      const cpc = clicks > 0 ? cost / clicks : null;
+      const cpa = applies > 0 ? cost / applies : null;
+      const items = [
+        ['該当件数', fmtNum(row.count), '件'],
+        ['消化金額', fmtNum(cost), '円'],
+        ['表示回数', fmtNum(impressions), '回'],
+        ['クリック数', fmtNum(clicks), '回'],
+        ['応募開始数', fmtNum(row.apply_starts || 0), '件'],
+        ['応募数', fmtNum(applies), '件'],
+        ['CTR', ctr === null ? '-' : fmtNum(ctr, 2), '%'],
+        ['CVR', cvr === null ? '-' : fmtNum(cvr, 2), '%'],
+        ['CPC', cpc === null ? '-' : fmtNum(cpc), '円'],
+        ['CPA', cpa === null ? '-' : fmtNum(cpa), '円'],
+      ];
+      els.statGrid.innerHTML = items.map(([title, value, unit]) => `
+        <div class="stat"><div class="stat-title">${esc(title)}</div><div class="stat-value">${esc(value)}<span style="font-size:13px;color:#78716c;margin-left:3px;">${esc(unit)}</span></div></div>
+      `).join('');
+      els.statsCard.classList.remove('hidden');
+    }
+
+    function renderRelated(rows) {
+      const filtered = rows
+        .filter(row => isUsefulCandidate(row.related_job))
+        .slice(0, 50);
+      if (!filtered.length) {
+        els.relatedRows.innerHTML = '<tr><td colspan="7">関連職種候補がありません。</td></tr>';
+      } else {
+        els.relatedRows.innerHTML = filtered.map(row => `
+          <tr>
+            <td>${esc(row.related_job)}</td>
+            <td>${fmtNum(row.count)}</td>
+            <td>${fmtNum(row.cost)}</td>
+            <td>${fmtNum(row.impressions)}</td>
+            <td>${fmtNum(row.clicks)}</td>
+            <td>${fmtNum(row.apply_starts)}</td>
+            <td>${fmtNum(row.applies)}</td>
+          </tr>
+        `).join('');
+      }
+      els.relatedCard.classList.remove('hidden');
+    }
+
+    async function runQuery() {
+      if (!appState) return;
+      const month = els.monthSelect.value;
+      if (!month) return;
+
+      els.runQueryBtn.disabled = true;
+      els.statsCard.classList.add('hidden');
+      els.relatedCard.classList.add('hidden');
+      setStatus('SQL集計中...', 'warn');
+
+      try {
+        const db = await getDb();
+        const conn = await db.connect();
+        const virtualPath = await registerMonthFile(db, month);
+        const whereClause = buildWhereClause();
+
+        // Parquet拡張が明示LOAD不要な環境もあります。失敗しても続行します。
+        try { await conn.query('LOAD parquet;'); } catch (e) { log(`[DuckDB] LOAD parquet はスキップ: ${e.message}`); }
+
+        const aggregateSql = `
+WITH src AS (
+  SELECT *
+  FROM read_parquet(${sqlLiteral(virtualPath)})
+  ${whereClause}
+)
+SELECT
+  COUNT(*) AS count,
+  COALESCE(SUM("消化金額"), 0) AS cost,
+  COALESCE(SUM("表示回数"), 0) AS impressions,
+  COALESCE(SUM("クリック数"), 0) AS clicks,
+  COALESCE(SUM("応募開始数"), 0) AS apply_starts,
+  COALESCE(SUM("応募数"), 0) AS applies
+FROM src;
+        `.trim();
+
+        log('\n[SQL aggregate]\n' + aggregateSql);
+        const aggregateTable = await conn.query(aggregateSql);
+        const aggregateRows = tableToRows(aggregateTable);
+        const aggregate = aggregateRows[0] || {};
+        log('[SQL aggregate result]\n' + JSON.stringify(aggregate, null, 2));
+        renderStats(aggregate);
+
+        const relatedSql = `
+WITH src AS (
+  SELECT *
+  FROM read_parquet(${sqlLiteral(virtualPath)})
+  ${whereClause}
+), exploded AS (
+  SELECT
+    trim(candidate) AS related_job,
+    "消化金額",
+    "表示回数",
+    "クリック数",
+    "応募開始数",
+    "応募数"
+  FROM src,
+  UNNEST(string_split(coalesce("関連職種", ''), '|')) AS t(candidate)
+)
+SELECT
+  related_job,
+  COUNT(*) AS count,
+  COALESCE(SUM("消化金額"), 0) AS cost,
+  COALESCE(SUM("表示回数"), 0) AS impressions,
+  COALESCE(SUM("クリック数"), 0) AS clicks,
+  COALESCE(SUM("応募開始数"), 0) AS apply_starts,
+  COALESCE(SUM("応募数"), 0) AS applies
+FROM exploded
+WHERE related_job <> ''
+GROUP BY related_job
+ORDER BY count DESC, applies DESC, clicks DESC, related_job ASC
+LIMIT 300;
+        `.trim();
+
+        log('\n[SQL related jobs]\n' + relatedSql);
+        const relatedTable = await conn.query(relatedSql);
+        const relatedRows = tableToRows(relatedTable);
+        log(`[SQL related jobs result] raw=${relatedRows.length} rows`);
+        renderRelated(relatedRows);
+
+        await conn.close();
+        setStatus('SQL集計完了', 'ok');
+      } catch (error) {
+        console.error(error);
+        log('\n[ERROR]\n' + (error.stack || error.message));
+        setStatus('SQL集計エラー', 'bad');
+      } finally {
+        els.runQueryBtn.disabled = false;
+      }
     }
 
     async function handleFiles(fileList) {
       const files = Array.from(fileList || []);
-      latestReportText = '';
-      els.copyBtn.disabled = true;
+      clearLog();
+      els.runQueryBtn.disabled = true;
+      els.statsCard.classList.add('hidden');
+      els.relatedCard.classList.add('hidden');
+      registeredFiles.clear();
+      sessionId++;
 
       if (!files.length) {
         setStatus('未選択');
@@ -346,51 +639,48 @@
         return;
       }
 
-      setStatus('解析中...', 'warn');
-
-      const selectedPaths = files.map(file => normalizePath(filePath(file)));
+      setStatus('manifest解析中...', 'warn');
       const manifestItem = findManifestFile(files);
-
       if (!manifestItem) {
         els.resultArea.classList.remove('hidden');
-        els.datasetInfo.innerHTML = '';
-        els.monthRows.innerHTML = '';
-        els.schemaRows.innerHTML = '';
-        els.fileSummary.innerHTML = '';
-        renderChecks([
-          { ok: false, text: 'manifest.json が見つかりませんでした。indeedマージレポート または output_dataset フォルダを選択してください。' }
-        ]);
-        els.log.textContent = selectedPaths.slice(0, 200).join('\n');
+        renderChecks([{ ok: false, text: 'manifest.json が見つかりませんでした。' }]);
+        log('選択されたファイル先頭200件:\n' + files.slice(0, 200).map(file => filePath(file)).join('\n'));
         setStatus('manifestなし', 'bad');
         return;
       }
 
       let manifest;
       try {
-        const text = await manifestItem.file.text();
-        manifest = JSON.parse(text);
+        manifest = JSON.parse(await manifestItem.file.text());
       } catch (error) {
-        els.resultArea.classList.remove('hidden');
-        renderChecks([{ ok: false, text: `manifest.json の読み込み・JSON解析に失敗しました: ${error.message}` }]);
+        renderChecks([{ ok: false, text: `manifest.json のJSON解析に失敗しました: ${error.message}` }]);
         setStatus('manifest解析失敗', 'bad');
         return;
       }
 
       const datasetPrefix = datasetPrefixFromManifestPath(manifestItem.path);
       const selectedFileMap = new Map();
-      files.forEach(file => {
-        const rel = normalizePath(relativeToDataset(filePath(file), datasetPrefix));
-        selectedFileMap.set(rel, file);
-      });
+      files.forEach(file => selectedFileMap.set(normalizePath(relativeToDataset(filePath(file), datasetPrefix)), file));
 
       const factFiles = Array.isArray(manifest.fact_files) ? manifest.fact_files : [];
       const factFileMap = new Map(factFiles.map(info => [String(info.month_key), info]));
       const monthMax = manifest.month_max || maxMonthFromFactFiles(factFiles);
-      const monthMin = manifest.month_min || null;
       const defaultMonths = defaultLast12Months(monthMax);
+      const detectedFactFiles = Array.from(selectedFileMap.keys()).filter(path => /^fact\/fact_\d{6}\.parquet$/i.test(path));
       const missingDefaultFacts = [];
 
-      const monthRows = defaultMonths.map(month => {
+      appState = { files, manifestItem, manifest, datasetPrefix, selectedFileMap, factFiles, factFileMap, monthMax, defaultMonths, sessionId };
+
+      els.monthSelect.innerHTML = factFiles
+        .slice()
+        .sort((a, b) => Number(b.month_key) - Number(a.month_key))
+        .map(info => {
+          const relPath = normalizePath(info.path);
+          const exists = selectedFileMap.has(relPath);
+          return `<option value="${esc(info.month_key)}" ${String(info.month_key) === String(monthMax) ? 'selected' : ''}>${esc(info.month_key)} ${exists ? '' : '（ファイル不足）'}</option>`;
+        }).join('');
+
+      els.monthRows.innerHTML = defaultMonths.map(month => {
         const info = factFileMap.get(String(month));
         const expectedPath = normalizePath(info?.path || `fact/fact_${month}.parquet`);
         const exists = selectedFileMap.has(expectedPath);
@@ -405,32 +695,19 @@
         `;
       }).join('');
 
-      const schemaRows = (manifest.fact_schema || []).map(col => `
+      els.schemaRows.innerHTML = (manifest.fact_schema || []).map(col => `
         <tr><td>${esc(col.name)}</td><td class="mono">${esc(col.type)}</td></tr>
-      `).join('');
-
-      const detectedFactFiles = Array.from(selectedFileMap.keys()).filter(path => /^fact\/fact_\d{6}\.parquet$/i.test(path));
-      const detectedMasterFiles = Array.from(selectedFileMap.keys()).filter(path => path.startsWith('master/'));
-      const detectedLogFiles = Array.from(selectedFileMap.keys()).filter(path => path.startsWith('logs/'));
+      `).join('') || '<tr><td colspan="2">fact_schema が見つかりません。</td></tr>';
 
       renderKv(els.datasetInfo, [
         ['dataset_name', `<span class="mono">${esc(manifest.dataset_name)}</span>`],
         ['schema_version', `<span class="mono">${esc(manifest.schema_version)}</span>`],
         ['generated_at', `<span class="mono">${esc(manifest.generated_at)}</span>`],
-        ['month_min', `<span class="mono">${esc(monthMin)}</span>`],
+        ['month_min', `<span class="mono">${esc(manifest.month_min)}</span>`],
         ['month_max', `<span class="mono">${esc(monthMax)}</span>`],
         ['total_fact_rows', `<span class="mono">${esc(manifest.total_fact_rows?.toLocaleString?.() ?? manifest.total_fact_rows)}</span>`],
         ['manifest path', `<span class="mono">${esc(manifestItem.path)}</span>`],
-        ['dataset prefix', `<span class="mono">${esc(datasetPrefix || '(なし)')}</span>`],
-      ]);
-
-      renderKv(els.fileSummary, [
-        ['選択ファイル数', `<span class="mono">${files.length.toLocaleString()}</span>`],
-        ['manifest上のfact数', `<span class="mono">${factFiles.length.toLocaleString()}</span>`],
         ['検出fact parquet数', `<span class="mono">${detectedFactFiles.length.toLocaleString()}</span>`],
-        ['検出masterファイル数', `<span class="mono">${detectedMasterFiles.length.toLocaleString()}</span>`],
-        ['検出logsファイル数', `<span class="mono">${detectedLogFiles.length.toLocaleString()}</span>`],
-        ['直近12か月不足数', `<span class="mono">${missingDefaultFacts.length}</span>`],
       ]);
 
       renderChecks([
@@ -438,33 +715,48 @@
         { ok: factFiles.length > 0, text: `manifest上の fact_files は ${factFiles.length} 件です。` },
         { ok: detectedFactFiles.length > 0, text: `選択フォルダ内で fact/fact_YYYYMM.parquet を ${detectedFactFiles.length} 件検出しました。` },
         { ok: missingDefaultFacts.length === 0, warn: missingDefaultFacts.length > 0, text: missingDefaultFacts.length === 0 ? '直近12か月の対象Parquetはすべて存在します。' : `直近12か月の対象Parquetに不足があります: ${missingDefaultFacts.length} 件` },
-        { ok: true, text: 'この検証版ではParquetの中身はまだ読みません。次段階でDuckDB-Wasm集計を追加します。' },
       ]);
 
-      els.monthRows.innerHTML = monthRows;
-      els.schemaRows.innerHTML = schemaRows || '<tr><td colspan="2">fact_schema が見つかりません。</td></tr>';
+      log('Indeed Parquet DuckDB-Wasm 集計テスト');
+      log(`manifest: ${manifestItem.path}`);
+      log(`datasetPrefix: ${datasetPrefix}`);
+      log(`dataset_name: ${manifest.dataset_name}`);
+      log(`monthMax: ${monthMax}`);
+      log(`detectedFactFiles: ${detectedFactFiles.length}`);
+      log('対象月を選び、「集計を実行」を押してください。');
 
-      latestReportText = buildReport({ files, manifestItem, manifest, datasetPrefix, defaultMonths, factFileMap, selectedFileMap, missingDefaultFacts });
-      els.log.textContent = latestReportText;
-      els.copyBtn.disabled = false;
       els.resultArea.classList.remove('hidden');
-      setStatus(missingDefaultFacts.length ? '確認完了（一部不足）' : '確認完了', missingDefaultFacts.length ? 'warn' : 'ok');
+      els.runQueryBtn.disabled = false;
+      setStatus('manifest確認完了', 'ok');
     }
 
     els.folderInput.addEventListener('change', event => {
       handleFiles(event.target.files).catch(error => {
         console.error(error);
+        log('[ERROR] ' + (error.stack || error.message));
         setStatus('エラー', 'bad');
-        els.log.textContent = error.stack || error.message;
-        els.resultArea.classList.remove('hidden');
+      });
+    });
+
+    els.runQueryBtn.addEventListener('click', () => {
+      runQuery().catch(error => {
+        console.error(error);
+        log('[ERROR] ' + (error.stack || error.message));
+        setStatus('エラー', 'bad');
       });
     });
 
     els.resetBtn.addEventListener('click', () => {
       els.folderInput.value = '';
+      appState = null;
       latestReportText = '';
+      registeredFiles.clear();
+      clearLog();
       els.copyBtn.disabled = true;
+      els.runQueryBtn.disabled = true;
       els.resultArea.classList.add('hidden');
+      els.statsCard.classList.add('hidden');
+      els.relatedCard.classList.add('hidden');
       setStatus('未選択');
     });
 
@@ -472,9 +764,6 @@
       if (!latestReportText) return;
       try {
         await navigator.clipboard.writeText(latestReportText);
-        const old = els.copyBtn.textContent;
-        els.copyBtn.textContent = 'コピーしました';
-        setTimeout(() => { els.copyBtn.textContent = old; }, 1500);
       } catch (error) {
         const textarea = document.createElement('textarea');
         textarea.value = latestReportText;
@@ -483,6 +772,9 @@
         document.execCommand('copy');
         textarea.remove();
       }
+      const old = els.copyBtn.textContent;
+      els.copyBtn.textContent = 'コピーしました';
+      setTimeout(() => { els.copyBtn.textContent = old; }, 1500);
     });
   </script>
 </body>
