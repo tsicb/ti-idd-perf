@@ -4,246 +4,147 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>Indeed Parquet DuckDB-Wasm 集計テスト</title>
+  <title>天市×indeedPLUS運用実績 - ローカルParquet版</title>
   <style>
     :root {
-      --bg1: #fff7ed;
-      --bg2: #fef3c7;
-      --card: rgba(255,255,255,.94);
-      --text: #44403c;
-      --muted: #78716c;
-      --line: #e7e5e4;
-      --accent: #f97316;
-      --sky: #0ea5e9;
-      --ok: #059669;
-      --warn: #d97706;
-      --bad: #e11d48;
-      --shadow: 0 16px 32px -18px rgba(0,0,0,.28);
-      --radius: 24px;
+      --bg1:#fef3c7; --bg2:#ffedd5; --bg3:#fef9c3;
+      --card:rgba(255,255,255,.93); --text:#44403c; --muted:#78716c; --line:#e7e5e4;
+      --orange:#f97316; --orangeDark:#c2410c; --sky:#0ea5e9; --skyDark:#0369a1;
+      --green:#059669; --rose:#e11d48; --amber:#d97706; --violet:#7c3aed;
+      --shadow:0 16px 32px -18px rgba(0,0,0,.28); --radius:28px;
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
-      background: linear-gradient(135deg, var(--bg1), var(--bg2));
-    }
-    .wrap { max-width: 1260px; margin: 0 auto; padding: 28px 18px 48px; }
-    .hero, .card {
-      background: var(--card);
-      border: 4px solid #fff;
-      border-radius: 32px;
-      box-shadow: var(--shadow);
-    }
-    .hero { padding: 26px; margin-bottom: 20px; }
-    .card { border-radius: var(--radius); padding: 20px; }
-    h1 { margin: 0 0 8px; font-size: clamp(24px, 3vw, 36px); letter-spacing: .02em; }
-    h2 { margin: 0 0 14px; font-size: 20px; }
-    h3 { margin: 0 0 10px; font-size: 16px; }
-    p { line-height: 1.7; }
-    .muted { color: var(--muted); }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
-    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
-    .span-12 { grid-column: span 12; }
-    .span-8 { grid-column: span 8; }
-    .span-6 { grid-column: span 6; }
-    .span-4 { grid-column: span 4; }
-    @media (max-width: 920px) { .span-8, .span-6, .span-4 { grid-column: span 12; } }
-    .picker, .actions, .filters {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .picker { margin-top: 18px; }
-    input[type="file"] { display: none; }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      border: 0;
-      border-radius: 16px;
-      padding: 12px 18px;
-      font-weight: 800;
-      cursor: pointer;
-      background: linear-gradient(180deg, #fb923c, #f97316);
-      color: #fff;
-      box-shadow: 0 5px 0 #c2410c;
-      transition: transform .08s ease, box-shadow .08s ease, filter .15s ease, opacity .15s ease;
-      text-decoration: none;
-    }
-    .btn:hover { filter: brightness(1.04); }
-    .btn:active { transform: translateY(5px); box-shadow: none; }
-    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: 0 5px 0 #c2410c; }
-    .btn.secondary { background: linear-gradient(180deg, #38bdf8, #0ea5e9); box-shadow: 0 5px 0 #0369a1; }
-    .btn.ghost { background: #f5f5f4; color: #57534e; box-shadow: 0 5px 0 #d6d3d1; }
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-weight: 800;
-      font-size: 13px;
-      background: #f5f5f4;
-      color: #57534e;
-    }
-    .status.ok { background: #d1fae5; color: #047857; }
-    .status.warn { background: #fef3c7; color: #b45309; }
-    .status.bad { background: #ffe4e6; color: #be123c; }
-    .kv { display: grid; grid-template-columns: 170px 1fr; gap: 8px 12px; font-size: 14px; }
-    .kv div:nth-child(odd) { color: var(--muted); font-weight: 800; }
-    table { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; border-radius: 16px; font-size: 14px; }
-    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
-    th { background: #f5f5f4; font-size: 13px; color: #57534e; position: sticky; top: 0; z-index: 1; }
-    tr:last-child td { border-bottom: 0; }
-    .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 16px; background: #fff; max-height: 440px; }
-    .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 9px; font-size: 12px; font-weight: 800; }
-    .pill.ok { background: #d1fae5; color: #047857; }
-    .pill.bad { background: #ffe4e6; color: #be123c; }
-    .pill.warn { background: #fef3c7; color: #b45309; }
-    .hidden { display: none !important; }
-    .log {
-      white-space: pre-wrap;
-      background: #1c1917;
-      color: #fafaf9;
-      border-radius: 16px;
-      padding: 14px;
-      font-size: 12px;
-      max-height: 320px;
-      overflow: auto;
-    }
-    .field { display: grid; gap: 6px; min-width: 190px; flex: 1; }
-    .field.small { flex: 0 0 170px; min-width: 150px; }
-    label.label { font-size: 13px; font-weight: 900; color: #57534e; }
-    input[type="text"], select {
-      width: 100%;
-      border: 3px solid #fff;
-      background: #fafaf9;
-      border-radius: 16px;
-      padding: 11px 12px;
-      font-weight: 700;
-      color: #44403c;
-      outline: none;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,.05);
-    }
-    input[type="text"]:focus, select:focus { border-color: #7dd3fc; background: #fff; }
-    .stat-grid { display: grid; grid-template-columns: repeat(6, minmax(130px, 1fr)); gap: 12px; }
-    @media (max-width: 920px) { .stat-grid { grid-template-columns: repeat(2, minmax(130px, 1fr)); } }
-    .stat { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 14px; }
-    .stat-title { font-size: 12px; color: var(--muted); font-weight: 900; }
-    .stat-value { margin-top: 6px; font-size: 22px; font-weight: 950; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:var(--text); font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3)); background-attachment:fixed; }
+    .wrap { max-width:1720px; margin:0 auto; padding:24px 18px 48px; }
+    .card { background:var(--card); border:4px solid #fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; }
+    .header { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:18px; }
+    h1 { margin:0; font-size:clamp(24px,3vw,36px); letter-spacing:.02em; }
+    h2 { margin:0 0 14px; font-size:20px; }
+    h3 { margin:0 0 10px; font-size:16px; }
+    p { line-height:1.7; }
+    .muted { color:var(--muted); }
+    .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace; }
+    .grid { display:grid; grid-template-columns:repeat(12,1fr); gap:18px; }
+    .span-12 { grid-column:span 12; } .span-9 { grid-column:span 9; } .span-8 { grid-column:span 8; } .span-6 { grid-column:span 6; } .span-4 { grid-column:span 4; } .span-3 { grid-column:span 3; }
+    @media (max-width:1100px) { .span-9,.span-8,.span-6,.span-4,.span-3 { grid-column:span 12; } }
+    input[type="file"] { display:none; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; border:0; border-radius:16px; padding:12px 18px; font-weight:900; cursor:pointer; background:linear-gradient(180deg,#fb923c,#f97316); color:#fff; box-shadow:0 5px 0 var(--orangeDark); transition:.12s; text-decoration:none; white-space:nowrap; }
+    .btn:hover { filter:brightness(1.04); } .btn:active { transform:translateY(5px); box-shadow:none; }
+    .btn:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+    .btn.secondary { background:linear-gradient(180deg,#38bdf8,#0ea5e9); box-shadow:0 5px 0 var(--skyDark); }
+    .btn.ghost { background:#f5f5f4; color:#57534e; box-shadow:0 5px 0 #d6d3d1; }
+    .btn.small { padding:8px 12px; border-radius:12px; font-size:13px; box-shadow:0 4px 0 var(--orangeDark); }
+    .toolbar, .filters, .actions, .chips { display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+    .status { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; font-weight:900; font-size:13px; background:#f5f5f4; color:#57534e; }
+    .status.ok { background:#d1fae5; color:#047857; } .status.warn { background:#fef3c7; color:#b45309; } .status.bad { background:#ffe4e6; color:#be123c; }
+    .field { display:grid; gap:6px; min-width:180px; flex:1; }
+    .field.sm { flex:0 0 150px; min-width:140px; } .field.md { flex:0 0 210px; min-width:180px; }
+    label.label { font-size:13px; font-weight:950; color:#57534e; }
+    input[type="text"], select { width:100%; border:4px solid #fff; background:#fafaf9; border-radius:16px; padding:12px 13px; font-weight:800; color:#44403c; outline:none; box-shadow:inset 0 2px 4px rgba(0,0,0,.05); }
+    input[type="text"]:focus, select:focus { border-color:#7dd3fc; background:#fff; }
+    .stats { display:grid; grid-template-columns:repeat(7,minmax(130px,1fr)); gap:12px; }
+    @media (max-width:1200px) { .stats { grid-template-columns:repeat(3,minmax(130px,1fr)); } }
+    @media (max-width:720px) { .stats { grid-template-columns:repeat(2,minmax(130px,1fr)); } }
+    .stat { background:#fff; border:1px solid var(--line); border-radius:20px; padding:14px; min-height:88px; }
+    .stat-title { color:var(--muted); font-size:12px; font-weight:950; } .stat-value { margin-top:8px; font-size:23px; font-weight:950; }
+    .unit { color:var(--muted); font-size:13px; margin-left:3px; }
+    .table-wrap { overflow:auto; max-height:520px; border:1px solid var(--line); border-radius:18px; background:#fff; }
+    table { width:100%; border-collapse:separate; border-spacing:0; font-size:14px; }
+    th,td { padding:10px 12px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; white-space:nowrap; }
+    th { background:#f5f5f4; color:#57534e; font-size:13px; font-weight:950; position:sticky; top:0; z-index:2; }
+    tr:last-child td { border-bottom:0; }
+    .pill { display:inline-flex; align-items:center; border-radius:999px; padding:4px 9px; font-size:12px; font-weight:900; }
+    .pill.ok { background:#d1fae5; color:#047857; } .pill.warn { background:#fef3c7; color:#b45309; } .pill.bad { background:#ffe4e6; color:#be123c; } .pill.sky { background:#e0f2fe; color:#0369a1; }
+    .chip { border:2px solid #fed7aa; background:#fff7ed; color:#9a3412; border-radius:999px; padding:7px 11px; cursor:pointer; font-weight:900; font-size:13px; }
+    .chip:hover { filter:brightness(.98); } .chip.selected { background:#f97316; color:#fff; border-color:#fdba74; }
+    .chip.pinned { background:#0ea5e9; color:#fff; border-color:#7dd3fc; }
+    .tabs { display:flex; gap:10px; flex-wrap:wrap; }
+    .tab { border:0; border-radius:999px; padding:9px 14px; cursor:pointer; font-weight:950; background:#f5f5f4; color:#57534e; }
+    .tab.active { background:#0ea5e9; color:#fff; }
+    .hidden { display:none!important; }
+    .log { white-space:pre-wrap; background:#1c1917; color:#fafaf9; border-radius:18px; padding:14px; font-size:12px; max-height:280px; overflow:auto; }
+    .empty { color:#78716c; padding:18px; background:#fafaf9; border-radius:18px; border:1px dashed #d6d3d1; }
+    .kv { display:grid; grid-template-columns:170px 1fr; gap:8px 12px; font-size:14px; }
+    .kv div:nth-child(odd) { color:var(--muted); font-weight:950; }
   </style>
 </head>
 <body>
   <main class="wrap">
-    <section class="hero">
-      <h1>Indeed Parquet DuckDB-Wasm 集計テスト</h1>
-      <p class="muted">
-        第2段階の検証版です。ローカルフォルダから <span class="mono">manifest.json</span> を読み、
-        選択月の <span class="mono">fact_YYYYMM.parquet</span> をDuckDB-Wasmへ登録してSQL集計します。
-      </p>
-      <div class="picker">
-        <label class="btn" for="folderInput">📁 フォルダを選択</label>
-        <input id="folderInput" type="file" webkitdirectory directory multiple />
-        <button id="resetBtn" class="btn ghost" type="button">リセット</button>
-        <button id="copyBtn" class="btn secondary" type="button" disabled>診断結果をコピー</button>
-        <span id="mainStatus" class="status">未選択</span>
+    <section class="card">
+      <div class="header">
+        <div>
+          <h1>天市×indeedPLUS運用実績</h1>
+          <p class="muted" style="margin:8px 0 0;">ローカルParquet / DuckDB-Wasm版プロトタイプ</p>
+        </div>
+        <div class="toolbar">
+          <label class="btn" for="folderInput">📁 フォルダを選択</label>
+          <input id="folderInput" type="file" webkitdirectory directory multiple />
+          <button id="refreshBtn" class="btn secondary" type="button" disabled>集計更新</button>
+          <button id="copyBtn" class="btn ghost" type="button" disabled>表をコピー</button>
+          <span id="mainStatus" class="status">未選択</span>
+        </div>
       </div>
-      <p class="muted" style="font-size:13px;margin-bottom:0;">
-        選択対象は <span class="mono">indeedマージレポート</span> でも <span class="mono">output_dataset</span> でも構いません。
-        DuckDB-Wasm本体はCDNから読み込みます。
-      </p>
+      <div id="datasetInfo" class="kv hidden"></div>
     </section>
 
-    <section id="resultArea" class="grid hidden">
-      <div class="card span-8">
-        <h2>データセット情報</h2>
-        <div id="datasetInfo" class="kv"></div>
-      </div>
-      <div class="card span-4">
-        <h2>読み込み判定</h2>
-        <div id="checks"></div>
-      </div>
-
+    <section id="appArea" class="grid hidden" style="margin-top:18px;">
       <div class="card span-12">
-        <h2>SQL集計テスト</h2>
+        <h2>検索条件</h2>
         <div class="filters">
-          <div class="field small">
-            <label class="label" for="monthSelect">対象月</label>
-            <select id="monthSelect"></select>
-          </div>
           <div class="field">
-            <label class="label" for="freeWordInput">フリーワード（タイトル検索）</label>
+            <label class="label" for="freeWordInput">フリーワード <span class="muted">※タイトル検索</span></label>
             <input id="freeWordInput" type="text" placeholder="例：接客 販売" />
           </div>
           <div class="field">
-            <label class="label" for="locationInput">勤務地（都道府県＋市区町村）</label>
+            <label class="label" for="locationInput">勤務地 <span class="muted">※都道府県＋市区町村</span></label>
             <input id="locationInput" type="text" placeholder="例：東京 新宿" />
           </div>
-          <div class="field small">
+          <div class="field sm">
             <label class="label" for="searchMode">検索モード</label>
-            <select id="searchMode">
-              <option value="OR">OR</option>
-              <option value="AND">AND</option>
-            </select>
+            <select id="searchMode"><option value="OR">OR</option><option value="AND">AND</option></select>
           </div>
-          <div class="field small">
-            <label class="label">&nbsp;</label>
-            <button id="runQueryBtn" class="btn" type="button" disabled>集計を実行</button>
+          <div class="field md">
+            <label class="label" for="campaignFilter">キャンペーン</label>
+            <select id="campaignFilter"><option value="all">すべて</option><option value="sa-only">SAのみ</option><option value="non-sa-only">SA以外</option></select>
+          </div>
+          <div class="field sm">
+            <label class="label" for="periodFrom">開始月</label>
+            <select id="periodFrom"></select>
+          </div>
+          <div class="field sm">
+            <label class="label" for="periodTo">終了月</label>
+            <select id="periodTo"></select>
           </div>
         </div>
-        <p class="muted" style="font-size:13px;">
-          まずは1か月分だけを対象に、合計指標と関連職種候補を確認します。次段階で複数月集計・期間比較へ拡張します。
-        </p>
       </div>
 
-      <div class="card span-12 hidden" id="statsCard">
-        <h2>集計結果</h2>
-        <div id="statGrid" class="stat-grid"></div>
+      <div class="card span-12">
+        <h2>合計</h2>
+        <div id="stats" class="stats"></div>
       </div>
 
-      <div class="card span-12 hidden" id="relatedCard">
-        <h2>関連職種候補 上位50件</h2>
-        <p class="muted" style="margin-top:-6px;">関連職種列を「|」で分割し、件数順で表示します。空欄・短すぎる語・記号だけの語・一部の英数字ノイズは除外しています。</p>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>関連職種</th>
-                <th>該当件数</th>
-                <th>消化金額</th>
-                <th>表示回数</th>
-                <th>クリック数</th>
-                <th>応募開始数</th>
-                <th>応募数</th>
-              </tr>
-            </thead>
-            <tbody id="relatedRows"></tbody>
-          </table>
+      <div class="card span-12">
+        <div class="header" style="margin-bottom:10px;">
+          <div>
+            <h2>関連する標準化職種</h2>
+            <p class="muted" style="margin:4px 0 0;font-size:13px;">関連職種を「|」で分割し、件数順で上位候補を表示します。クリックで比較表に追加します。</p>
+          </div>
+          <button id="clearSelectedBtn" class="btn ghost small" type="button">選択解除</button>
         </div>
+        <div id="selectedJobs" class="chips" style="margin-bottom:12px;"></div>
+        <div id="relatedJobs" class="chips"></div>
       </div>
 
-      <div class="card span-6">
-        <h2>対象月ファイル</h2>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>month_key</th><th>path</th><th>存在</th><th>rows</th></tr></thead>
-            <tbody id="monthRows"></tbody>
-          </table>
+      <div class="card span-12">
+        <div class="header" style="margin-bottom:12px;">
+          <h2>比較</h2>
+          <div class="tabs">
+            <button class="tab active" data-mode="job" type="button">職種比較</button>
+            <button class="tab" data-mode="prefecture" type="button">都道府県比較</button>
+            <button class="tab" data-mode="month" type="button">月別推移</button>
+          </div>
         </div>
-      </div>
-
-      <div class="card span-6">
-        <h2>fact_schema</h2>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>列名</th><th>型</th></tr></thead>
-            <tbody id="schemaRows"></tbody>
-          </table>
-        </div>
+        <div id="comparisonContent"></div>
       </div>
 
       <div class="card span-12">
@@ -257,525 +158,253 @@
     import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm/+esm";
 
     const els = {
-      folderInput: document.getElementById('folderInput'),
-      resetBtn: document.getElementById('resetBtn'),
-      copyBtn: document.getElementById('copyBtn'),
-      runQueryBtn: document.getElementById('runQueryBtn'),
-      mainStatus: document.getElementById('mainStatus'),
-      resultArea: document.getElementById('resultArea'),
-      datasetInfo: document.getElementById('datasetInfo'),
-      checks: document.getElementById('checks'),
-      monthSelect: document.getElementById('monthSelect'),
-      freeWordInput: document.getElementById('freeWordInput'),
-      locationInput: document.getElementById('locationInput'),
-      searchMode: document.getElementById('searchMode'),
-      monthRows: document.getElementById('monthRows'),
-      schemaRows: document.getElementById('schemaRows'),
-      statsCard: document.getElementById('statsCard'),
-      statGrid: document.getElementById('statGrid'),
-      relatedCard: document.getElementById('relatedCard'),
-      relatedRows: document.getElementById('relatedRows'),
-      log: document.getElementById('log'),
+      folderInput: document.getElementById('folderInput'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), mainStatus: document.getElementById('mainStatus'),
+      datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'),
+      searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'),
+      stats: document.getElementById('stats'), relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
+      comparisonContent: document.getElementById('comparisonContent'), log: document.getElementById('log')
     };
 
-    let latestReportText = '';
     let dbPromise = null;
     let appState = null;
-    let sessionId = 0;
+    let selectedJobTitles = [];
+    let comparisonMode = 'job';
+    let lastCopyRows = [];
+    let logText = '';
     const registeredFiles = new Set();
 
-    function setStatus(text, type = '') {
-      els.mainStatus.textContent = text;
-      els.mainStatus.className = `status ${type}`.trim();
-    }
-
-    function log(message) {
-      const text = typeof message === 'string' ? message : JSON.stringify(message, null, 2);
-      els.log.textContent += (els.log.textContent ? '\n' : '') + text;
-      els.log.scrollTop = els.log.scrollHeight;
-      latestReportText = els.log.textContent;
-      els.copyBtn.disabled = !latestReportText;
-    }
-
-    function clearLog() {
-      els.log.textContent = '';
-      latestReportText = '';
-      els.copyBtn.disabled = true;
-    }
-
-    function esc(value) {
-      return String(value ?? '').replace(/[&<>'"]/g, ch => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-      }[ch]));
-    }
-
-    function fmtNum(value, digits = 0) {
-      if (value === null || value === undefined || value === '') return '-';
-      const n = typeof value === 'bigint' ? Number(value) : Number(value);
-      if (!Number.isFinite(n)) return String(value);
-      return n.toLocaleString('ja-JP', { maximumFractionDigits: digits, minimumFractionDigits: digits });
-    }
-
-    function toPlainValue(value) {
-      if (typeof value === 'bigint') return Number(value);
-      if (value && typeof value === 'object' && typeof value.valueOf === 'function') {
-        const v = value.valueOf();
-        if (typeof v !== 'object') return v;
-      }
-      return value;
-    }
-
-    function tableToRows(table) {
-      const fields = table.schema.fields.map(f => f.name);
-      return table.toArray().map(row => {
-        if (row && typeof row.toJSON === 'function') {
-          const json = row.toJSON();
-          const out = {};
-          Object.keys(json).forEach(k => out[k] = toPlainValue(json[k]));
-          return out;
-        }
-        const out = {};
-        fields.forEach(name => out[name] = toPlainValue(row[name]));
-        return out;
-      });
-    }
-
-    function filePath(file) {
-      return file.webkitRelativePath || file.name;
-    }
-
-    function normalizePath(path) {
-      return String(path || '').replace(/\\/g, '/');
-    }
+    function setStatus(text, type='') { els.mainStatus.textContent = text; els.mainStatus.className = `status ${type}`.trim(); }
+    function esc(v) { return String(v ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch])); }
+    function fmtNum(v, digits=0) { if (v === null || v === undefined || v === '') return '-'; const n = typeof v === 'bigint' ? Number(v) : Number(v); if (!Number.isFinite(n)) return String(v); return n.toLocaleString('ja-JP',{maximumFractionDigits:digits,minimumFractionDigits:digits}); }
+    function log(message) { const text = typeof message === 'string' ? message : JSON.stringify(message,null,2); logText += (logText ? '\n' : '') + text; els.log.textContent = logText; els.log.scrollTop = els.log.scrollHeight; }
+    function clearLog() { logText = ''; els.log.textContent = ''; }
+    function filePath(file) { return file.webkitRelativePath || file.name; }
+    function normalizePath(path) { return String(path || '').replace(/\\/g, '/'); }
+    function sqlLiteral(value) { return `'${String(value).replaceAll("'", "''")}'`; }
+    function splitKeywords(text) { return String(text || '').split(/[\s　]+/).map(s => s.trim()).filter(Boolean); }
+    function toPlainValue(value) { if (typeof value === 'bigint') return Number(value); if (value && typeof value === 'object' && typeof value.valueOf === 'function') { const v = value.valueOf(); if (typeof v !== 'object') return v; } return value; }
+    function tableToRows(table) { const fields = table.schema.fields.map(f => f.name); return table.toArray().map(row => { if (row && typeof row.toJSON === 'function') { const json = row.toJSON(); const out = {}; Object.keys(json).forEach(k => out[k] = toPlainValue(json[k])); return out; } const out = {}; fields.forEach(name => out[name] = toPlainValue(row[name])); return out; }); }
 
     function findManifestFile(files) {
-      const candidates = files
-        .map(file => ({ file, path: normalizePath(filePath(file)) }))
-        .filter(item => item.path.endsWith('manifest.json'));
-      return (
-        candidates.find(item => item.path.endsWith('/output_dataset/manifest.json')) ||
-        candidates.find(item => item.path === 'output_dataset/manifest.json') ||
-        candidates.find(item => item.path === 'manifest.json') ||
-        candidates[0] ||
-        null
-      );
+      const candidates = files.map(file => ({file, path: normalizePath(filePath(file))})).filter(item => item.path.endsWith('manifest.json'));
+      return candidates.find(item => item.path.endsWith('/output_dataset/manifest.json')) || candidates.find(item => item.path === 'output_dataset/manifest.json') || candidates.find(item => item.path === 'manifest.json') || candidates[0] || null;
     }
-
-    function datasetPrefixFromManifestPath(path) {
-      const normalized = normalizePath(path);
-      const marker = 'output_dataset/manifest.json';
-      const idx = normalized.indexOf(marker);
-      if (idx >= 0) return normalized.slice(0, idx + 'output_dataset/'.length);
-      return normalized.slice(0, normalized.length - 'manifest.json'.length);
-    }
-
-    function relativeToDataset(path, datasetPrefix) {
-      const normalized = normalizePath(path);
-      if (datasetPrefix && normalized.startsWith(datasetPrefix)) return normalized.slice(datasetPrefix.length);
-      return normalized;
-    }
-
-    function monthToDateParts(yyyymm) {
-      const s = String(yyyymm);
-      return { year: Number(s.slice(0, 4)), month: Number(s.slice(4, 6)) };
-    }
-
-    function addMonths(yyyymm, offset) {
-      const { year, month } = monthToDateParts(yyyymm);
-      const d = new Date(year, month - 1 + offset, 1);
-      return String(d.getFullYear()) + String(d.getMonth() + 1).padStart(2, '0');
-    }
-
-    function defaultLast12Months(monthMax) {
-      if (!monthMax) return [];
-      const months = [];
-      for (let i = 11; i >= 0; i--) months.push(addMonths(monthMax, -i));
-      return months;
-    }
-
-    function maxMonthFromFactFiles(factFiles) {
-      const months = (factFiles || []).map(f => Number(f.month_key)).filter(Number.isFinite);
-      return months.length ? Math.max(...months) : null;
-    }
-
-    function renderKv(container, pairs) {
-      container.innerHTML = pairs.map(([k, v]) => `<div>${esc(k)}</div><div>${v}</div>`).join('');
-    }
-
-    function renderChecks(items) {
-      els.checks.innerHTML = items.map(item => {
-        const cls = item.ok ? 'ok' : (item.warn ? 'warn' : 'bad');
-        const label = item.ok ? 'OK' : (item.warn ? '注意' : 'NG');
-        return `<p style="margin:.35rem 0;"><span class="pill ${cls}">${label}</span> ${esc(item.text)}</p>`;
-      }).join('');
-    }
-
-    function splitKeywords(text) {
-      return String(text || '').split(/[\s　]+/).map(s => s.trim()).filter(Boolean);
-    }
-
-    function sqlLiteral(value) {
-      return `'${String(value).replaceAll("'", "''")}'`;
-    }
-
-    function buildWhereClause() {
-      const mode = els.searchMode.value === 'AND' ? ' AND ' : ' OR ';
-      const clauses = [];
-      const freeWords = splitKeywords(els.freeWordInput.value);
-      const locations = splitKeywords(els.locationInput.value);
-
-      if (freeWords.length) {
-        clauses.push('(' + freeWords.map(kw => `"タイトル" LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')');
-      }
-      if (locations.length) {
-        clauses.push('(' + locations.map(kw => `concat(coalesce("都道府県", ''), coalesce("市区町村", '')) LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')');
-      }
-      return clauses.length ? 'WHERE ' + clauses.join(' AND ') : '';
-    }
-
-    function isUsefulCandidate(value) {
-      const v = String(value || '').trim();
-      if (!v) return false;
-      if (v.length <= 1) return false;
-      if (!/[一-龥々〆ヵヶぁ-ゖァ-ヺーA-Za-z0-9]/.test(v)) return false;
-      const lower = v.toLowerCase();
-      const whitelist = new Set(['it', 'ai', 'pr', 'ec', 'pc', 'dx']);
-      if (/^[a-z0-9]{1,2}$/i.test(v) && !whitelist.has(lower)) return false;
-      return true;
-    }
+    function datasetPrefixFromManifestPath(path) { const normalized = normalizePath(path); const marker = 'output_dataset/manifest.json'; const idx = normalized.indexOf(marker); if (idx >= 0) return normalized.slice(0, idx + 'output_dataset/'.length); return normalized.slice(0, normalized.length - 'manifest.json'.length); }
+    function relativeToDataset(path, prefix) { const normalized = normalizePath(path); return prefix && normalized.startsWith(prefix) ? normalized.slice(prefix.length) : normalized; }
+    function monthParts(yyyymm) { const s = String(yyyymm); return {year:Number(s.slice(0,4)), month:Number(s.slice(4,6))}; }
+    function addMonths(yyyymm, offset) { const {year, month} = monthParts(yyyymm); const d = new Date(year, month - 1 + offset, 1); return String(d.getFullYear()) + String(d.getMonth()+1).padStart(2,'0'); }
+    function monthsBetween(from, to) { if (!from || !to) return []; let a = String(from), b = String(to); if (a > b) [a,b] = [b,a]; const out = []; let cur = a; while (cur <= b) { out.push(cur); cur = addMonths(cur, 1); if (out.length > 240) break; } return out; }
+    function defaultFrom(monthMax) { return addMonths(monthMax, -11); }
+    function maxMonthFromFactFiles(factFiles) { const m = factFiles.map(f => Number(f.month_key)).filter(Number.isFinite); return m.length ? Math.max(...m) : null; }
 
     async function getDb() {
       if (dbPromise) return dbPromise;
       dbPromise = (async () => {
         setStatus('DuckDB初期化中...', 'warn');
-        log('[DuckDB] 初期化開始');
-        const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
-        const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
-        log(`[DuckDB] selected bundle mainModule=${bundle.mainModule}`);
-
-        const workerUrl = URL.createObjectURL(
-          new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
-        );
+        const bundles = duckdb.getJsDelivrBundles();
+        const bundle = await duckdb.selectBundle(bundles);
+        const workerUrl = URL.createObjectURL(new Blob([`importScripts("${bundle.mainWorker}");`], {type:'text/javascript'}));
         const worker = new Worker(workerUrl);
         const logger = new duckdb.ConsoleLogger();
         const db = new duckdb.AsyncDuckDB(logger, worker);
         await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
         URL.revokeObjectURL(workerUrl);
-        log('[DuckDB] 初期化完了');
+        log('[DuckDB] initialized');
         return db;
       })();
       return dbPromise;
     }
 
-    async function registerMonthFile(db, month) {
-      const state = appState;
-      const info = state.factFileMap.get(String(month));
-      if (!info) throw new Error(`manifest上に month_key=${month} のfactファイルがありません。`);
-      const relPath = normalizePath(info.path);
-      const file = state.selectedFileMap.get(relPath);
-      if (!file) throw new Error(`選択フォルダ内に ${relPath} が見つかりません。`);
-
-      const virtualPath = `session_${state.sessionId}_${relPath.replaceAll('/', '_')}`;
-      if (!registeredFiles.has(virtualPath)) {
-        log(`[DuckDB] registerFileBuffer: ${relPath} (${fmtNum(file.size)} bytes) -> ${virtualPath}`);
-        const buffer = await file.arrayBuffer();
-        await db.registerFileBuffer(virtualPath, new Uint8Array(buffer));
-        registeredFiles.add(virtualPath);
-      }
-      return virtualPath;
-    }
-
-    function renderStats(row) {
-      const clicks = Number(row.clicks || 0);
-      const applies = Number(row.applies || 0);
-      const impressions = Number(row.impressions || 0);
-      const cost = Number(row.cost || 0);
-      const cvr = clicks > 0 ? applies / clicks * 100 : null;
-      const ctr = impressions > 0 ? clicks / impressions * 100 : null;
-      const cpc = clicks > 0 ? cost / clicks : null;
-      const cpa = applies > 0 ? cost / applies : null;
-      const items = [
-        ['該当件数', fmtNum(row.count), '件'],
-        ['消化金額', fmtNum(cost), '円'],
-        ['表示回数', fmtNum(impressions), '回'],
-        ['クリック数', fmtNum(clicks), '回'],
-        ['応募開始数', fmtNum(row.apply_starts || 0), '件'],
-        ['応募数', fmtNum(applies), '件'],
-        ['CTR', ctr === null ? '-' : fmtNum(ctr, 2), '%'],
-        ['CVR', cvr === null ? '-' : fmtNum(cvr, 2), '%'],
-        ['CPC', cpc === null ? '-' : fmtNum(cpc), '円'],
-        ['CPA', cpa === null ? '-' : fmtNum(cpa), '円'],
-      ];
-      els.statGrid.innerHTML = items.map(([title, value, unit]) => `
-        <div class="stat"><div class="stat-title">${esc(title)}</div><div class="stat-value">${esc(value)}<span style="font-size:13px;color:#78716c;margin-left:3px;">${esc(unit)}</span></div></div>
-      `).join('');
-      els.statsCard.classList.remove('hidden');
-    }
-
-    function renderRelated(rows) {
-      const filtered = rows
-        .filter(row => isUsefulCandidate(row.related_job))
-        .slice(0, 50);
-      if (!filtered.length) {
-        els.relatedRows.innerHTML = '<tr><td colspan="7">関連職種候補がありません。</td></tr>';
-      } else {
-        els.relatedRows.innerHTML = filtered.map(row => `
-          <tr>
-            <td>${esc(row.related_job)}</td>
-            <td>${fmtNum(row.count)}</td>
-            <td>${fmtNum(row.cost)}</td>
-            <td>${fmtNum(row.impressions)}</td>
-            <td>${fmtNum(row.clicks)}</td>
-            <td>${fmtNum(row.apply_starts)}</td>
-            <td>${fmtNum(row.applies)}</td>
-          </tr>
-        `).join('');
-      }
-      els.relatedCard.classList.remove('hidden');
-    }
-
-    async function runQuery() {
-      if (!appState) return;
-      const month = els.monthSelect.value;
-      if (!month) return;
-
-      els.runQueryBtn.disabled = true;
-      els.statsCard.classList.add('hidden');
-      els.relatedCard.classList.add('hidden');
-      setStatus('SQL集計中...', 'warn');
-
-      try {
-        const db = await getDb();
-        const conn = await db.connect();
-        const virtualPath = await registerMonthFile(db, month);
-        const whereClause = buildWhereClause();
-
-        // Parquet拡張が明示LOAD不要な環境もあります。失敗しても続行します。
-        try { await conn.query('LOAD parquet;'); } catch (e) { log(`[DuckDB] LOAD parquet はスキップ: ${e.message}`); }
-
-        const aggregateSql = `
-WITH src AS (
-  SELECT *
-  FROM read_parquet(${sqlLiteral(virtualPath)})
-  ${whereClause}
-)
-SELECT
-  COUNT(*) AS count,
-  COALESCE(SUM("消化金額"), 0) AS cost,
-  COALESCE(SUM("表示回数"), 0) AS impressions,
-  COALESCE(SUM("クリック数"), 0) AS clicks,
-  COALESCE(SUM("応募開始数"), 0) AS apply_starts,
-  COALESCE(SUM("応募数"), 0) AS applies
-FROM src;
-        `.trim();
-
-        log('\n[SQL aggregate]\n' + aggregateSql);
-        const aggregateTable = await conn.query(aggregateSql);
-        const aggregateRows = tableToRows(aggregateTable);
-        const aggregate = aggregateRows[0] || {};
-        log('[SQL aggregate result]\n' + JSON.stringify(aggregate, null, 2));
-        renderStats(aggregate);
-
-        const relatedSql = `
-WITH src AS (
-  SELECT *
-  FROM read_parquet(${sqlLiteral(virtualPath)})
-  ${whereClause}
-), exploded AS (
-  SELECT
-    trim(candidate) AS related_job,
-    "消化金額",
-    "表示回数",
-    "クリック数",
-    "応募開始数",
-    "応募数"
-  FROM src,
-  UNNEST(string_split(coalesce("関連職種", ''), '|')) AS t(candidate)
-)
-SELECT
-  related_job,
-  COUNT(*) AS count,
-  COALESCE(SUM("消化金額"), 0) AS cost,
-  COALESCE(SUM("表示回数"), 0) AS impressions,
-  COALESCE(SUM("クリック数"), 0) AS clicks,
-  COALESCE(SUM("応募開始数"), 0) AS apply_starts,
-  COALESCE(SUM("応募数"), 0) AS applies
-FROM exploded
-WHERE related_job <> ''
-GROUP BY related_job
-ORDER BY count DESC, applies DESC, clicks DESC, related_job ASC
-LIMIT 300;
-        `.trim();
-
-        log('\n[SQL related jobs]\n' + relatedSql);
-        const relatedTable = await conn.query(relatedSql);
-        const relatedRows = tableToRows(relatedTable);
-        log(`[SQL related jobs result] raw=${relatedRows.length} rows`);
-        renderRelated(relatedRows);
-
-        await conn.close();
-        setStatus('SQL集計完了', 'ok');
-      } catch (error) {
-        console.error(error);
-        log('\n[ERROR]\n' + (error.stack || error.message));
-        setStatus('SQL集計エラー', 'bad');
-      } finally {
-        els.runQueryBtn.disabled = false;
-      }
-    }
+    function renderKv(container, pairs) { container.innerHTML = pairs.map(([k,v]) => `<div>${esc(k)}</div><div>${v}</div>`).join(''); }
 
     async function handleFiles(fileList) {
       const files = Array.from(fileList || []);
-      clearLog();
-      els.runQueryBtn.disabled = true;
-      els.statsCard.classList.add('hidden');
-      els.relatedCard.classList.add('hidden');
-      registeredFiles.clear();
-      sessionId++;
-
-      if (!files.length) {
-        setStatus('未選択');
-        els.resultArea.classList.add('hidden');
-        return;
-      }
-
+      clearLog(); selectedJobTitles = []; registeredFiles.clear(); lastCopyRows = []; els.copyBtn.disabled = true;
+      if (!files.length) return;
       setStatus('manifest解析中...', 'warn');
       const manifestItem = findManifestFile(files);
-      if (!manifestItem) {
-        els.resultArea.classList.remove('hidden');
-        renderChecks([{ ok: false, text: 'manifest.json が見つかりませんでした。' }]);
-        log('選択されたファイル先頭200件:\n' + files.slice(0, 200).map(file => filePath(file)).join('\n'));
-        setStatus('manifestなし', 'bad');
-        return;
-      }
-
-      let manifest;
-      try {
-        manifest = JSON.parse(await manifestItem.file.text());
-      } catch (error) {
-        renderChecks([{ ok: false, text: `manifest.json のJSON解析に失敗しました: ${error.message}` }]);
-        setStatus('manifest解析失敗', 'bad');
-        return;
-      }
-
-      const datasetPrefix = datasetPrefixFromManifestPath(manifestItem.path);
+      if (!manifestItem) { setStatus('manifestなし', 'bad'); log('manifest.json が見つかりません。'); return; }
+      const manifest = JSON.parse(await manifestItem.file.text());
+      const prefix = datasetPrefixFromManifestPath(manifestItem.path);
       const selectedFileMap = new Map();
-      files.forEach(file => selectedFileMap.set(normalizePath(relativeToDataset(filePath(file), datasetPrefix)), file));
-
+      files.forEach(file => selectedFileMap.set(normalizePath(relativeToDataset(filePath(file), prefix)), file));
       const factFiles = Array.isArray(manifest.fact_files) ? manifest.fact_files : [];
       const factFileMap = new Map(factFiles.map(info => [String(info.month_key), info]));
+      const availableMonths = factFiles.map(f => String(f.month_key)).filter(m => selectedFileMap.has(normalizePath(factFileMap.get(m).path))).sort();
       const monthMax = manifest.month_max || maxMonthFromFactFiles(factFiles);
-      const defaultMonths = defaultLast12Months(monthMax);
-      const detectedFactFiles = Array.from(selectedFileMap.keys()).filter(path => /^fact\/fact_\d{6}\.parquet$/i.test(path));
-      const missingDefaultFacts = [];
-
-      appState = { files, manifestItem, manifest, datasetPrefix, selectedFileMap, factFiles, factFileMap, monthMax, defaultMonths, sessionId };
-
-      els.monthSelect.innerHTML = factFiles
-        .slice()
-        .sort((a, b) => Number(b.month_key) - Number(a.month_key))
-        .map(info => {
-          const relPath = normalizePath(info.path);
-          const exists = selectedFileMap.has(relPath);
-          return `<option value="${esc(info.month_key)}" ${String(info.month_key) === String(monthMax) ? 'selected' : ''}>${esc(info.month_key)} ${exists ? '' : '（ファイル不足）'}</option>`;
-        }).join('');
-
-      els.monthRows.innerHTML = defaultMonths.map(month => {
-        const info = factFileMap.get(String(month));
-        const expectedPath = normalizePath(info?.path || `fact/fact_${month}.parquet`);
-        const exists = selectedFileMap.has(expectedPath);
-        if (!exists) missingDefaultFacts.push({ month, path: expectedPath });
-        return `
-          <tr>
-            <td class="mono">${esc(month)}</td>
-            <td class="mono">${esc(expectedPath)}</td>
-            <td>${exists ? '<span class="pill ok">存在</span>' : '<span class="pill bad">不足</span>'}</td>
-            <td>${esc(info?.rows ?? '-')}</td>
-          </tr>
-        `;
-      }).join('');
-
-      els.schemaRows.innerHTML = (manifest.fact_schema || []).map(col => `
-        <tr><td>${esc(col.name)}</td><td class="mono">${esc(col.type)}</td></tr>
-      `).join('') || '<tr><td colspan="2">fact_schema が見つかりません。</td></tr>';
-
+      appState = { files, manifest, manifestItem, prefix, selectedFileMap, factFiles, factFileMap, availableMonths, monthMax, sessionId: Date.now() };
       renderKv(els.datasetInfo, [
-        ['dataset_name', `<span class="mono">${esc(manifest.dataset_name)}</span>`],
-        ['schema_version', `<span class="mono">${esc(manifest.schema_version)}</span>`],
-        ['generated_at', `<span class="mono">${esc(manifest.generated_at)}</span>`],
-        ['month_min', `<span class="mono">${esc(manifest.month_min)}</span>`],
-        ['month_max', `<span class="mono">${esc(monthMax)}</span>`],
-        ['total_fact_rows', `<span class="mono">${esc(manifest.total_fact_rows?.toLocaleString?.() ?? manifest.total_fact_rows)}</span>`],
-        ['manifest path', `<span class="mono">${esc(manifestItem.path)}</span>`],
-        ['検出fact parquet数', `<span class="mono">${detectedFactFiles.length.toLocaleString()}</span>`],
+        ['dataset_name', `<span class="mono">${esc(manifest.dataset_name)}</span>`], ['schema_version', `<span class="mono">${esc(manifest.schema_version)}</span>`], ['generated_at', `<span class="mono">${esc(manifest.generated_at)}</span>`],
+        ['month range', `<span class="mono">${esc(manifest.month_min)} - ${esc(monthMax)}</span>`], ['fact files', `<span class="mono">${esc(factFiles.length)}</span>`], ['detected months', `<span class="mono">${esc(availableMonths.length)}</span>`], ['manifest', `<span class="mono">${esc(manifestItem.path)}</span>`]
       ]);
-
-      renderChecks([
-        { ok: true, text: 'manifest.json を検出しました。' },
-        { ok: factFiles.length > 0, text: `manifest上の fact_files は ${factFiles.length} 件です。` },
-        { ok: detectedFactFiles.length > 0, text: `選択フォルダ内で fact/fact_YYYYMM.parquet を ${detectedFactFiles.length} 件検出しました。` },
-        { ok: missingDefaultFacts.length === 0, warn: missingDefaultFacts.length > 0, text: missingDefaultFacts.length === 0 ? '直近12か月の対象Parquetはすべて存在します。' : `直近12か月の対象Parquetに不足があります: ${missingDefaultFacts.length} 件` },
-      ]);
-
-      log('Indeed Parquet DuckDB-Wasm 集計テスト');
+      els.datasetInfo.classList.remove('hidden');
+      renderPeriodOptions();
+      els.appArea.classList.remove('hidden');
+      els.refreshBtn.disabled = false;
+      setStatus('フォルダ読込完了', 'ok');
       log(`manifest: ${manifestItem.path}`);
-      log(`datasetPrefix: ${datasetPrefix}`);
-      log(`dataset_name: ${manifest.dataset_name}`);
-      log(`monthMax: ${monthMax}`);
-      log(`detectedFactFiles: ${detectedFactFiles.length}`);
-      log('対象月を選び、「集計を実行」を押してください。');
-
-      els.resultArea.classList.remove('hidden');
-      els.runQueryBtn.disabled = false;
-      setStatus('manifest確認完了', 'ok');
+      log(`detected fact months: ${availableMonths.length}`);
+      await refreshAll();
     }
 
-    els.folderInput.addEventListener('change', event => {
-      handleFiles(event.target.files).catch(error => {
-        console.error(error);
-        log('[ERROR] ' + (error.stack || error.message));
-        setStatus('エラー', 'bad');
-      });
-    });
+    function renderPeriodOptions() {
+      const months = appState.availableMonths;
+      const max = String(appState.monthMax);
+      const fromDefault = defaultFrom(max);
+      els.periodFrom.innerHTML = months.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+      els.periodTo.innerHTML = months.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+      els.periodFrom.value = months.includes(fromDefault) ? fromDefault : months[0];
+      els.periodTo.value = months.includes(max) ? max : months[months.length - 1];
+    }
 
-    els.runQueryBtn.addEventListener('click', () => {
-      runQuery().catch(error => {
-        console.error(error);
-        log('[ERROR] ' + (error.stack || error.message));
-        setStatus('エラー', 'bad');
-      });
-    });
+    function selectedMonths() { return monthsBetween(els.periodFrom.value, els.periodTo.value).filter(m => appState.availableMonths.includes(m)); }
 
-    els.resetBtn.addEventListener('click', () => {
-      els.folderInput.value = '';
-      appState = null;
-      latestReportText = '';
-      registeredFiles.clear();
-      clearLog();
-      els.copyBtn.disabled = true;
-      els.runQueryBtn.disabled = true;
-      els.resultArea.classList.add('hidden');
-      els.statsCard.classList.add('hidden');
-      els.relatedCard.classList.add('hidden');
-      setStatus('未選択');
-    });
-
-    els.copyBtn.addEventListener('click', async () => {
-      if (!latestReportText) return;
-      try {
-        await navigator.clipboard.writeText(latestReportText);
-      } catch (error) {
-        const textarea = document.createElement('textarea');
-        textarea.value = latestReportText;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        textarea.remove();
+    async function registerMonths(db, months) {
+      const paths = [];
+      for (const month of months) {
+        const info = appState.factFileMap.get(String(month));
+        if (!info) continue;
+        const relPath = normalizePath(info.path);
+        const file = appState.selectedFileMap.get(relPath);
+        if (!file) continue;
+        const virtualPath = `session_${appState.sessionId}_${relPath.replaceAll('/', '_')}`;
+        if (!registeredFiles.has(virtualPath)) {
+          log(`[register] ${relPath} -> ${virtualPath}`);
+          const buffer = await file.arrayBuffer();
+          await db.registerFileBuffer(virtualPath, new Uint8Array(buffer));
+          registeredFiles.add(virtualPath);
+        }
+        paths.push(virtualPath);
       }
-      const old = els.copyBtn.textContent;
-      els.copyBtn.textContent = 'コピーしました';
-      setTimeout(() => { els.copyBtn.textContent = old; }, 1500);
-    });
+      return paths;
+    }
+
+    function readExpr(paths) { return paths.length === 1 ? `read_parquet(${sqlLiteral(paths[0])})` : `read_parquet([${paths.map(sqlLiteral).join(', ')}])`; }
+
+    function baseWhere(extraClauses=[]) {
+      const mode = els.searchMode.value === 'AND' ? ' AND ' : ' OR ';
+      const clauses = [];
+      const titleWords = splitKeywords(els.freeWordInput.value);
+      const locWords = splitKeywords(els.locationInput.value);
+      if (titleWords.length) clauses.push('(' + titleWords.map(kw => `"タイトル" LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')');
+      if (locWords.length) clauses.push('(' + locWords.map(kw => `concat(coalesce("都道府県", ''), coalesce("市区町村", '')) LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')');
+      if (els.campaignFilter.value === 'sa-only') clauses.push(`coalesce("キャンペーン", '') LIKE '%SA-%'`);
+      if (els.campaignFilter.value === 'non-sa-only') clauses.push(`coalesce("キャンペーン", '') NOT LIKE '%SA-%'`);
+      extraClauses.forEach(c => clauses.push(c));
+      return clauses.length ? 'WHERE ' + clauses.join(' AND ') : '';
+    }
+
+    function isUsefulCandidate(value) {
+      const v = String(value || '').trim(); if (!v || v.length <= 1) return false;
+      if (!/[一-龥々〆ヵヶぁ-ゖァ-ヺーA-Za-z0-9]/.test(v)) return false;
+      const whitelist = new Set(['it','ai','pr','ec','pc','dx']);
+      if (/^[a-z0-9]{1,2}$/i.test(v) && !whitelist.has(v.toLowerCase())) return false;
+      return true;
+    }
+
+    async function queryRows(conn, sql) { log('\n[SQL]\n' + sql); const table = await conn.query(sql); return tableToRows(table); }
+
+    async function refreshAll() {
+      if (!appState) return;
+      const months = selectedMonths();
+      if (!months.length) { setStatus('対象月なし', 'bad'); return; }
+      els.refreshBtn.disabled = true; setStatus('集計中...', 'warn');
+      try {
+        const db = await getDb();
+        const conn = await db.connect();
+        try { await conn.query('LOAD parquet;'); } catch(e) { /* autoload環境では不要 */ }
+        const paths = await registerMonths(db, months);
+        const source = readExpr(paths);
+        const where = baseWhere();
+        const aggregateSql = `WITH src AS (SELECT * FROM ${source} ${where}) SELECT COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src;`;
+        const totals = (await queryRows(conn, aggregateSql))[0] || {};
+        renderStats(totals);
+        const relatedSql = `WITH src AS (SELECT * FROM ${source} ${where}), exploded AS (SELECT trim(candidate) AS related_job, "消化金額", "表示回数", "クリック数", "応募開始数", "応募数" FROM src, UNNEST(string_split(coalesce("関連職種", ''), '|')) AS t(candidate)) SELECT related_job, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM exploded WHERE related_job <> '' GROUP BY related_job ORDER BY count DESC, applies DESC, clicks DESC, related_job ASC LIMIT 500;`;
+        const relatedRaw = await queryRows(conn, relatedSql);
+        renderRelated(relatedRaw.filter(r => isUsefulCandidate(r.related_job)).slice(0,50));
+        await renderComparison(conn, source);
+        await conn.close();
+        setStatus(`集計完了：${months[0]}〜${months[months.length-1]} / ${paths.length}ファイル`, 'ok');
+      } catch (error) {
+        console.error(error); log('[ERROR]\n' + (error.stack || error.message)); setStatus('集計エラー', 'bad');
+      } finally { els.refreshBtn.disabled = false; }
+    }
+
+    function calcRates(row) {
+      const cost = Number(row.cost || 0), imps = Number(row.impressions || 0), clicks = Number(row.clicks || 0), applies = Number(row.applies || 0);
+      return { ctr: imps ? clicks / imps * 100 : null, cvr: clicks ? applies / clicks * 100 : null, cpc: clicks ? cost / clicks : null, cpa: applies ? cost / applies : null };
+    }
+
+    function renderStats(row) {
+      const r = calcRates(row);
+      const items = [['該当件数',fmtNum(row.count),'件'],['消化金額',fmtNum(row.cost),'円'],['表示回数',fmtNum(row.impressions),'回'],['クリック数',fmtNum(row.clicks),'回'],['応募開始数',fmtNum(row.apply_starts),'件'],['応募数',fmtNum(row.applies),'件'],['CVR',r.cvr===null?'-':fmtNum(r.cvr,2),'%'],['CPA',r.cpa===null?'-':fmtNum(r.cpa),'円']];
+      els.stats.innerHTML = items.map(([title,value,unit]) => `<div class="stat"><div class="stat-title">${esc(title)}</div><div class="stat-value">${esc(value)}<span class="unit">${esc(unit)}</span></div></div>`).join('');
+    }
+
+    function renderSelectedJobs() {
+      if (!selectedJobTitles.length) { els.selectedJobs.innerHTML = '<span class="muted">比較に追加された関連職種はありません。</span>'; return; }
+      els.selectedJobs.innerHTML = selectedJobTitles.map(job => `<button class="chip pinned selected" data-remove-job="${esc(job)}" type="button">${esc(job)} ×</button>`).join('');
+      els.selectedJobs.querySelectorAll('[data-remove-job]').forEach(btn => btn.addEventListener('click', () => { selectedJobTitles = selectedJobTitles.filter(j => j !== btn.dataset.removeJob); renderSelectedJobs(); refreshAll(); }));
+    }
+
+    function renderRelated(rows) {
+      renderSelectedJobs();
+      if (!rows.length) { els.relatedJobs.innerHTML = '<div class="empty">関連職種候補がありません。</div>'; return; }
+      els.relatedJobs.innerHTML = rows.map(row => `<button class="chip ${selectedJobTitles.includes(row.related_job) ? 'selected' : ''}" data-job="${esc(row.related_job)}" type="button">${esc(row.related_job)} <span class="muted">${fmtNum(row.count)}</span></button>`).join('');
+      els.relatedJobs.querySelectorAll('[data-job]').forEach(btn => btn.addEventListener('click', () => { const job = btn.dataset.job; selectedJobTitles = selectedJobTitles.includes(job) ? selectedJobTitles.filter(j => j !== job) : [...selectedJobTitles, job]; renderSelectedJobs(); refreshAll(); }));
+    }
+
+    async function renderComparison(conn, source) {
+      if (comparisonMode === 'job') return renderJobComparison(conn, source);
+      if (comparisonMode === 'prefecture') return renderPrefComparison(conn, source);
+      return renderMonthComparison(conn, source);
+    }
+
+    function metricHeaders() { return '<th>該当件数</th><th>消化金額</th><th>表示回数</th><th>クリック数</th><th>応募開始数</th><th>応募数</th><th>CVR</th><th>CPA</th>'; }
+    function metricCells(row) { const r = calcRates(row); return `<td>${fmtNum(row.count)}</td><td>${fmtNum(row.cost)}</td><td>${fmtNum(row.impressions)}</td><td>${fmtNum(row.clicks)}</td><td>${fmtNum(row.apply_starts)}</td><td>${fmtNum(row.applies)}</td><td>${r.cvr===null?'-':fmtNum(r.cvr,2)+'%'}</td><td>${r.cpa===null?'-':fmtNum(r.cpa)+'円'}</td>`; }
+
+    async function renderJobComparison(conn, source) {
+      if (!selectedJobTitles.length) { els.comparisonContent.innerHTML = '<div class="empty">関連職種候補をクリックすると、ここに職種別の比較表が表示されます。</div>'; lastCopyRows = []; els.copyBtn.disabled = true; return; }
+      const selects = selectedJobTitles.map(job => `SELECT ${sqlLiteral(job)} AS label, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src WHERE "タイトル" LIKE ${sqlLiteral('%' + job + '%')}`).join(' UNION ALL ');
+      const sql = `WITH src AS (SELECT * FROM ${source} ${baseWhere()}) ${selects} ORDER BY count DESC;`;
+      const rows = await queryRows(conn, sql);
+      renderTable('関連職種', rows);
+    }
+
+    async function renderPrefComparison(conn, source) {
+      const sql = `WITH src AS (SELECT * FROM ${source} ${baseWhere()}) SELECT coalesce("都道府県", '（不明）') AS label, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src GROUP BY label ORDER BY CASE WHEN applies > 0 THEN cost / applies ELSE 999999999 END ASC, count DESC;`;
+      const rows = await queryRows(conn, sql);
+      renderTable('都道府県', rows);
+    }
+
+    async function renderMonthComparison(conn, source) {
+      const sql = `WITH src AS (SELECT * FROM ${source} ${baseWhere()}) SELECT CAST("集計年月キー" AS VARCHAR) AS label, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src GROUP BY label ORDER BY label ASC;`;
+      const rows = await queryRows(conn, sql);
+      renderTable('集計年月', rows);
+    }
+
+    function renderTable(labelName, rows) {
+      lastCopyRows = rows.map(row => ({ label: row.label, ...row, ...calcRates(row) }));
+      els.copyBtn.disabled = rows.length === 0;
+      if (!rows.length) { els.comparisonContent.innerHTML = '<div class="empty">該当データがありません。</div>'; return; }
+      els.comparisonContent.innerHTML = `<div class="table-wrap"><table><thead><tr><th>${esc(labelName)}</th>${metricHeaders()}</tr></thead><tbody>${rows.map(row => `<tr><td>${esc(row.label)}</td>${metricCells(row)}</tr>`).join('')}</tbody></table></div>`;
+    }
+
+    function copyTable() {
+      if (!lastCopyRows.length) return;
+      const headers = ['ラベル','該当件数','消化金額','表示回数','クリック数','応募開始数','応募数','CVR','CPA'];
+      const lines = [headers.join('\t')];
+      lastCopyRows.forEach(row => lines.push([row.label,row.count,row.cost,row.impressions,row.clicks,row.apply_starts,row.applies,row.cvr ?? '',row.cpa ?? ''].join('\t')));
+      navigator.clipboard.writeText(lines.join('\n')).catch(() => {});
+    }
+
+    els.folderInput.addEventListener('change', e => handleFiles(e.target.files).catch(err => { console.error(err); log('[ERROR]\n' + (err.stack || err.message)); setStatus('エラー','bad'); }));
+    els.refreshBtn.addEventListener('click', () => { clearLog(); refreshAll(); });
+    els.copyBtn.addEventListener('click', copyTable);
+    els.clearSelectedBtn.addEventListener('click', () => { selectedJobTitles = []; renderSelectedJobs(); refreshAll(); });
+    [els.freeWordInput, els.locationInput].forEach(input => input.addEventListener('keydown', e => { if (e.key === 'Enter') { clearLog(); refreshAll(); } }));
+    [els.searchMode, els.campaignFilter, els.periodFrom, els.periodTo].forEach(el => el.addEventListener('change', () => { clearLog(); refreshAll(); }));
+    document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); comparisonMode = tab.dataset.mode; clearLog(); refreshAll(); }));
   </script>
 </body>
 </html>
