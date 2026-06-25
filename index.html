@@ -4,172 +4,574 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>天市×indeedPLUS運用実績 - ローカルParquet版</title>
+  <title>天市×indeedPLUS運用実績</title>
+
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap');
+
     :root {
-      --bg1:#fef3c7; --bg2:#ffedd5; --bg3:#fef9c3;
-      --card:rgba(255,255,255,.93); --text:#44403c; --muted:#78716c; --line:#e7e5e4;
-      --orange:#f97316; --orangeDark:#c2410c; --sky:#0ea5e9; --skyDark:#0369a1;
-      --green:#059669; --rose:#e11d48; --amber:#d97706; --violet:#7c3aed;
-      --shadow:0 16px 32px -18px rgba(0,0,0,.28); --radius:28px;
+      --stone-50:#fafaf9;
+      --stone-100:#f5f5f4;
+      --stone-200:#e7e5e4;
+      --stone-300:#d6d3d1;
+      --stone-400:#a8a29e;
+      --stone-500:#78716c;
+      --stone-600:#57534e;
+      --stone-700:#44403c;
+      --stone-800:#292524;
+      --orange-50:#fff7ed;
+      --orange-100:#ffedd5;
+      --orange-200:#fed7aa;
+      --orange-300:#fdba74;
+      --orange-400:#fb923c;
+      --orange-500:#f97316;
+      --orange-700:#c2410c;
+      --sky-50:#f0f9ff;
+      --sky-100:#e0f2fe;
+      --sky-200:#bae6fd;
+      --sky-300:#7dd3fc;
+      --sky-500:#0ea5e9;
+      --sky-700:#0369a1;
+      --emerald-100:#d1fae5;
+      --emerald-200:#a7f3d0;
+      --emerald-600:#059669;
+      --rose-100:#ffe4e6;
+      --rose-500:#f43f5e;
+      --rose-700:#be123c;
+      --amber-100:#fef3c7;
+      --amber-200:#fde68a;
+      --amber-500:#f59e0b;
+      --amber-700:#b45309;
+      --indigo-100:#e0e7ff;
+      --indigo-500:#6366f1;
+      --violet-100:#ede9fe;
+      --violet-500:#8b5cf6;
+      --white-glass: rgba(255,255,255,.92);
+      --shadow-card: 0 12px 24px -8px rgba(0,0,0,.15);
+      --shadow-soft: 0 8px 18px -12px rgba(0,0,0,.24);
+      --radius-xl: 2rem;
+      --radius-lg: 1.5rem;
+      --radius-md: 1rem;
     }
-    * { box-sizing:border-box; }
-    body { margin:0; min-height:100vh; color:var(--text); font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3)); background-attachment:fixed; }
-    .wrap { max-width:1720px; margin:0 auto; padding:24px 18px 48px; }
-    .card { background:var(--card); border:4px solid #fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; }
-    .header { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:18px; }
-    h1 { margin:0; font-size:clamp(24px,3vw,36px); letter-spacing:.02em; }
-    h2 { margin:0 0 14px; font-size:20px; }
-    h3 { margin:0 0 10px; font-size:16px; }
-    p { line-height:1.7; }
-    .muted { color:var(--muted); }
-    .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace; }
-    .grid { display:grid; grid-template-columns:repeat(12,1fr); gap:18px; }
-    .span-12 { grid-column:span 12; } .span-9 { grid-column:span 9; } .span-8 { grid-column:span 8; } .span-6 { grid-column:span 6; } .span-4 { grid-column:span 4; } .span-3 { grid-column:span 3; }
-    @media (max-width:1100px) { .span-9,.span-8,.span-6,.span-4,.span-3 { grid-column:span 12; } }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--stone-700);
+      font-family: 'Zen Maru Gothic', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #fef3c7 0%, #ffedd5 50%, #fef9c3 100%);
+      background-attachment: fixed;
+    }
+
+    button, input, select { font-family: inherit; }
+    button { border: 0; }
     input[type="file"] { display:none; }
-    .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; border:0; border-radius:16px; padding:12px 18px; font-weight:900; cursor:pointer; background:linear-gradient(180deg,#fb923c,#f97316); color:#fff; box-shadow:0 5px 0 var(--orangeDark); transition:.12s; text-decoration:none; white-space:nowrap; }
-    .btn:hover { filter:brightness(1.04); } .btn:active { transform:translateY(5px); box-shadow:none; }
-    .btn:disabled { opacity:.45; cursor:not-allowed; transform:none; }
-    .btn.secondary { background:linear-gradient(180deg,#38bdf8,#0ea5e9); box-shadow:0 5px 0 var(--skyDark); }
-    .btn.ghost { background:#f5f5f4; color:#57534e; box-shadow:0 5px 0 #d6d3d1; }
-    .btn.small { padding:8px 12px; border-radius:12px; font-size:13px; box-shadow:0 4px 0 var(--orangeDark); }
-    .toolbar, .filters, .actions, .chips { display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
-    .status { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; font-weight:900; font-size:13px; background:#f5f5f4; color:#57534e; }
-    .status.ok { background:#d1fae5; color:#047857; } .status.warn { background:#fef3c7; color:#b45309; } .status.bad { background:#ffe4e6; color:#be123c; }
-    .field { display:grid; gap:6px; min-width:180px; flex:1; }
-    .field.sm { flex:0 0 150px; min-width:140px; } .field.md { flex:0 0 210px; min-width:180px; }
-    label.label { font-size:13px; font-weight:950; color:#57534e; }
-    input[type="text"], select { width:100%; border:4px solid #fff; background:#fafaf9; border-radius:16px; padding:12px 13px; font-weight:800; color:#44403c; outline:none; box-shadow:inset 0 2px 4px rgba(0,0,0,.05); }
-    input[type="text"]:focus, select:focus { border-color:#7dd3fc; background:#fff; }
-    .stats { display:grid; grid-template-columns:repeat(7,minmax(130px,1fr)); gap:12px; }
-    @media (max-width:1200px) { .stats { grid-template-columns:repeat(3,minmax(130px,1fr)); } }
-    @media (max-width:720px) { .stats { grid-template-columns:repeat(2,minmax(130px,1fr)); } }
-    .stat { background:#fff; border:1px solid var(--line); border-radius:20px; padding:14px; min-height:88px; }
-    .stat-title { color:var(--muted); font-size:12px; font-weight:950; } .stat-value { margin-top:8px; font-size:23px; font-weight:950; }
-    .unit { color:var(--muted); font-size:13px; margin-left:3px; }
-    .table-wrap { overflow:auto; max-height:520px; border:1px solid var(--line); border-radius:18px; background:#fff; }
-    table { width:100%; border-collapse:separate; border-spacing:0; font-size:14px; }
-    th,td { padding:10px 12px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; white-space:nowrap; }
-    th { background:#f5f5f4; color:#57534e; font-size:13px; font-weight:950; position:sticky; top:0; z-index:2; }
-    tr:last-child td { border-bottom:0; }
-    .pill { display:inline-flex; align-items:center; border-radius:999px; padding:4px 9px; font-size:12px; font-weight:900; }
-    .pill.ok { background:#d1fae5; color:#047857; } .pill.warn { background:#fef3c7; color:#b45309; } .pill.bad { background:#ffe4e6; color:#be123c; } .pill.sky { background:#e0f2fe; color:#0369a1; }
-    .chip { border:2px solid #fed7aa; background:#fff7ed; color:#9a3412; border-radius:999px; padding:7px 11px; cursor:pointer; font-weight:900; font-size:13px; }
-    .chip:hover { filter:brightness(.98); } .chip.selected { background:#f97316; color:#fff; border-color:#fdba74; }
-    .chip.pinned { background:#0ea5e9; color:#fff; border-color:#7dd3fc; }
-    .tabs { display:flex; gap:10px; flex-wrap:wrap; }
-    .tab { border:0; border-radius:999px; padding:9px 14px; cursor:pointer; font-weight:950; background:#f5f5f4; color:#57534e; }
-    .tab.active { background:#0ea5e9; color:#fff; }
-    .hidden { display:none!important; }
-    .log { white-space:pre-wrap; background:#1c1917; color:#fafaf9; border-radius:18px; padding:14px; font-size:12px; max-height:280px; overflow:auto; }
-    .empty { color:#78716c; padding:18px; background:#fafaf9; border-radius:18px; border:1px dashed #d6d3d1; }
-    .kv { display:grid; grid-template-columns:170px 1fr; gap:8px 12px; font-size:14px; }
-    .kv div:nth-child(odd) { color:var(--muted); font-weight:950; }
+
+    .page {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 24px 18px 54px;
+    }
+
+    .card {
+      background: var(--white-glass);
+      backdrop-filter: blur(14px);
+      border: 4px solid #fff;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-card);
+      padding: 24px;
+    }
+
+    .stack { display: grid; gap: 18px; }
+    .header {
+      display:flex;
+      flex-wrap:wrap;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    .brand { display:flex; align-items:center; gap:14px; min-width: 260px; }
+    .brand-icon {
+      width: 46px; height: 46px; border-radius: 16px;
+      display:grid; place-items:center;
+      color:#22c55e;
+      background: linear-gradient(180deg,#fff,#f0fdf4);
+      border:3px solid #fff;
+      box-shadow: 0 8px 18px -10px rgba(0,0,0,.35);
+    }
+    h1 { margin:0; font-size: clamp(25px, 3vw, 34px); line-height:1.2; color:var(--stone-800); letter-spacing:.02em; }
+    h2 { margin:0; font-size: 20px; color:var(--stone-800); }
+    h3 { margin:0; font-size: 15px; color:var(--stone-700); }
+    .lead { margin:5px 0 0; color:var(--stone-500); font-weight:700; font-size: 13px; }
+
+    .toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:12px; }
+    .btn {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height: 44px;
+      padding: 11px 18px;
+      border-radius: 16px;
+      font-size:14px;
+      font-weight:900;
+      color:#fff;
+      background: linear-gradient(180deg,var(--orange-400),var(--orange-500));
+      box-shadow: 0 5px 0 var(--orange-700);
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+      text-decoration:none;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:hover { filter: brightness(1.04); }
+    .btn:active { transform: translateY(5px); box-shadow: none; }
+    .btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    .btn.sky { background: linear-gradient(180deg,#38bdf8,var(--sky-500)); box-shadow:0 5px 0 var(--sky-700); }
+    .btn.stone { color:var(--stone-600); background: linear-gradient(180deg,#fff,var(--stone-100)); box-shadow:0 5px 0 var(--stone-300); border:1px solid rgba(214,211,209,.8); }
+    .btn.small { min-height:36px; padding:8px 12px; border-radius:13px; font-size:12px; box-shadow:0 4px 0 var(--orange-700); }
+
+    .status {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 10px 13px;
+      border-radius: 999px;
+      font-weight:900;
+      font-size:13px;
+      color:var(--stone-600);
+      background: var(--stone-100);
+      border:2px solid #fff;
+      box-shadow: var(--shadow-soft);
+      white-space:nowrap;
+    }
+    .status.ok { color:#047857; background:var(--emerald-100); }
+    .status.warn { color:var(--amber-700); background:var(--amber-100); }
+    .status.bad { color:var(--rose-700); background:var(--rose-100); }
+
+    .guide {
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items:center;
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      background: rgba(245,245,244,.66);
+      border: 4px solid #fff;
+      box-shadow: inset 0 4px 8px rgba(0,0,0,.04);
+    }
+    @media (max-width: 820px) { .guide { grid-template-columns:1fr; } }
+    .guide-title { margin:0 0 4px; color:var(--stone-800); font-weight:900; font-size:17px; }
+    .guide-text { margin:0; color:var(--stone-500); font-weight:700; line-height:1.6; }
+    .tiny { color:var(--stone-500); font-size:12px; font-weight:700; }
+
+    .meta-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
+    .meta-pill {
+      display:inline-flex; align-items:center; gap:7px;
+      padding:8px 11px; border-radius:999px;
+      background:#fff; color:var(--stone-600);
+      border:2px solid var(--stone-100);
+      font-size:12px; font-weight:900;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .filter-grid {
+      display:grid;
+      grid-template-columns: minmax(220px, 1.4fr) minmax(220px, 1.25fr) minmax(150px,.7fr) minmax(160px,.8fr) minmax(138px,.65fr);
+      gap: 16px;
+      align-items:start;
+    }
+    @media (max-width: 1220px) { .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 720px) { .filter-grid { grid-template-columns: 1fr; } }
+    .field { display:grid; gap:7px; min-width:0; }
+    .field label {
+      font-size:13px;
+      font-weight:900;
+      color:var(--stone-600);
+      display:flex; align-items:center; gap:6px;
+    }
+    .hint { font-size:11px; color:var(--stone-400); font-weight:900; }
+    .input-wrap { position:relative; }
+    .input-wrap svg { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--stone-400); pointer-events:none; }
+    input[type="text"], select {
+      width:100%;
+      border:4px solid #fff;
+      background: var(--stone-50);
+      border-radius: 16px;
+      padding: 13px 14px;
+      font-weight:900;
+      font-size:14px;
+      color:var(--stone-700);
+      outline:none;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,.05);
+      transition:.15s ease;
+    }
+    .input-wrap input { padding-left:44px; padding-right:36px; }
+    input[type="text"]:focus, select:focus { background:#fff; border-color:var(--sky-300); box-shadow:0 0 0 4px var(--sky-100), inset 0 2px 4px rgba(0,0,0,.04); }
+    .clear-input {
+      position:absolute;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
+      width:26px; height:26px;
+      border-radius:999px;
+      background:#fff;
+      color:var(--stone-400);
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      cursor:pointer;
+      font-weight:900;
+      display:none;
+    }
+    .input-wrap.has-value .clear-input { display:block; }
+    .period-pair { display:grid; grid-template-columns:1fr auto 1fr; gap:7px; align-items:center; }
+    .period-pair span { color:var(--stone-400); font-weight:900; }
+
+    .section-title {
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px;
+    }
+    .section-sub { margin:4px 0 0; font-size:12px; color:var(--stone-500); font-weight:700; }
+
+    .stats {
+      display:grid;
+      grid-template-columns: repeat(7, minmax(130px, 1fr));
+      gap:12px;
+    }
+    @media (max-width:1400px) { .stats { grid-template-columns: repeat(4, minmax(130px, 1fr)); } }
+    @media (max-width:820px) { .stats { grid-template-columns: repeat(2, minmax(130px, 1fr)); } }
+    .stat {
+      min-height:92px;
+      background:#fff;
+      border-radius:20px;
+      border:2px solid var(--stone-100);
+      padding:14px;
+      box-shadow: var(--shadow-soft);
+    }
+    .stat-title { color:var(--stone-500); font-size:12px; font-weight:900; display:flex; align-items:center; gap:6px; }
+    .stat-value { margin-top:9px; color:var(--stone-800); font-size: clamp(20px, 2vw, 26px); line-height:1.2; font-weight:900; word-break: break-word; }
+    .unit { margin-left:3px; color:var(--stone-500); font-size:13px; }
+
+    .chips { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    .chip {
+      border:2px solid var(--orange-200);
+      background: #fff7ed;
+      color:#9a3412;
+      border-radius: 999px;
+      padding:8px 12px;
+      font-weight:900;
+      font-size:13px;
+      cursor:pointer;
+      transition:.12s ease;
+      box-shadow: 0 3px 0 #fed7aa;
+    }
+    .chip:hover { filter:brightness(.99); transform:translateY(1px); }
+    .chip.selected { background: linear-gradient(180deg,var(--orange-300),var(--orange-500)); color:#fff; border-color:var(--orange-200); box-shadow:0 4px 0 var(--orange-700); }
+    .chip.pinned { background: linear-gradient(180deg,#38bdf8,var(--sky-500)); color:#fff; border-color:var(--sky-200); box-shadow:0 4px 0 var(--sky-700); }
+    .chip-count { margin-left:4px; color:rgba(120,113,108,.78); font-size:11px; }
+    .chip.selected .chip-count, .chip.pinned .chip-count { color:rgba(255,255,255,.75); }
+
+    .tabs { display:flex; flex-wrap:wrap; gap:10px; }
+    .tab {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      min-height:38px;
+      padding:9px 14px;
+      border-radius:999px;
+      color:var(--stone-600);
+      background: var(--stone-100);
+      border:2px solid #fff;
+      cursor:pointer;
+      font-weight:900;
+      box-shadow:0 4px 0 var(--stone-300);
+      transition:.12s ease;
+    }
+    .tab.active { color:#fff; background:linear-gradient(180deg,#38bdf8,var(--sky-500)); box-shadow:0 4px 0 var(--sky-700); }
+    .tab:active { transform:translateY(4px); box-shadow:none; }
+
+    .compare-controls {
+      display:grid;
+      grid-template-columns: repeat(4, minmax(130px, 1fr));
+      gap:12px;
+      margin-bottom:14px;
+      padding:14px;
+      border-radius:20px;
+      background: rgba(245,245,244,.75);
+      border:3px solid #fff;
+    }
+    @media (max-width:900px) { .compare-controls { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+    @media (max-width:560px) { .compare-controls { grid-template-columns:1fr; } }
+
+    .table-frame {
+      position: relative;
+      overflow:auto;
+      max-height: 620px;
+      border-radius: 22px;
+      border:3px solid #fff;
+      background:#fff;
+      box-shadow: inset 0 0 0 1px var(--stone-100);
+    }
+    .table-frame::-webkit-scrollbar { height: 18px; width: 12px; }
+    .table-frame::-webkit-scrollbar-track { background:var(--stone-100); border-radius:999px; }
+    .table-frame::-webkit-scrollbar-thumb { background:linear-gradient(180deg,var(--stone-300),var(--stone-400)); border-radius:999px; border:3px solid var(--stone-100); }
+    table { width:100%; min-width: 980px; border-collapse:separate; border-spacing:0; font-size:14px; }
+    th, td { padding:12px 14px; border-right:2px solid var(--stone-100); border-bottom:2px solid var(--stone-100); white-space:nowrap; text-align:right; vertical-align:middle; }
+    th:first-child, td:first-child { text-align:left; position:sticky; left:0; z-index:1; background:#fff; min-width:220px; max-width:360px; white-space:normal; }
+    th { position:sticky; top:0; z-index:2; background:#f5f5f4; color:var(--stone-600); font-size:12px; font-weight:900; }
+    th:first-child { z-index:3; background:#f5f5f4; }
+    tr:hover td { background:#fff7ed; }
+    tr:hover td:first-child { background:#fff7ed; }
+    .diff-row td { background:var(--sky-50); font-weight:900; }
+    .diff-row td:first-child { background:var(--sky-50); }
+
+    .empty {
+      padding:22px;
+      border-radius:20px;
+      color:var(--stone-500);
+      background: var(--stone-50);
+      border:2px dashed var(--stone-300);
+      font-weight:800;
+      line-height:1.7;
+    }
+
+    .column-menu { position:relative; }
+    .dropdown {
+      position:absolute;
+      right:0;
+      top:calc(100% + 10px);
+      z-index:20;
+      width:240px;
+      padding:12px;
+      border-radius:18px;
+      background:#fff;
+      border:3px solid var(--stone-100);
+      box-shadow:0 18px 40px -24px rgba(0,0,0,.5);
+      display:none;
+    }
+    .dropdown.open { display:grid; gap:8px; }
+    .check-row { display:flex; align-items:center; gap:8px; padding:8px; border-radius:12px; cursor:pointer; font-size:13px; font-weight:900; color:var(--stone-600); }
+    .check-row:hover { background:var(--stone-50); }
+    .fake-check { width:18px; height:18px; border-radius:6px; border:2px solid var(--stone-300); display:grid; place-items:center; flex:0 0 auto; }
+    .fake-check.checked { background:var(--sky-500); border-color:var(--sky-500); color:#fff; }
+
+    .hidden { display:none !important; }
+    .busy-cover {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(255,247,237,.62);
+      backdrop-filter: blur(4px);
+      display:none;
+      place-items:center;
+      padding:18px;
+    }
+    .busy-cover.show { display:grid; }
+    .busy-box {
+      max-width:420px;
+      width:100%;
+      background:#fff;
+      border:4px solid #fff;
+      border-radius:28px;
+      box-shadow:var(--shadow-card);
+      padding:26px;
+      text-align:center;
+    }
+    .spinner {
+      width:56px; height:56px; border-radius:999px;
+      margin:0 auto 14px;
+      border:6px solid var(--orange-100);
+      border-top-color:var(--orange-500);
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    details.trouble {
+      margin-top: 14px;
+      color:var(--stone-500);
+      font-size:12px;
+      font-weight:700;
+    }
+    details.trouble summary { cursor:pointer; font-weight:900; }
+    .error-detail {
+      margin-top:10px;
+      padding:12px;
+      background:#fff;
+      border-radius:14px;
+      border:2px solid var(--stone-100);
+      white-space:pre-wrap;
+      overflow:auto;
+      max-height:180px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:11px;
+      color:var(--stone-600);
+    }
   </style>
 </head>
 <body>
-  <main class="wrap">
+  <div class="busy-cover" id="busyCover" aria-live="polite">
+    <div class="busy-box">
+      <div class="spinner"></div>
+      <h2 id="busyTitle">データを読み込んでいます...</h2>
+      <p class="lead" id="busyText">しばらくお待ちください。</p>
+    </div>
+  </div>
+
+  <main class="page stack">
     <section class="card">
       <div class="header">
-        <div>
-          <h1>天市×indeedPLUS運用実績</h1>
-          <p class="muted" style="margin:8px 0 0;">ローカルParquet / DuckDB-Wasm版 置き換え候補v2</p>
+        <div class="brand">
+          <div class="brand-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+          </div>
+          <div>
+            <h1>天市×indeedPLUS運用実績</h1>
+            <p class="lead">求人タイトル・勤務地・期間で、運用実績をかんたん比較できます。</p>
+          </div>
         </div>
         <div class="toolbar">
-          <label class="btn" for="folderInput">📁 フォルダを選択</label>
+          <label class="btn" for="folderInput">📁 データフォルダを選択</label>
           <input id="folderInput" type="file" webkitdirectory directory multiple />
-          <button id="refreshBtn" class="btn secondary" type="button" disabled>集計更新</button>
-          <button id="copyBtn" class="btn ghost" type="button" disabled>表をコピー</button>
+          <button id="refreshBtn" class="btn sky" type="button" disabled>集計更新</button>
+          <button id="copyBtn" class="btn stone" type="button" disabled>表をコピー</button>
           <span id="mainStatus" class="status">未選択</span>
         </div>
       </div>
-      <div id="datasetInfo" class="kv hidden"></div>
+
+      <div id="startGuide" class="guide">
+        <div>
+          <p class="guide-title">はじめに、運用データのフォルダを選択してください。</p>
+          <p class="guide-text">「output_dataset」フォルダ、またはその親フォルダを選択すると読み込みます。初期表示は、データ内の最新月から直近12か月です。</p>
+        </div>
+        <label class="btn" for="folderInput">フォルダを選ぶ</label>
+      </div>
+
+      <div id="loadedMeta" class="meta-row hidden"></div>
+      <details id="troubleBox" class="trouble hidden">
+        <summary>読み込みで困ったとき</summary>
+        <div class="error-detail" id="errorDetail"></div>
+      </details>
     </section>
 
-    <section id="appArea" class="grid hidden" style="margin-top:18px;">
-      <div class="card span-12">
-        <h2>検索条件</h2>
-        <div class="filters">
-          <div class="field">
-            <label class="label" for="freeWordInput">フリーワード <span class="muted">※タイトル検索</span></label>
-            <input id="freeWordInput" type="text" placeholder="例：接客 販売" />
-          </div>
-          <div class="field">
-            <label class="label" for="locationInput">勤務地 <span class="muted">※都道府県＋市区町村</span></label>
-            <input id="locationInput" type="text" placeholder="例：東京 新宿" />
-          </div>
-          <div class="field sm">
-            <label class="label" for="searchMode">検索モード</label>
-            <select id="searchMode"><option value="OR">OR</option><option value="AND">AND</option></select>
-          </div>
-          <div class="field md">
-            <label class="label" for="campaignFilter">キャンペーン</label>
-            <select id="campaignFilter"><option value="all">すべて</option><option value="sa-only">SAのみ</option><option value="non-sa-only">SA以外</option></select>
-          </div>
-          <div class="field sm">
-            <label class="label" for="periodFrom">開始月</label>
-            <select id="periodFrom"></select>
-          </div>
-          <div class="field sm">
-            <label class="label" for="periodTo">終了月</label>
-            <select id="periodTo"></select>
+    <section id="appArea" class="stack hidden">
+      <section class="card">
+        <div class="section-title">
+          <div>
+            <h2>検索条件</h2>
+            <p class="section-sub">入力すると少し待って自動集計します。すぐ反映したい場合は「集計更新」を押してください。</p>
           </div>
         </div>
-      </div>
 
-      <div class="card span-12">
-        <h2>合計</h2>
+        <div class="filter-grid">
+          <div class="field">
+            <label for="freeWordInput">🔎 フリーワード <span class="hint">※求人タイトルを検索</span></label>
+            <div class="input-wrap" id="freeWordWrap">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input id="freeWordInput" type="text" placeholder="例：接客 販売" autocomplete="off" />
+              <button class="clear-input" data-clear="freeWordInput" type="button">×</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="locationInput">📍 勤務地 <span class="hint">※都道府県・市区町村を検索</span></label>
+            <div class="input-wrap" id="locationWrap">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <input id="locationInput" type="text" placeholder="例：東京 新宿" autocomplete="off" />
+              <button class="clear-input" data-clear="locationInput" type="button">×</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="searchMode">検索モード</label>
+            <select id="searchMode">
+              <option value="OR">いずれかを含む</option>
+              <option value="AND">すべて含む</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="campaignFilter">キャンペーン</label>
+            <select id="campaignFilter">
+              <option value="all">すべて</option>
+              <option value="sa-only">SAのみ</option>
+              <option value="non-sa-only">SA以外</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>集計期間</label>
+            <div class="period-pair">
+              <select id="periodFrom" aria-label="開始月"></select>
+              <span>〜</span>
+              <select id="periodTo" aria-label="終了月"></select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-title">
+          <div>
+            <h2>合計</h2>
+            <p id="conditionSummary" class="section-sub">現在の条件で集計しています。</p>
+          </div>
+          <div class="column-menu" id="columnMenu">
+            <button id="columnBtn" class="btn stone small" type="button">表示項目</button>
+            <div id="columnDropdown" class="dropdown"></div>
+          </div>
+        </div>
         <div id="stats" class="stats"></div>
-      </div>
+      </section>
 
-      <div class="card span-12">
-        <div class="header" style="margin-bottom:10px;">
+      <section class="card">
+        <div class="section-title">
           <div>
             <h2>関連する標準化職種</h2>
-            <p class="muted" style="margin:4px 0 0;font-size:13px;">関連職種を「|」で分割し、件数順で上位候補を表示します。クリックで比較表に追加します。</p>
+            <p class="section-sub">候補をクリックすると、下の比較表に追加できます。</p>
           </div>
-          <button id="clearSelectedBtn" class="btn ghost small" type="button">選択解除</button>
+          <button id="clearSelectedBtn" class="btn stone small" type="button">選択解除</button>
         </div>
         <div id="selectedJobs" class="chips" style="margin-bottom:12px;"></div>
         <div id="relatedJobs" class="chips"></div>
-      </div>
+      </section>
 
-      <div class="card span-12">
-        <div class="header" style="margin-bottom:12px;">
-          <h2>比較</h2>
+      <section class="card">
+        <div class="section-title">
+          <div>
+            <h2>比較</h2>
+            <p class="section-sub">見たい切り口を選んで、実績を比較できます。</p>
+          </div>
           <div class="tabs">
             <button class="tab active" data-mode="job" type="button">職種比較</button>
             <button class="tab" data-mode="prefecture" type="button">都道府県比較</button>
             <button class="tab" data-mode="month" type="button">月別推移</button>
-            <button class="tab" data-mode="period" type="button">期間A/B比較</button>
+            <button class="tab" data-mode="period" type="button">期間比較</button>
           </div>
         </div>
-        <div id="periodCompareControls" class="filters hidden" style="margin-bottom:14px;padding:14px;background:#fafaf9;border-radius:18px;border:1px solid #e7e5e4;">
-          <div class="field sm">
-            <label class="label" for="compareAFrom">期間A 開始</label>
+
+        <div id="periodCompareControls" class="compare-controls hidden">
+          <div class="field">
+            <label for="compareAFrom">期間A 開始</label>
             <select id="compareAFrom"></select>
           </div>
-          <div class="field sm">
-            <label class="label" for="compareATo">期間A 終了</label>
+          <div class="field">
+            <label for="compareATo">期間A 終了</label>
             <select id="compareATo"></select>
           </div>
-          <div class="field sm">
-            <label class="label" for="compareBFrom">期間B 開始</label>
+          <div class="field">
+            <label for="compareBFrom">期間B 開始</label>
             <select id="compareBFrom"></select>
           </div>
-          <div class="field sm">
-            <label class="label" for="compareBTo">期間B 終了</label>
+          <div class="field">
+            <label for="compareBTo">期間B 終了</label>
             <select id="compareBTo"></select>
           </div>
         </div>
-        <div id="comparisonContent"></div>
-      </div>
 
-      <div class="card span-12">
-        <h2>診断ログ / SQL</h2>
-        <div id="log" class="log"></div>
-      </div>
+        <div id="comparisonContent"></div>
+      </section>
     </section>
   </main>
 
@@ -177,121 +579,324 @@
     import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm/+esm";
 
     const els = {
-      folderInput: document.getElementById('folderInput'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), mainStatus: document.getElementById('mainStatus'),
-      datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'),
-      searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'),
-      stats: document.getElementById('stats'), relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
-      comparisonContent: document.getElementById('comparisonContent'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), log: document.getElementById('log')
+      folderInput: document.getElementById('folderInput'),
+      refreshBtn: document.getElementById('refreshBtn'),
+      copyBtn: document.getElementById('copyBtn'),
+      mainStatus: document.getElementById('mainStatus'),
+      startGuide: document.getElementById('startGuide'),
+      loadedMeta: document.getElementById('loadedMeta'),
+      appArea: document.getElementById('appArea'),
+      troubleBox: document.getElementById('troubleBox'),
+      errorDetail: document.getElementById('errorDetail'),
+      busyCover: document.getElementById('busyCover'),
+      busyTitle: document.getElementById('busyTitle'),
+      busyText: document.getElementById('busyText'),
+      freeWordInput: document.getElementById('freeWordInput'),
+      locationInput: document.getElementById('locationInput'),
+      freeWordWrap: document.getElementById('freeWordWrap'),
+      locationWrap: document.getElementById('locationWrap'),
+      searchMode: document.getElementById('searchMode'),
+      campaignFilter: document.getElementById('campaignFilter'),
+      periodFrom: document.getElementById('periodFrom'),
+      periodTo: document.getElementById('periodTo'),
+      conditionSummary: document.getElementById('conditionSummary'),
+      stats: document.getElementById('stats'),
+      columnBtn: document.getElementById('columnBtn'),
+      columnDropdown: document.getElementById('columnDropdown'),
+      selectedJobs: document.getElementById('selectedJobs'),
+      relatedJobs: document.getElementById('relatedJobs'),
+      clearSelectedBtn: document.getElementById('clearSelectedBtn'),
+      comparisonContent: document.getElementById('comparisonContent'),
+      periodCompareControls: document.getElementById('periodCompareControls'),
+      compareAFrom: document.getElementById('compareAFrom'),
+      compareATo: document.getElementById('compareATo'),
+      compareBFrom: document.getElementById('compareBFrom'),
+      compareBTo: document.getElementById('compareBTo'),
     };
+
+    const metricDefs = [
+      { id:'count', label:'該当件数', unit:'件', digits:0, icon:'💼' },
+      { id:'cost', label:'消化金額', unit:'円', digits:0, icon:'💰' },
+      { id:'impressions', label:'表示回数', unit:'回', digits:0, icon:'👀' },
+      { id:'clicks', label:'クリック数', unit:'回', digits:0, icon:'🖱️' },
+      { id:'apply_starts', label:'応募開始数', unit:'件', digits:0, icon:'▶️' },
+      { id:'applies', label:'応募数', unit:'件', digits:0, icon:'👥' },
+      { id:'ctr', label:'クリック率', unit:'%', digits:2, icon:'📈' },
+      { id:'cvr', label:'応募率', unit:'%', digits:2, icon:'🎯' },
+      { id:'cpc', label:'CPC', unit:'円', digits:0, icon:'🪙' },
+      { id:'cpa', label:'CPA', unit:'円', digits:0, icon:'💳' },
+    ];
 
     let dbPromise = null;
     let appState = null;
     let selectedJobTitles = [];
     let comparisonMode = 'job';
     let lastCopyRows = [];
-    let logText = '';
-    const registeredFiles = new Set();
+    let registeredFiles = new Set();
+    let refreshSeq = 0;
+    let debounceTimer = null;
+    let currentTotals = null;
+    let visibleMetrics = ['count', 'cost', 'clicks', 'applies', 'cvr', 'cpc', 'cpa'];
 
-    function setStatus(text, type='') { els.mainStatus.textContent = text; els.mainStatus.className = `status ${type}`.trim(); }
-    function esc(v) { return String(v ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch])); }
-    function fmtNum(v, digits=0) { if (v === null || v === undefined || v === '') return '-'; const n = typeof v === 'bigint' ? Number(v) : Number(v); if (!Number.isFinite(n)) return String(v); return n.toLocaleString('ja-JP',{maximumFractionDigits:digits,minimumFractionDigits:digits}); }
-    function log(message) { const text = typeof message === 'string' ? message : JSON.stringify(message,null,2); logText += (logText ? '\n' : '') + text; els.log.textContent = logText; els.log.scrollTop = els.log.scrollHeight; }
-    function clearLog() { logText = ''; els.log.textContent = ''; }
+    function setStatus(text, type='') {
+      els.mainStatus.textContent = text;
+      els.mainStatus.className = `status ${type}`.trim();
+    }
+
+    function setBusy(show, title='データを読み込んでいます...', text='しばらくお待ちください。') {
+      els.busyTitle.textContent = title;
+      els.busyText.textContent = text;
+      els.busyCover.classList.toggle('show', Boolean(show));
+    }
+
+    function showTrouble(message) {
+      els.errorDetail.textContent = message || '';
+      els.troubleBox.classList.toggle('hidden', !message);
+    }
+
+    function esc(v) {
+      return String(v ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+    }
+
+    function fmtNum(value, digits=0) {
+      if (value === null || value === undefined || value === '') return '-';
+      const n = typeof value === 'bigint' ? Number(value) : Number(value);
+      if (!Number.isFinite(n)) return String(value);
+      return n.toLocaleString('ja-JP', { maximumFractionDigits: digits, minimumFractionDigits: digits });
+    }
+
     function filePath(file) { return file.webkitRelativePath || file.name; }
     function normalizePath(path) { return String(path || '').replace(/\\/g, '/'); }
     function sqlLiteral(value) { return `'${String(value).replaceAll("'", "''")}'`; }
     function splitKeywords(text) { return String(text || '').split(/[\s　]+/).map(s => s.trim()).filter(Boolean); }
-    function toPlainValue(value) { if (typeof value === 'bigint') return Number(value); if (value && typeof value === 'object' && typeof value.valueOf === 'function') { const v = value.valueOf(); if (typeof v !== 'object') return v; } return value; }
-    function tableToRows(table) { const fields = table.schema.fields.map(f => f.name); return table.toArray().map(row => { if (row && typeof row.toJSON === 'function') { const json = row.toJSON(); const out = {}; Object.keys(json).forEach(k => out[k] = toPlainValue(json[k])); return out; } const out = {}; fields.forEach(name => out[name] = toPlainValue(row[name])); return out; }); }
+
+    function toPlainValue(value) {
+      if (typeof value === 'bigint') return Number(value);
+      if (value && typeof value === 'object' && typeof value.valueOf === 'function') {
+        const v = value.valueOf();
+        if (typeof v !== 'object') return v;
+      }
+      return value;
+    }
+
+    function tableToRows(table) {
+      const fields = table.schema.fields.map(f => f.name);
+      return table.toArray().map(row => {
+        if (row && typeof row.toJSON === 'function') {
+          const json = row.toJSON();
+          const out = {};
+          Object.keys(json).forEach(k => { out[k] = toPlainValue(json[k]); });
+          return out;
+        }
+        const out = {};
+        fields.forEach(name => { out[name] = toPlainValue(row[name]); });
+        return out;
+      });
+    }
+
+    function monthLabel(yyyymm) {
+      const s = String(yyyymm || '');
+      if (!/^\d{6}$/.test(s)) return s;
+      return `${s.slice(0,4)}年${s.slice(4,6)}月`;
+    }
+
+    function monthParts(yyyymm) {
+      const s = String(yyyymm);
+      return { year: Number(s.slice(0,4)), month: Number(s.slice(4,6)) };
+    }
+
+    function addMonths(yyyymm, offset) {
+      const { year, month } = monthParts(yyyymm);
+      const d = new Date(year, month - 1 + offset, 1);
+      return String(d.getFullYear()) + String(d.getMonth() + 1).padStart(2, '0');
+    }
+
+    function monthsBetween(from, to) {
+      if (!from || !to) return [];
+      let a = String(from), b = String(to);
+      if (a > b) [a, b] = [b, a];
+      const out = [];
+      let cur = a;
+      while (cur <= b) {
+        out.push(cur);
+        cur = addMonths(cur, 1);
+        if (out.length > 240) break;
+      }
+      return out;
+    }
+
+    function maxMonthFromFactFiles(factFiles) {
+      const nums = factFiles.map(f => Number(f.month_key)).filter(Number.isFinite);
+      return nums.length ? Math.max(...nums) : null;
+    }
 
     function findManifestFile(files) {
-      const candidates = files.map(file => ({file, path: normalizePath(filePath(file))})).filter(item => item.path.endsWith('manifest.json'));
-      return candidates.find(item => item.path.endsWith('/output_dataset/manifest.json')) || candidates.find(item => item.path === 'output_dataset/manifest.json') || candidates.find(item => item.path === 'manifest.json') || candidates[0] || null;
+      const candidates = files
+        .map(file => ({ file, path: normalizePath(filePath(file)) }))
+        .filter(item => item.path.endsWith('manifest.json'));
+      return candidates.find(item => item.path.endsWith('/output_dataset/manifest.json'))
+        || candidates.find(item => item.path === 'output_dataset/manifest.json')
+        || candidates.find(item => item.path === 'manifest.json')
+        || candidates[0]
+        || null;
     }
-    function datasetPrefixFromManifestPath(path) { const normalized = normalizePath(path); const marker = 'output_dataset/manifest.json'; const idx = normalized.indexOf(marker); if (idx >= 0) return normalized.slice(0, idx + 'output_dataset/'.length); return normalized.slice(0, normalized.length - 'manifest.json'.length); }
-    function relativeToDataset(path, prefix) { const normalized = normalizePath(path); return prefix && normalized.startsWith(prefix) ? normalized.slice(prefix.length) : normalized; }
-    function monthParts(yyyymm) { const s = String(yyyymm); return {year:Number(s.slice(0,4)), month:Number(s.slice(4,6))}; }
-    function addMonths(yyyymm, offset) { const {year, month} = monthParts(yyyymm); const d = new Date(year, month - 1 + offset, 1); return String(d.getFullYear()) + String(d.getMonth()+1).padStart(2,'0'); }
-    function monthsBetween(from, to) { if (!from || !to) return []; let a = String(from), b = String(to); if (a > b) [a,b] = [b,a]; const out = []; let cur = a; while (cur <= b) { out.push(cur); cur = addMonths(cur, 1); if (out.length > 240) break; } return out; }
+
+    function datasetPrefixFromManifestPath(path) {
+      const normalized = normalizePath(path);
+      const marker = 'output_dataset/manifest.json';
+      const idx = normalized.indexOf(marker);
+      if (idx >= 0) return normalized.slice(0, idx + 'output_dataset/'.length);
+      return normalized.slice(0, normalized.length - 'manifest.json'.length);
+    }
+
+    function relativeToDataset(path, prefix) {
+      const normalized = normalizePath(path);
+      return prefix && normalized.startsWith(prefix) ? normalized.slice(prefix.length) : normalized;
+    }
+
     function defaultFrom(monthMax) { return addMonths(monthMax, -11); }
-    function maxMonthFromFactFiles(factFiles) { const m = factFiles.map(f => Number(f.month_key)).filter(Number.isFinite); return m.length ? Math.max(...m) : null; }
 
     async function getDb() {
       if (dbPromise) return dbPromise;
       dbPromise = (async () => {
-        setStatus('DuckDB初期化中...', 'warn');
+        setStatus('読み込み準備中...', 'warn');
         const bundles = duckdb.getJsDelivrBundles();
         const bundle = await duckdb.selectBundle(bundles);
-        const workerUrl = URL.createObjectURL(new Blob([`importScripts("${bundle.mainWorker}");`], {type:'text/javascript'}));
+        const workerUrl = URL.createObjectURL(new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' }));
         const worker = new Worker(workerUrl);
         const logger = new duckdb.ConsoleLogger();
         const db = new duckdb.AsyncDuckDB(logger, worker);
         await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
         URL.revokeObjectURL(workerUrl);
-        log('[DuckDB] initialized');
         return db;
       })();
       return dbPromise;
     }
 
-    function renderKv(container, pairs) { container.innerHTML = pairs.map(([k,v]) => `<div>${esc(k)}</div><div>${v}</div>`).join(''); }
+    function renderColumnDropdown() {
+      els.columnDropdown.innerHTML = metricDefs.map(metric => {
+        const checked = visibleMetrics.includes(metric.id);
+        return `<button class="check-row" type="button" data-metric="${esc(metric.id)}">
+          <span class="fake-check ${checked ? 'checked' : ''}">${checked ? '✓' : ''}</span>
+          <span>${esc(metric.icon)} ${esc(metric.label)}</span>
+        </button>`;
+      }).join('');
+      els.columnDropdown.querySelectorAll('[data-metric]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.metric;
+          if (visibleMetrics.includes(id)) {
+            if (visibleMetrics.length <= 1) return;
+            visibleMetrics = visibleMetrics.filter(m => m !== id);
+          } else {
+            visibleMetrics = [...visibleMetrics, id];
+          }
+          renderColumnDropdown();
+          if (currentTotals) renderStats(currentTotals);
+          if (lastCopyRows.length) rerenderLastTable();
+        });
+      });
+    }
 
     async function handleFiles(fileList) {
       const files = Array.from(fileList || []);
-      clearLog(); selectedJobTitles = []; registeredFiles.clear(); lastCopyRows = []; els.copyBtn.disabled = true;
       if (!files.length) return;
-      setStatus('manifest解析中...', 'warn');
-      const manifestItem = findManifestFile(files);
-      if (!manifestItem) { setStatus('manifestなし', 'bad'); log('manifest.json が見つかりません。'); return; }
-      const manifest = JSON.parse(await manifestItem.file.text());
-      const prefix = datasetPrefixFromManifestPath(manifestItem.path);
-      const selectedFileMap = new Map();
-      files.forEach(file => selectedFileMap.set(normalizePath(relativeToDataset(filePath(file), prefix)), file));
-      const factFiles = Array.isArray(manifest.fact_files) ? manifest.fact_files : [];
-      const factFileMap = new Map(factFiles.map(info => [String(info.month_key), info]));
-      const availableMonths = factFiles.map(f => String(f.month_key)).filter(m => selectedFileMap.has(normalizePath(factFileMap.get(m).path))).sort();
-      const monthMax = manifest.month_max || maxMonthFromFactFiles(factFiles);
-      appState = { files, manifest, manifestItem, prefix, selectedFileMap, factFiles, factFileMap, availableMonths, monthMax, sessionId: Date.now() };
-      renderKv(els.datasetInfo, [
-        ['dataset_name', `<span class="mono">${esc(manifest.dataset_name)}</span>`], ['schema_version', `<span class="mono">${esc(manifest.schema_version)}</span>`], ['generated_at', `<span class="mono">${esc(manifest.generated_at)}</span>`],
-        ['month range', `<span class="mono">${esc(manifest.month_min)} - ${esc(monthMax)}</span>`], ['fact files', `<span class="mono">${esc(factFiles.length)}</span>`], ['detected months', `<span class="mono">${esc(availableMonths.length)}</span>`], ['manifest', `<span class="mono">${esc(manifestItem.path)}</span>`]
-      ]);
-      els.datasetInfo.classList.remove('hidden');
-      renderPeriodOptions();
-      els.appArea.classList.remove('hidden');
-      els.refreshBtn.disabled = false;
-      setStatus('フォルダ読込完了', 'ok');
-      log(`manifest: ${manifestItem.path}`);
-      log(`detected fact months: ${availableMonths.length}`);
-      await refreshAll();
+
+      setBusy(true, 'データフォルダを確認しています...', '選択されたフォルダの中身を読み取っています。');
+      showTrouble('');
+      registeredFiles = new Set();
+      selectedJobTitles = [];
+      lastCopyRows = [];
+      currentTotals = null;
+      els.copyBtn.disabled = true;
+      els.comparisonContent.innerHTML = '';
+
+      try {
+        const manifestItem = findManifestFile(files);
+        if (!manifestItem) {
+          throw new Error('manifest.json が見つかりませんでした。「output_dataset」フォルダ、またはその親フォルダを選択してください。');
+        }
+
+        const manifest = JSON.parse(await manifestItem.file.text());
+        const prefix = datasetPrefixFromManifestPath(manifestItem.path);
+        const selectedFileMap = new Map();
+        files.forEach(file => selectedFileMap.set(normalizePath(relativeToDataset(filePath(file), prefix)), file));
+
+        const factFiles = Array.isArray(manifest.fact_files) ? manifest.fact_files : [];
+        const factFileMap = new Map(factFiles.map(info => [String(info.month_key), info]));
+        const availableMonths = factFiles
+          .map(f => String(f.month_key))
+          .filter(month => {
+            const info = factFileMap.get(month);
+            return info && selectedFileMap.has(normalizePath(info.path));
+          })
+          .sort();
+
+        if (!availableMonths.length) {
+          throw new Error('fact フォルダ内の月別データが見つかりませんでした。output_dataset/fact/fact_YYYYMM.parquet が含まれているか確認してください。');
+        }
+
+        const monthMax = availableMonths[availableMonths.length - 1] || String(manifest.month_max || maxMonthFromFactFiles(factFiles));
+        appState = { files, manifest, manifestItem, prefix, selectedFileMap, factFiles, factFileMap, availableMonths, monthMax, sessionId: Date.now() };
+
+        renderPeriodOptions();
+        els.startGuide.classList.add('hidden');
+        els.appArea.classList.remove('hidden');
+        els.refreshBtn.disabled = false;
+        renderSelectedJobs();
+        renderLoadedMeta();
+        setStatus('フォルダ読込完了', 'ok');
+        await refreshAll();
+      } catch (error) {
+        console.error(error);
+        setStatus('読み込み失敗', 'bad');
+        showTrouble(error.stack || error.message || String(error));
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function renderLoadedMeta() {
+      if (!appState) return;
+      const months = selectedMonths();
+      els.loadedMeta.innerHTML = `
+        <span class="meta-pill">📅 読み込み済み：${esc(monthLabel(months[0]))}〜${esc(monthLabel(months[months.length - 1]))}</span>
+        <span class="meta-pill">🗂 対象：${esc(months.length)}か月分</span>
+        <span class="meta-pill">🔄 更新日時：${esc(appState.manifest.generated_at || '不明')}</span>
+      `;
+      els.loadedMeta.classList.remove('hidden');
     }
 
     function renderPeriodOptions() {
       const months = appState.availableMonths;
       const max = String(appState.monthMax);
       const fromDefault = defaultFrom(max);
-      els.periodFrom.innerHTML = months.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
-      els.periodTo.innerHTML = months.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+      const periodOptions = months.map(m => `<option value="${esc(m)}">${esc(monthLabel(m))}</option>`).join('');
+
+      els.periodFrom.innerHTML = periodOptions;
+      els.periodTo.innerHTML = periodOptions;
       els.periodFrom.value = months.includes(fromDefault) ? fromDefault : months[0];
       els.periodTo.value = months.includes(max) ? max : months[months.length - 1];
 
-      const opts = months.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
-      els.compareAFrom.innerHTML = opts;
-      els.compareATo.innerHTML = opts;
-      els.compareBFrom.innerHTML = opts;
-      els.compareBTo.innerHTML = opts;
+      els.compareAFrom.innerHTML = periodOptions;
+      els.compareATo.innerHTML = periodOptions;
+      els.compareBFrom.innerHTML = periodOptions;
+      els.compareBTo.innerHTML = periodOptions;
 
-      const bFrom = months.includes(fromDefault) ? fromDefault : months[0];
-      const bTo = months.includes(max) ? max : months[months.length - 1];
+      const bFrom = els.periodFrom.value;
+      const bTo = els.periodTo.value;
       const aFromCandidate = addMonths(bFrom, -12);
       const aToCandidate = addMonths(bTo, -12);
+
       els.compareBFrom.value = bFrom;
       els.compareBTo.value = bTo;
       els.compareAFrom.value = months.includes(aFromCandidate) ? aFromCandidate : months[0];
       els.compareATo.value = months.includes(aToCandidate) ? aToCandidate : (months.includes(addMonths(bFrom, -1)) ? addMonths(bFrom, -1) : months[0]);
     }
 
-    function selectedMonths() { return monthsBetween(els.periodFrom.value, els.periodTo.value).filter(m => appState.availableMonths.includes(m)); }
+    function selectedMonths() {
+      if (!appState) return [];
+      return monthsBetween(els.periodFrom.value, els.periodTo.value).filter(m => appState.availableMonths.includes(m));
+    }
 
     async function registerMonths(db, months) {
       const paths = [];
@@ -303,7 +908,6 @@
         if (!file) continue;
         const virtualPath = `session_${appState.sessionId}_${relPath.replaceAll('/', '_')}`;
         if (!registeredFiles.has(virtualPath)) {
-          log(`[register] ${relPath} -> ${virtualPath}`);
           const buffer = await file.arrayBuffer();
           await db.registerFileBuffer(virtualPath, new Uint8Array(buffer));
           registeredFiles.add(virtualPath);
@@ -313,98 +917,239 @@
       return paths;
     }
 
-    function readExpr(paths) { return paths.length === 1 ? `read_parquet(${sqlLiteral(paths[0])})` : `read_parquet([${paths.map(sqlLiteral).join(', ')}])`; }
+    function readExpr(paths) {
+      return paths.length === 1 ? `read_parquet(${sqlLiteral(paths[0])})` : `read_parquet([${paths.map(sqlLiteral).join(', ')}])`;
+    }
 
-    function baseWhere(extraClauses=[]) {
+    function titleSearchClause(includeSelectedJobs=false) {
       const mode = els.searchMode.value === 'AND' ? ' AND ' : ' OR ';
-      const clauses = [];
-      const titleWords = splitKeywords(els.freeWordInput.value);
-      const locWords = splitKeywords(els.locationInput.value);
-      if (titleWords.length) clauses.push('(' + titleWords.map(kw => `"タイトル" LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')');
-      if (locWords.length) clauses.push('(' + locWords.map(kw => `concat(coalesce("都道府県", ''), coalesce("市区町村", '')) LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')');
-      if (els.campaignFilter.value === 'sa-only') clauses.push(`coalesce("キャンペーン", '') LIKE '%SA-%'`);
-      if (els.campaignFilter.value === 'non-sa-only') clauses.push(`coalesce("キャンペーン", '') NOT LIKE '%SA-%'`);
-      extraClauses.forEach(c => clauses.push(c));
+      const words = splitKeywords(els.freeWordInput.value);
+      const pieces = [];
+      if (words.length) {
+        pieces.push('(' + words.map(kw => `"タイトル" LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')');
+      }
+      if (includeSelectedJobs && selectedJobTitles.length) {
+        pieces.push('(' + selectedJobTitles.map(job => `"タイトル" LIKE ${sqlLiteral('%' + job + '%')}`).join(' OR ') + ')');
+      }
+      return pieces.length ? '(' + pieces.join(' OR ') + ')' : '';
+    }
+
+    function locationSearchClause() {
+      const mode = els.searchMode.value === 'AND' ? ' AND ' : ' OR ';
+      const words = splitKeywords(els.locationInput.value);
+      if (!words.length) return '';
+      return '(' + words.map(kw => `concat(coalesce("都道府県", ''), coalesce("市区町村", '')) LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')';
+    }
+
+    function campaignClause() {
+      if (els.campaignFilter.value === 'sa-only') return `coalesce("キャンペーン", '') LIKE '%SA-%'`;
+      if (els.campaignFilter.value === 'non-sa-only') return `coalesce("キャンペーン", '') NOT LIKE '%SA-%'`;
+      return '';
+    }
+
+    function baseWhere({ includeSelectedJobs=false, extraClauses=[] } = {}) {
+      const clauses = [titleSearchClause(includeSelectedJobs), locationSearchClause(), campaignClause(), ...extraClauses].filter(Boolean);
       return clauses.length ? 'WHERE ' + clauses.join(' AND ') : '';
     }
 
     function isUsefulCandidate(value) {
-      const v = String(value || '').trim(); if (!v || v.length <= 1) return false;
+      const v = String(value || '').trim();
+      if (!v || v.length <= 1) return false;
       if (!/[一-龥々〆ヵヶぁ-ゖァ-ヺーA-Za-z0-9]/.test(v)) return false;
       const whitelist = new Set(['it','ai','pr','ec','pc','dx']);
       if (/^[a-z0-9]{1,2}$/i.test(v) && !whitelist.has(v.toLowerCase())) return false;
       return true;
     }
 
-    async function queryRows(conn, sql) { log('\n[SQL]\n' + sql); const table = await conn.query(sql); return tableToRows(table); }
+    async function queryRows(conn, sql) {
+      const table = await conn.query(sql);
+      return tableToRows(table);
+    }
 
     async function refreshAll() {
       if (!appState) return;
+      const mySeq = ++refreshSeq;
       const months = selectedMonths();
-      if (!months.length) { setStatus('対象月なし', 'bad'); return; }
-      els.refreshBtn.disabled = true; setStatus('集計中...', 'warn');
+      if (!months.length) {
+        setStatus('対象月なし', 'bad');
+        return;
+      }
+
+      setBusy(true, '集計しています...', `${monthLabel(months[0])}〜${monthLabel(months[months.length - 1])} を集計中です。`);
+      els.refreshBtn.disabled = true;
+      setStatus('集計中...', 'warn');
+      showTrouble('');
+
       try {
         const db = await getDb();
         const conn = await db.connect();
-        try { await conn.query('LOAD parquet;'); } catch(e) { /* autoload環境では不要 */ }
+        try { await conn.query('LOAD parquet;'); } catch(e) {}
         const paths = await registerMonths(db, months);
+        if (!paths.length) throw new Error('選択期間に対応するデータファイルが見つかりませんでした。');
         const source = readExpr(paths);
         const where = baseWhere();
-        const aggregateSql = `WITH src AS (SELECT * FROM ${source} ${where}) SELECT COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src;`;
+
+        const aggregateSql = `
+WITH src AS (SELECT * FROM ${source} ${where})
+SELECT
+  COUNT(*) AS count,
+  COALESCE(SUM("消化金額"),0) AS cost,
+  COALESCE(SUM("表示回数"),0) AS impressions,
+  COALESCE(SUM("クリック数"),0) AS clicks,
+  COALESCE(SUM("応募開始数"),0) AS apply_starts,
+  COALESCE(SUM("応募数"),0) AS applies
+FROM src;`.trim();
         const totals = (await queryRows(conn, aggregateSql))[0] || {};
-        renderStats(totals);
-        const relatedSql = `WITH src AS (SELECT * FROM ${source} ${where}), exploded AS (SELECT trim(candidate) AS related_job, "消化金額", "表示回数", "クリック数", "応募開始数", "応募数" FROM src, UNNEST(string_split(coalesce("関連職種", ''), '|')) AS t(candidate)) SELECT related_job, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM exploded WHERE related_job <> '' GROUP BY related_job ORDER BY count DESC, applies DESC, clicks DESC, related_job ASC LIMIT 500;`;
+        if (mySeq !== refreshSeq) return;
+        currentTotals = decorateMetrics(totals);
+        renderStats(currentTotals);
+
+        const relatedSql = `
+WITH src AS (SELECT * FROM ${source} ${where}),
+exploded AS (
+  SELECT
+    trim(candidate) AS related_job,
+    "消化金額", "表示回数", "クリック数", "応募開始数", "応募数"
+  FROM src,
+  UNNEST(string_split(coalesce("関連職種", ''), '|')) AS t(candidate)
+)
+SELECT
+  related_job,
+  COUNT(*) AS count,
+  COALESCE(SUM("消化金額"),0) AS cost,
+  COALESCE(SUM("表示回数"),0) AS impressions,
+  COALESCE(SUM("クリック数"),0) AS clicks,
+  COALESCE(SUM("応募開始数"),0) AS apply_starts,
+  COALESCE(SUM("応募数"),0) AS applies
+FROM exploded
+WHERE related_job <> ''
+GROUP BY related_job
+ORDER BY count DESC, applies DESC, clicks DESC, related_job ASC
+LIMIT 500;`.trim();
         const relatedRaw = await queryRows(conn, relatedSql);
-        renderRelated(relatedRaw.filter(r => isUsefulCandidate(r.related_job)).slice(0,50));
+        if (mySeq !== refreshSeq) return;
+        renderRelated(relatedRaw.filter(r => isUsefulCandidate(r.related_job)).slice(0, 50));
+
         await renderComparison(conn, source, db);
         await conn.close();
-        setStatus(`集計完了：${months[0]}〜${months[months.length-1]} / ${paths.length}ファイル`, 'ok');
+        if (mySeq !== refreshSeq) return;
+        renderLoadedMeta();
+        renderConditionSummary();
+        setStatus(`集計完了：${monthLabel(months[0])}〜${monthLabel(months[months.length - 1])}`, 'ok');
       } catch (error) {
-        console.error(error); log('[ERROR]\n' + (error.stack || error.message)); setStatus('集計エラー', 'bad');
-      } finally { els.refreshBtn.disabled = false; }
+        console.error(error);
+        setStatus('集計エラー', 'bad');
+        showTrouble(error.stack || error.message || String(error));
+      } finally {
+        if (mySeq === refreshSeq) {
+          els.refreshBtn.disabled = false;
+          setBusy(false);
+        }
+      }
     }
 
     function calcRates(row) {
-      const cost = Number(row.cost || 0), imps = Number(row.impressions || 0), clicks = Number(row.clicks || 0), applies = Number(row.applies || 0);
-      return { ctr: imps ? clicks / imps * 100 : null, cvr: clicks ? applies / clicks * 100 : null, cpc: clicks ? cost / clicks : null, cpa: applies ? cost / applies : null };
+      const cost = Number(row.cost || 0);
+      const imps = Number(row.impressions || 0);
+      const clicks = Number(row.clicks || 0);
+      const applies = Number(row.applies || 0);
+      return {
+        ctr: imps ? clicks / imps * 100 : null,
+        cvr: clicks ? applies / clicks * 100 : null,
+        cpc: clicks ? cost / clicks : null,
+        cpa: applies ? cost / applies : null,
+      };
+    }
+
+    function decorateMetrics(row) {
+      const rates = calcRates(row);
+      return { ...row, ...rates };
+    }
+
+    function metricValue(row, id) {
+      if (row[id] !== undefined) return row[id];
+      return decorateMetrics(row)[id];
+    }
+
+    function formatMetric(row, metric) {
+      const value = metricValue(row, metric.id);
+      if (value === null || value === undefined || value === '') return '-';
+      const sign = row.isDiff && Number(value) > 0 ? '+' : '';
+      const unit = metric.unit === '%' ? (row.isDiff ? 'pt' : '%') : metric.unit;
+      return `${sign}${fmtNum(value, metric.digits)}${unit}`;
     }
 
     function renderStats(row) {
-      const r = calcRates(row);
-      const items = [['該当件数',fmtNum(row.count),'件'],['消化金額',fmtNum(row.cost),'円'],['表示回数',fmtNum(row.impressions),'回'],['クリック数',fmtNum(row.clicks),'回'],['応募開始数',fmtNum(row.apply_starts),'件'],['応募数',fmtNum(row.applies),'件'],['CVR',r.cvr===null?'-':fmtNum(r.cvr,2),'%'],['CPA',r.cpa===null?'-':fmtNum(r.cpa),'円']];
-      els.stats.innerHTML = items.map(([title,value,unit]) => `<div class="stat"><div class="stat-title">${esc(title)}</div><div class="stat-value">${esc(value)}<span class="unit">${esc(unit)}</span></div></div>`).join('');
+      const metrics = metricDefs.filter(m => visibleMetrics.includes(m.id));
+      els.stats.innerHTML = metrics.map(metric => {
+        const raw = metricValue(row, metric.id);
+        const value = raw === null || raw === undefined ? '-' : fmtNum(raw, metric.digits);
+        return `<div class="stat">
+          <div class="stat-title"><span>${esc(metric.icon)}</span><span>${esc(metric.label)}</span></div>
+          <div class="stat-value">${esc(value)}<span class="unit">${esc(metric.unit)}</span></div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderConditionSummary() {
+      const months = selectedMonths();
+      const words = [els.freeWordInput.value.trim() || '指定なし', els.locationInput.value.trim() || '全国'];
+      els.conditionSummary.textContent = `検索：${words[0]} / 勤務地：${words[1]} / 期間：${monthLabel(months[0])}〜${monthLabel(months[months.length - 1])}`;
+      els.freeWordWrap.classList.toggle('has-value', Boolean(els.freeWordInput.value));
+      els.locationWrap.classList.toggle('has-value', Boolean(els.locationInput.value));
     }
 
     function renderSelectedJobs() {
-      if (!selectedJobTitles.length) { els.selectedJobs.innerHTML = '<span class="muted">比較に追加された関連職種はありません。</span>'; return; }
+      if (!selectedJobTitles.length) {
+        els.selectedJobs.innerHTML = '<span class="tiny">比較に追加された職種はありません。</span>';
+        return;
+      }
       els.selectedJobs.innerHTML = selectedJobTitles.map(job => `<button class="chip pinned selected" data-remove-job="${esc(job)}" type="button">${esc(job)} ×</button>`).join('');
-      els.selectedJobs.querySelectorAll('[data-remove-job]').forEach(btn => btn.addEventListener('click', () => { selectedJobTitles = selectedJobTitles.filter(j => j !== btn.dataset.removeJob); renderSelectedJobs(); refreshAll(); }));
+      els.selectedJobs.querySelectorAll('[data-remove-job]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedJobTitles = selectedJobTitles.filter(j => j !== btn.dataset.removeJob);
+          renderSelectedJobs();
+          refreshAll();
+        });
+      });
     }
 
     function renderRelated(rows) {
       renderSelectedJobs();
-      if (!rows.length) { els.relatedJobs.innerHTML = '<div class="empty">関連職種候補がありません。</div>'; return; }
-      els.relatedJobs.innerHTML = rows.map(row => `<button class="chip ${selectedJobTitles.includes(row.related_job) ? 'selected' : ''}" data-job="${esc(row.related_job)}" type="button">${esc(row.related_job)} <span class="muted">${fmtNum(row.count)}</span></button>`).join('');
-      els.relatedJobs.querySelectorAll('[data-job]').forEach(btn => btn.addEventListener('click', () => { const job = btn.dataset.job; selectedJobTitles = selectedJobTitles.includes(job) ? selectedJobTitles.filter(j => j !== job) : [...selectedJobTitles, job]; renderSelectedJobs(); refreshAll(); }));
+      if (!rows.length) {
+        els.relatedJobs.innerHTML = '<div class="empty">関連職種候補がありません。検索条件を変えると候補が出る場合があります。</div>';
+        return;
+      }
+      els.relatedJobs.innerHTML = rows.map(row => `<button class="chip ${selectedJobTitles.includes(row.related_job) ? 'selected' : ''}" data-job="${esc(row.related_job)}" type="button">${esc(row.related_job)} <span class="chip-count">${fmtNum(row.count)}</span></button>`).join('');
+      els.relatedJobs.querySelectorAll('[data-job]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const job = btn.dataset.job;
+          selectedJobTitles = selectedJobTitles.includes(job) ? selectedJobTitles.filter(j => j !== job) : [...selectedJobTitles, job];
+          renderSelectedJobs();
+          refreshAll();
+        });
+      });
     }
 
     async function renderComparison(conn, source, db) {
-      updateComparisonControls();
+      els.periodCompareControls.classList.toggle('hidden', comparisonMode !== 'period');
       if (comparisonMode === 'job') return renderJobComparison(conn, source);
       if (comparisonMode === 'prefecture') return renderPrefComparison(conn, source);
       if (comparisonMode === 'period') return renderPeriodABComparison(conn, db);
       return renderMonthComparison(conn, source);
     }
 
-    function updateComparisonControls() {
-      els.periodCompareControls.classList.toggle('hidden', comparisonMode !== 'period');
+    function selectedComparisonWhere() {
+      return baseWhere({ includeSelectedJobs: comparisonMode !== 'job' });
     }
 
-    function metricHeaders() { return '<th>該当件数</th><th>消化金額</th><th>表示回数</th><th>クリック数</th><th>応募開始数</th><th>応募数</th><th>CVR</th><th>CPA</th>'; }
-    function metricCells(row) { const r = calcRates(row); return `<td>${fmtNum(row.count)}</td><td>${fmtNum(row.cost)}</td><td>${fmtNum(row.impressions)}</td><td>${fmtNum(row.clicks)}</td><td>${fmtNum(row.apply_starts)}</td><td>${fmtNum(row.applies)}</td><td>${r.cvr===null?'-':fmtNum(r.cvr,2)+'%'}</td><td>${r.cpa===null?'-':fmtNum(r.cpa)+'円'}</td>`; }
-
     async function renderJobComparison(conn, source) {
-      if (!selectedJobTitles.length) { els.comparisonContent.innerHTML = '<div class="empty">関連職種候補をクリックすると、ここに職種別の比較表が表示されます。</div>'; lastCopyRows = []; els.copyBtn.disabled = true; return; }
+      if (!selectedJobTitles.length) {
+        els.comparisonContent.innerHTML = '<div class="empty">関連職種候補をクリックすると、ここに職種別の比較表が表示されます。</div>';
+        lastCopyRows = [];
+        els.copyBtn.disabled = true;
+        return;
+      }
       const selects = selectedJobTitles.map(job => `SELECT ${sqlLiteral(job)} AS label, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src WHERE "タイトル" LIKE ${sqlLiteral('%' + job + '%')}`).join(' UNION ALL ');
       const sql = `WITH src AS (SELECT * FROM ${source} ${baseWhere()}) ${selects} ORDER BY count DESC;`;
       const rows = await queryRows(conn, sql);
@@ -412,15 +1157,39 @@
     }
 
     async function renderPrefComparison(conn, source) {
-      const sql = `WITH src AS (SELECT * FROM ${source} ${baseWhere()}) SELECT coalesce("都道府県", '（不明）') AS label, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src GROUP BY label ORDER BY CASE WHEN applies > 0 THEN cost / applies ELSE 999999999 END ASC, count DESC;`;
+      const sql = `
+WITH src AS (SELECT * FROM ${source} ${selectedComparisonWhere()})
+SELECT
+  coalesce("都道府県", '（不明）') AS label,
+  COUNT(*) AS count,
+  COALESCE(SUM("消化金額"),0) AS cost,
+  COALESCE(SUM("表示回数"),0) AS impressions,
+  COALESCE(SUM("クリック数"),0) AS clicks,
+  COALESCE(SUM("応募開始数"),0) AS apply_starts,
+  COALESCE(SUM("応募数"),0) AS applies
+FROM src
+GROUP BY label
+ORDER BY CASE WHEN applies > 0 THEN cost / applies ELSE 999999999 END ASC, count DESC;`.trim();
       const rows = await queryRows(conn, sql);
       renderTable('都道府県', rows);
     }
 
     async function renderMonthComparison(conn, source) {
-      const sql = `WITH src AS (SELECT * FROM ${source} ${baseWhere()}) SELECT CAST("集計年月キー" AS VARCHAR) AS label, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src GROUP BY label ORDER BY label ASC;`;
+      const sql = `
+WITH src AS (SELECT * FROM ${source} ${selectedComparisonWhere()})
+SELECT
+  CAST("集計年月キー" AS VARCHAR) AS label,
+  COUNT(*) AS count,
+  COALESCE(SUM("消化金額"),0) AS cost,
+  COALESCE(SUM("表示回数"),0) AS impressions,
+  COALESCE(SUM("クリック数"),0) AS clicks,
+  COALESCE(SUM("応募開始数"),0) AS apply_starts,
+  COALESCE(SUM("応募数"),0) AS applies
+FROM src
+GROUP BY label
+ORDER BY label ASC;`.trim();
       const rows = await queryRows(conn, sql);
-      renderTable('集計年月', rows);
+      renderTable('集計年月', rows.map(row => ({ ...row, label: monthLabel(row.label) })));
     }
 
     async function renderPeriodABComparison(conn, db) {
@@ -436,11 +1205,11 @@
       const pathsB = await registerMonths(db, monthsB);
       const sourceA = readExpr(pathsA);
       const sourceB = readExpr(pathsB);
-      const where = baseWhere();
+      const where = baseWhere({ includeSelectedJobs:true });
       const sql = `
 WITH a AS (SELECT * FROM ${sourceA} ${where}),
      b AS (SELECT * FROM ${sourceB} ${where})
-SELECT ${sqlLiteral('期間A：' + monthsA[0] + '〜' + monthsA[monthsA.length - 1])} AS label,
+SELECT ${sqlLiteral('期間A：' + monthLabel(monthsA[0]) + '〜' + monthLabel(monthsA[monthsA.length - 1]))} AS label,
   COUNT(*) AS count,
   COALESCE(SUM("消化金額"),0) AS cost,
   COALESCE(SUM("表示回数"),0) AS impressions,
@@ -449,7 +1218,7 @@ SELECT ${sqlLiteral('期間A：' + monthsA[0] + '〜' + monthsA[monthsA.length -
   COALESCE(SUM("応募数"),0) AS applies
 FROM a
 UNION ALL
-SELECT ${sqlLiteral('期間B：' + monthsB[0] + '〜' + monthsB[monthsB.length - 1])} AS label,
+SELECT ${sqlLiteral('期間B：' + monthLabel(monthsB[0]) + '〜' + monthLabel(monthsB[monthsB.length - 1]))} AS label,
   COUNT(*) AS count,
   COALESCE(SUM("消化金額"),0) AS cost,
   COALESCE(SUM("表示回数"),0) AS impressions,
@@ -459,42 +1228,121 @@ SELECT ${sqlLiteral('期間B：' + monthsB[0] + '〜' + monthsB[monthsB.length -
 FROM b;`.trim();
       const rows = await queryRows(conn, sql);
       if (rows.length >= 2) {
-        const a = rows[0], b = rows[1];
+        const a = decorateMetrics(rows[0]);
+        const b = decorateMetrics(rows[1]);
+        rows[0] = a;
+        rows[1] = b;
         rows.push({
           label: '差分：B − A',
+          isDiff: true,
           count: Number(b.count || 0) - Number(a.count || 0),
           cost: Number(b.cost || 0) - Number(a.cost || 0),
           impressions: Number(b.impressions || 0) - Number(a.impressions || 0),
           clicks: Number(b.clicks || 0) - Number(a.clicks || 0),
           apply_starts: Number(b.apply_starts || 0) - Number(a.apply_starts || 0),
-          applies: Number(b.applies || 0) - Number(a.applies || 0)
+          applies: Number(b.applies || 0) - Number(a.applies || 0),
+          ctr: (b.ctr !== null && a.ctr !== null) ? b.ctr - a.ctr : null,
+          cvr: (b.cvr !== null && a.cvr !== null) ? b.cvr - a.cvr : null,
+          cpc: (b.cpc !== null && a.cpc !== null) ? b.cpc - a.cpc : null,
+          cpa: (b.cpa !== null && a.cpa !== null) ? b.cpa - a.cpa : null,
         });
       }
       renderTable('比較期間', rows);
     }
 
+    function visibleMetricDefs() { return metricDefs.filter(m => visibleMetrics.includes(m.id)); }
+
     function renderTable(labelName, rows) {
-      lastCopyRows = rows.map(row => ({ label: row.label, ...row, ...calcRates(row) }));
-      els.copyBtn.disabled = rows.length === 0;
-      if (!rows.length) { els.comparisonContent.innerHTML = '<div class="empty">該当データがありません。</div>'; return; }
-      els.comparisonContent.innerHTML = `<div class="table-wrap"><table><thead><tr><th>${esc(labelName)}</th>${metricHeaders()}</tr></thead><tbody>${rows.map(row => `<tr><td>${esc(row.label)}</td>${metricCells(row)}</tr>`).join('')}</tbody></table></div>`;
+      const decorated = rows.map(row => row.ctr !== undefined ? row : decorateMetrics(row));
+      lastCopyRows = decorated;
+      els.copyBtn.disabled = decorated.length === 0;
+      if (!decorated.length) {
+        els.comparisonContent.innerHTML = '<div class="empty">該当データがありません。</div>';
+        return;
+      }
+      const headers = visibleMetricDefs().map(metric => `<th>${esc(metric.label)}</th>`).join('');
+      const body = decorated.map(row => {
+        const cells = visibleMetricDefs().map(metric => `<td>${esc(formatMetric(row, metric))}</td>`).join('');
+        return `<tr class="${row.isDiff ? 'diff-row' : ''}"><td>${esc(row.label)}</td>${cells}</tr>`;
+      }).join('');
+      els.comparisonContent.innerHTML = `<div class="table-frame"><table><thead><tr><th>${esc(labelName)}</th>${headers}</tr></thead><tbody>${body}</tbody></table></div>`;
+    }
+
+    function rerenderLastTable() {
+      const activeTab = document.querySelector('.tab.active')?.textContent?.trim() || '比較';
+      const labelName = activeTab === '都道府県比較' ? '都道府県' : activeTab === '月別推移' ? '集計年月' : activeTab === '期間比較' ? '比較期間' : '関連職種';
+      renderTable(labelName, lastCopyRows);
     }
 
     function copyTable() {
       if (!lastCopyRows.length) return;
-      const headers = ['ラベル','該当件数','消化金額','表示回数','クリック数','応募開始数','応募数','CVR','CPA'];
+      const headers = ['ラベル', ...visibleMetricDefs().map(m => m.label)];
       const lines = [headers.join('\t')];
-      lastCopyRows.forEach(row => lines.push([row.label,row.count,row.cost,row.impressions,row.clicks,row.apply_starts,row.applies,row.cvr ?? '',row.cpa ?? ''].join('\t')));
-      navigator.clipboard.writeText(lines.join('\n')).catch(() => {});
+      lastCopyRows.forEach(row => {
+        const values = [row.label, ...visibleMetricDefs().map(metric => formatMetric(row, metric))];
+        lines.push(values.join('\t'));
+      });
+      const text = lines.join('\n');
+      navigator.clipboard.writeText(text).then(() => {
+        const original = els.copyBtn.textContent;
+        els.copyBtn.textContent = 'コピーしました';
+        setTimeout(() => { els.copyBtn.textContent = original; }, 1600);
+      }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      });
     }
 
-    els.folderInput.addEventListener('change', e => handleFiles(e.target.files).catch(err => { console.error(err); log('[ERROR]\n' + (err.stack || err.message)); setStatus('エラー','bad'); }));
-    els.refreshBtn.addEventListener('click', () => { clearLog(); refreshAll(); });
+    function scheduleRefresh() {
+      if (!appState) return;
+      renderConditionSummary();
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => refreshAll(), 500);
+    }
+
+    function clearInput(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.value = '';
+      scheduleRefresh();
+    }
+
+    els.folderInput.addEventListener('change', e => handleFiles(e.target.files));
+    els.refreshBtn.addEventListener('click', () => refreshAll());
     els.copyBtn.addEventListener('click', copyTable);
     els.clearSelectedBtn.addEventListener('click', () => { selectedJobTitles = []; renderSelectedJobs(); refreshAll(); });
-    [els.freeWordInput, els.locationInput].forEach(input => input.addEventListener('keydown', e => { if (e.key === 'Enter') { clearLog(); refreshAll(); } }));
-    [els.searchMode, els.campaignFilter, els.periodFrom, els.periodTo, els.compareAFrom, els.compareATo, els.compareBFrom, els.compareBTo].forEach(el => el.addEventListener('change', () => { clearLog(); refreshAll(); }));
-    document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); comparisonMode = tab.dataset.mode; updateComparisonControls(); clearLog(); refreshAll(); }));
+    els.columnBtn.addEventListener('click', () => els.columnDropdown.classList.toggle('open'));
+    document.addEventListener('click', e => {
+      if (!document.getElementById('columnMenu').contains(e.target)) els.columnDropdown.classList.remove('open');
+    });
+
+    [els.freeWordInput, els.locationInput].forEach(input => {
+      input.addEventListener('input', scheduleRefresh);
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') refreshAll(); });
+    });
+    document.querySelectorAll('[data-clear]').forEach(btn => btn.addEventListener('click', () => clearInput(btn.dataset.clear)));
+
+    [els.searchMode, els.campaignFilter, els.periodFrom, els.periodTo, els.compareAFrom, els.compareATo, els.compareBFrom, els.compareBTo].forEach(el => {
+      el.addEventListener('change', () => refreshAll());
+    });
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        comparisonMode = tab.dataset.mode;
+        els.periodCompareControls.classList.toggle('hidden', comparisonMode !== 'period');
+        refreshAll();
+      });
+    });
+
+    renderColumnDropdown();
+    renderSelectedJobs();
+    renderConditionSummary();
   </script>
 </body>
 </html>
