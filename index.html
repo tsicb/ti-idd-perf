@@ -101,6 +101,29 @@
     .kv div:nth-child(odd) { display:none; }
     .kv div:nth-child(even) { background:#f5f5f4; color:#57534e; border:2px solid #fff; border-radius:999px; padding:7px 11px; font-size:13px; font-weight:900; }
     .main-subtitle { margin:8px 0 0; color:#78716c; font-weight:800; }
+
+    .search-related-card { position:relative; }
+    .section-divider { margin:20px 0 16px; border-top:4px dashed #fff; }
+    .related-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+    .range-btn {
+      width:100%; min-height:52px; text-align:left; border:4px solid #fff; border-radius:18px; padding:12px 14px;
+      background:#fff7ed; color:#44403c; font-weight:950; font-family:inherit; cursor:pointer;
+      box-shadow:inset 0 2px 4px rgba(0,0,0,.04);
+    }
+    .range-btn:hover { background:#ffedd5; }
+    .hidden-control { display:none!important; }
+    .month-modal { position:absolute; right:24px; top:158px; z-index:20; width:min(620px, calc(100vw - 48px)); background:#fff; border:4px solid #fed7aa; border-radius:28px; box-shadow:0 24px 60px rgba(0,0,0,.22); padding:18px; }
+    .month-modal-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .month-modal-title { font-size:17px; font-weight:950; color:#292524; }
+    .month-modal-note { margin-top:4px; font-size:13px; color:#78716c; font-weight:800; }
+    .month-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:9px; max-height:360px; overflow:auto; padding:4px; }
+    .month-btn { border:2px solid #e7e5e4; background:#fafaf9; border-radius:14px; padding:10px 8px; font-weight:950; font-family:inherit; cursor:pointer; color:#57534e; }
+    .month-btn:hover { border-color:#fdba74; background:#fff7ed; }
+    .month-btn.range { background:#ffedd5; border-color:#fed7aa; color:#9a3412; }
+    .month-btn.start, .month-btn.end { background:#f97316; border-color:#fb923c; color:#fff; box-shadow:0 3px 0 #c2410c; }
+    .summary-row td { background:#ecfeff; font-weight:950; color:#164e63; border-bottom:3px solid #67e8f9; }
+    .summary-row td:first-child::before { content:'★'; color:#f97316; margin-right:6px; }
+    @media (max-width:700px) { .month-modal { left:12px; right:12px; top:220px; width:auto; } .month-grid { grid-template-columns:repeat(3,1fr); } }
   </style>
 </head>
 <body>
@@ -123,7 +146,7 @@
     </section>
 
     <section id="appArea" class="grid hidden" style="margin-top:18px;">
-      <div class="card span-12">
+      <div class="card span-12 search-related-card" id="searchRelatedCard">
         <h2>検索条件</h2>
         <div class="filters">
           <div class="field">
@@ -139,30 +162,33 @@
             <select id="searchMode"><option value="OR">OR</option><option value="AND">AND</option></select>
           </div>
           <div class="field md">
-            <label class="label" for="campaignFilter">キャンペーン</label>
+            <label class="label" for="campaignFilter">SA条件</label>
             <select id="campaignFilter"><option value="all">すべて</option><option value="sa-only">SAのみ</option><option value="non-sa-only">SA以外</option></select>
           </div>
-          <div class="field sm">
-            <label class="label" for="periodFrom">開始月</label>
-            <select id="periodFrom"></select>
-          </div>
-          <div class="field sm">
-            <label class="label" for="periodTo">終了月</label>
-            <select id="periodTo"></select>
+          <div class="field md">
+            <label class="label" for="periodRangeBtn">集計期間</label>
+            <button id="periodRangeBtn" class="range-btn" type="button">期間を選択</button>
+            <select id="periodFrom" class="hidden-control"></select>
+            <select id="periodTo" class="hidden-control"></select>
           </div>
         </div>
-      </div>
 
-      <div class="card span-12">
-        <h2>検索結果の合計</h2>
-        <div id="stats" class="stats"></div>
-      </div>
+        <div id="periodModal" class="month-modal hidden" aria-hidden="true">
+          <div class="month-modal-head">
+            <div>
+              <div class="month-modal-title">集計期間を選択</div>
+              <div id="periodModalNote" class="month-modal-note">開始月を選択してください。</div>
+            </div>
+            <button id="periodModalClose" class="btn ghost small" type="button">閉じる</button>
+          </div>
+          <div id="periodMonthGrid" class="month-grid"></div>
+        </div>
 
-      <div class="card span-12">
-        <div class="header" style="margin-bottom:10px;">
+        <div class="section-divider"></div>
+        <div class="related-head">
           <div>
-            <h2>関連する職種</h2>
-            <p class="muted" style="margin:4px 0 0;font-size:13px;">クリックすると比較表に追加できます。</p>
+            <h2 style="margin-bottom:4px;">関連する職種</h2>
+            <p class="muted" style="margin:0;font-size:13px;">クリックすると比較表に追加できます。</p>
           </div>
           <button id="clearSelectedBtn" class="btn ghost small" type="button">選択をクリア</button>
         </div>
@@ -212,9 +238,9 @@
 
     const els = {
       folderInput: document.getElementById('folderInput'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), mainStatus: document.getElementById('mainStatus'),
-      datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'),
-      searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'),
-      stats: document.getElementById('stats'), relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
+      datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'),
+      searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
+      relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
       comparisonContent: document.getElementById('comparisonContent'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), log: document.getElementById('log')
     };
 
@@ -223,6 +249,11 @@
     let selectedJobTitles = [];
     let comparisonMode = 'job';
     let lastCopyRows = [];
+    let latestTotals = null;
+    let textDirty = false;
+    let periodDraftStart = '';
+    let periodDraftEnd = '';
+    let periodSelecting = 'start';
     let logText = '';
     const registeredFiles = new Set();
 
@@ -323,9 +354,72 @@
       els.compareBTo.value = bTo;
       els.compareAFrom.value = months.includes(aFromCandidate) ? aFromCandidate : months[0];
       els.compareATo.value = months.includes(aToCandidate) ? aToCandidate : (months.includes(addMonths(bFrom, -1)) ? addMonths(bFrom, -1) : months[0]);
+      updatePeriodRangeLabel();
+      renderPeriodModal();
     }
 
     function selectedMonths() { return monthsBetween(els.periodFrom.value, els.periodTo.value).filter(m => appState.availableMonths.includes(m)); }
+
+
+    function updatePeriodRangeLabel() {
+      if (!els.periodRangeBtn) return;
+      const from = els.periodFrom.value;
+      const to = els.periodTo.value;
+      els.periodRangeBtn.textContent = from && to ? `${formatMonthLabel(from)} 〜 ${formatMonthLabel(to)}` : '期間を選択';
+    }
+
+    function openPeriodModal() {
+      if (!appState) return;
+      periodDraftStart = els.periodFrom.value || '';
+      periodDraftEnd = els.periodTo.value || '';
+      periodSelecting = 'start';
+      renderPeriodModal();
+      els.periodModal.classList.remove('hidden');
+      els.periodModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closePeriodModal() {
+      els.periodModal.classList.add('hidden');
+      els.periodModal.setAttribute('aria-hidden', 'true');
+    }
+
+    function renderPeriodModal() {
+      if (!appState || !els.periodMonthGrid) return;
+      const months = appState.availableMonths;
+      const start = periodDraftStart;
+      const end = periodDraftEnd;
+      els.periodModalNote.textContent = periodSelecting === 'start' ? '開始月を選択してください。' : `${formatMonthLabel(start)} からの終了月を選択してください。`;
+      els.periodMonthGrid.innerHTML = months.map(m => {
+        const isStart = start === m;
+        const isEnd = end === m;
+        const inRange = start && end && m >= Math.min(start, end) && m <= Math.max(start, end);
+        const cls = ['month-btn', isStart ? 'start' : '', isEnd ? 'end' : '', inRange ? 'range' : ''].filter(Boolean).join(' ');
+        return `<button type="button" class="${cls}" data-period-month="${esc(m)}">${esc(formatMonthLabel(m))}</button>`;
+      }).join('');
+      els.periodMonthGrid.querySelectorAll('[data-period-month]').forEach(btn => {
+        btn.addEventListener('click', () => choosePeriodMonth(btn.dataset.periodMonth));
+      });
+    }
+
+    function choosePeriodMonth(month) {
+      if (periodSelecting === 'start' || !periodDraftStart || (periodDraftStart && periodDraftEnd)) {
+        periodDraftStart = month;
+        periodDraftEnd = '';
+        periodSelecting = 'end';
+        renderPeriodModal();
+        return;
+      }
+      periodDraftEnd = month;
+      let from = periodDraftStart;
+      let to = periodDraftEnd;
+      if (from > to) [from, to] = [to, from];
+      els.periodFrom.value = from;
+      els.periodTo.value = to;
+      updatePeriodRangeLabel();
+      closePeriodModal();
+      clearLog();
+      refreshAll();
+    }
 
     async function registerMonths(db, months) {
       const paths = [];
@@ -386,7 +480,7 @@
         const where = baseWhere();
         const aggregateSql = `WITH src AS (SELECT * FROM ${source} ${where}) SELECT COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src;`;
         const totals = (await queryRows(conn, aggregateSql))[0] || {};
-        renderStats(totals);
+        latestTotals = totals;
         const relatedSql = `WITH src AS (SELECT * FROM ${source} ${where}), exploded AS (SELECT trim(candidate) AS related_job, "消化金額", "表示回数", "クリック数", "応募開始数", "応募数" FROM src, UNNEST(string_split(coalesce("関連職種", ''), '|')) AS t(candidate)) SELECT related_job, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM exploded WHERE related_job <> '' GROUP BY related_job ORDER BY count DESC, applies DESC, clicks DESC, related_job ASC LIMIT 500;`;
         const relatedRaw = await queryRows(conn, relatedSql);
         renderRelated(relatedRaw.filter(r => isUsefulCandidate(r.related_job)).slice(0,50));
@@ -404,6 +498,7 @@
     }
 
     function renderStats(row) {
+      if (!els.stats) return;
       const r = calcRates(row);
       const items = [['該当件数',fmtNum(row.count),'件'],['消化金額',fmtNum(row.cost),'円'],['表示回数',fmtNum(row.impressions),'回'],['クリック数',fmtNum(row.clicks),'回'],['応募開始数',fmtNum(row.apply_starts),'件'],['応募数',fmtNum(row.applies),'件'],['CVR',r.cvr===null?'-':fmtNum(r.cvr,2),'%'],['CPA',r.cpa===null?'-':fmtNum(r.cpa),'円']];
       els.stats.innerHTML = items.map(([title,value,unit]) => `<div class="stat"><div class="stat-title">${esc(title)}</div><div class="stat-value">${esc(value)}<span class="unit">${esc(unit)}</span></div></div>`).join('');
@@ -412,14 +507,14 @@
     function renderSelectedJobs() {
       if (!selectedJobTitles.length) { els.selectedJobs.innerHTML = '<span class="muted">比較に追加された職種はありません。</span>'; return; }
       els.selectedJobs.innerHTML = selectedJobTitles.map(job => `<button class="chip pinned selected" data-remove-job="${esc(job)}" type="button">${esc(job)} ×</button>`).join('');
-      els.selectedJobs.querySelectorAll('[data-remove-job]').forEach(btn => btn.addEventListener('click', () => { selectedJobTitles = selectedJobTitles.filter(j => j !== btn.dataset.removeJob); renderSelectedJobs(); refreshAll(); }));
+      els.selectedJobs.querySelectorAll('[data-remove-job]').forEach(btn => btn.addEventListener('click', () => { selectedJobTitles = selectedJobTitles.filter(j => j !== btn.dataset.removeJob); renderSelectedJobs(); textDirty = false; refreshAll(); }));
     }
 
     function renderRelated(rows) {
       renderSelectedJobs();
       if (!rows.length) { els.relatedJobs.innerHTML = '<div class="empty">関連する職種が見つかりません。</div>'; return; }
       els.relatedJobs.innerHTML = rows.map(row => `<button class="chip ${selectedJobTitles.includes(row.related_job) ? 'selected' : ''}" data-job="${esc(row.related_job)}" type="button">${esc(row.related_job)} <span class="muted">${fmtNum(row.count)}</span></button>`).join('');
-      els.relatedJobs.querySelectorAll('[data-job]').forEach(btn => btn.addEventListener('click', () => { const job = btn.dataset.job; selectedJobTitles = selectedJobTitles.includes(job) ? selectedJobTitles.filter(j => j !== job) : [...selectedJobTitles, job]; renderSelectedJobs(); refreshAll(); }));
+      els.relatedJobs.querySelectorAll('[data-job]').forEach(btn => btn.addEventListener('click', () => { const job = btn.dataset.job; selectedJobTitles = selectedJobTitles.includes(job) ? selectedJobTitles.filter(j => j !== job) : [...selectedJobTitles, job]; renderSelectedJobs(); textDirty = false; refreshAll(); }));
     }
 
     async function renderComparison(conn, source, db) {
@@ -438,7 +533,7 @@
     function metricCells(row) { const r = calcRates(row); return `<td>${fmtNum(row.count)}</td><td>${fmtNum(row.cost)}</td><td>${fmtNum(row.impressions)}</td><td>${fmtNum(row.clicks)}</td><td>${fmtNum(row.apply_starts)}</td><td>${fmtNum(row.applies)}</td><td>${r.cvr===null?'-':fmtNum(r.cvr,2)+'%'}</td><td>${r.cpa===null?'-':fmtNum(r.cpa)+'円'}</td>`; }
 
     async function renderJobComparison(conn, source) {
-      if (!selectedJobTitles.length) { els.comparisonContent.innerHTML = '<div class="empty">上の職種候補をクリックすると、ここに職種別の比較表が表示されます。</div>'; lastCopyRows = []; els.copyBtn.disabled = true; return; }
+      if (!selectedJobTitles.length) { renderTable('関連職種', []); return; }
       const selects = selectedJobTitles.map(job => `SELECT ${sqlLiteral(job)} AS label, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src WHERE "タイトル" LIKE ${sqlLiteral('%' + job + '%')}`).join(' UNION ALL ');
       const sql = `WITH src AS (SELECT * FROM ${source} ${baseWhere()}) ${selects} ORDER BY count DESC;`;
       const rows = await queryRows(conn, sql);
@@ -508,10 +603,13 @@ FROM b;`.trim();
     }
 
     function renderTable(labelName, rows) {
-      lastCopyRows = rows.map(row => ({ label: row.label, ...row, ...calcRates(row) }));
-      els.copyBtn.disabled = rows.length === 0;
-      if (!rows.length) { els.comparisonContent.innerHTML = '<div class="empty">該当データがありません。</div>'; return; }
-      els.comparisonContent.innerHTML = `<div class="table-wrap"><table><thead><tr><th>${esc(labelName)}</th>${metricHeaders()}</tr></thead><tbody>${rows.map(row => `<tr><td>${esc(row.label)}</td>${metricCells(row)}</tr>`).join('')}</tbody></table></div>`;
+      const summary = latestTotals ? [{ label: '検索結果（合計）', __summary: true, ...latestTotals }] : [];
+      const displayRows = summary.concat(rows || []);
+      lastCopyRows = displayRows.map(row => ({ label: row.label, ...row, ...calcRates(row) }));
+      els.copyBtn.disabled = displayRows.length === 0;
+      if (!displayRows.length) { els.comparisonContent.innerHTML = '<div class="empty">該当データがありません。</div>'; return; }
+      const helper = (!rows || rows.length === 0) && comparisonMode === 'job' ? '<div class="empty" style="margin-top:12px;">上の職種候補をクリックすると、比較行を追加できます。</div>' : '';
+      els.comparisonContent.innerHTML = `<div class="table-wrap"><table><thead><tr><th>${esc(labelName)}</th>${metricHeaders()}</tr></thead><tbody>${displayRows.map(row => `<tr class="${row.__summary ? 'summary-row' : ''}"><td>${esc(row.label)}</td>${metricCells(row)}</tr>`).join('')}</tbody></table></div>${helper}`;
     }
 
     function copyTable() {
@@ -522,13 +620,30 @@ FROM b;`.trim();
       navigator.clipboard.writeText(lines.join('\n')).catch(() => {});
     }
 
+    function commitTextSearchIfNeeded() {
+      if (!appState || !textDirty) return;
+      textDirty = false;
+      clearLog();
+      refreshAll();
+    }
+
     els.folderInput.addEventListener('change', e => handleFiles(e.target.files).catch(err => { console.error(err); log('[ERROR]\n' + (err.stack || err.message)); setStatus('エラー','bad'); }));
-    els.refreshBtn.addEventListener('click', () => { clearLog(); refreshAll(); });
+    els.refreshBtn.addEventListener('click', () => { textDirty = false; clearLog(); refreshAll(); });
     els.copyBtn.addEventListener('click', copyTable);
-    els.clearSelectedBtn.addEventListener('click', () => { selectedJobTitles = []; renderSelectedJobs(); refreshAll(); });
-    [els.freeWordInput, els.locationInput].forEach(input => input.addEventListener('keydown', e => { if (e.key === 'Enter') { clearLog(); refreshAll(); } }));
-    [els.searchMode, els.campaignFilter, els.periodFrom, els.periodTo, els.compareAFrom, els.compareATo, els.compareBFrom, els.compareBTo].forEach(el => el.addEventListener('change', () => { clearLog(); refreshAll(); }));
-    document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); comparisonMode = tab.dataset.mode; updateComparisonControls(); clearLog(); refreshAll(); }));
+    els.clearSelectedBtn.addEventListener('click', () => { selectedJobTitles = []; renderSelectedJobs(); textDirty = false; refreshAll(); });
+    [els.freeWordInput, els.locationInput].forEach(input => {
+      input.addEventListener('input', () => { textDirty = true; });
+      input.addEventListener('blur', () => setTimeout(commitTextSearchIfNeeded, 0));
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commitTextSearchIfNeeded(); input.blur(); } });
+    });
+    [els.searchMode, els.campaignFilter, els.compareAFrom, els.compareATo, els.compareBFrom, els.compareBTo].forEach(el => el.addEventListener('change', () => { clearLog(); refreshAll(); }));
+    els.periodRangeBtn.addEventListener('click', (e) => { e.stopPropagation(); openPeriodModal(); });
+    els.periodModalClose.addEventListener('click', closePeriodModal);
+    els.periodModal.addEventListener('click', e => e.stopPropagation());
+    document.addEventListener('click', e => {
+      if (!els.periodModal.classList.contains('hidden') && !els.periodModal.contains(e.target) && e.target !== els.periodRangeBtn) closePeriodModal();
+    });
+    document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); comparisonMode = tab.dataset.mode; updateComparisonControls(); textDirty = false; clearLog(); refreshAll(); }));
   </script>
 </body>
 </html>
