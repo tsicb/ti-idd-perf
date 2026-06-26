@@ -55,6 +55,19 @@
       font-weight:900; font-size:13px; background:#f5f5f4; color:#57534e; border:2px solid #fff;
     }
     .status.ok { background:#dcfce7; color:#047857; } .status.warn { background:#fef3c7; color:#b45309; } .status.bad { background:#ffe4e6; color:#be123c; }
+    .top-only-control { display:none!important; }
+    .toast {
+      position:fixed; right:24px; top:24px; z-index:2147483647;
+      width:min(520px, calc(100vw - 32px)); padding:16px 18px; border-radius:22px;
+      background:rgba(255,255,255,.96); border:3px solid #fed7aa; box-shadow:0 18px 50px rgba(0,0,0,.22);
+      color:#44403c; font-weight:900; transform:translateY(-16px); opacity:0; pointer-events:none;
+      transition:opacity .18s ease, transform .18s ease;
+    }
+    .toast.show { opacity:1; transform:translateY(0); }
+    .toast-title { display:flex; align-items:center; gap:8px; font-size:15px; color:#9a3412; margin-bottom:6px; }
+    .toast-path { margin:8px 0; padding:9px 10px; border-radius:12px; background:#fff7ed; color:#7c2d12; font-size:12px; word-break:break-all; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace; }
+    .toast-note { font-size:13px; color:#57534e; line-height:1.6; }
+    @media (max-width:700px) { .toast { right:12px; left:12px; top:12px; width:auto; } }
     .field { display:grid; gap:6px; min-width:180px; flex:1; }
     .field.sm { flex:0 0 150px; min-width:140px; } .field.md { flex:0 0 210px; min-width:180px; }
     label.label { font-size:13px; font-weight:950; color:#57534e; display:flex; align-items:center; gap:6px; }
@@ -163,11 +176,11 @@
           <p class="main-subtitle">データフォルダを選択して、求人運用データを確認できます。</p>
         </div>
         <div class="toolbar">
-          <label class="btn" for="folderInput">📁 データフォルダを選択</label>
+          <label id="folderSelectBtn" class="btn" for="folderInput">📁 データフォルダを選択</label>
           <input id="folderInput" type="file" webkitdirectory directory multiple />
-          <button id="refreshBtn" class="btn secondary" type="button" disabled>表示を更新</button>
-          <button id="copyBtn" class="btn ghost" type="button" disabled>表をコピー</button>
-          <span id="mainStatus" class="status">データ未選択</span>
+          <button id="refreshBtn" class="btn secondary top-only-control" type="button" disabled>表示を更新</button>
+          <button id="copyBtn" class="btn ghost top-only-control" type="button" disabled>表をコピー</button>
+          <span id="mainStatus" class="status top-only-control">データ未選択</span>
         </div>
       </div>
       <div id="datasetInfo" class="kv hidden"></div>
@@ -260,12 +273,13 @@
       </div>
     </section>
   </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script type="module">
     import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm/+esm";
 
     const els = {
-      folderInput: document.getElementById('folderInput'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), mainStatus: document.getElementById('mainStatus'),
+      folderInput: document.getElementById('folderInput'), folderSelectBtn: document.getElementById('folderSelectBtn'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), mainStatus: document.getElementById('mainStatus'), toast: document.getElementById('toast'),
       datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'),
       searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
       relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
@@ -290,8 +304,47 @@
     let periodHoverMonth = '';
     let logText = '';
     const registeredFiles = new Set();
+    const DEFAULT_FOLDER_PATH = String.raw`K:\天市事業\public\1049\共有情報\tenichiプラス\indeedマージレポート\output_dataset`;
+    let toastTimer = null;
 
-    function setStatus(text, type='') { els.mainStatus.textContent = text; els.mainStatus.className = `status ${type}`.trim(); }
+    function setStatus(text, type='') { els.mainStatus.textContent = text; els.mainStatus.className = `status top-only-control ${type}`.trim(); }
+    function showToast(html, duration=6500) {
+      if (!els.toast) return;
+      els.toast.innerHTML = html;
+      els.toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => els.toast.classList.remove('show'), duration);
+    }
+    function copyTextFallback(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (_) { ok = false; }
+      document.body.removeChild(ta);
+      return ok;
+    }
+    async function copyDefaultFolderPath() {
+      let copied = false;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(DEFAULT_FOLDER_PATH);
+          copied = true;
+        }
+      } catch (_) { copied = false; }
+      if (!copied) copied = copyTextFallback(DEFAULT_FOLDER_PATH);
+      showToast(`
+        <div class="toast-title">📋 データフォルダの場所をコピーしました</div>
+        <div class="toast-note">フォルダ選択画面が開いたら、上部のフォルダパス欄にそのまま貼り付けてください。</div>
+        <div class="toast-path">${esc(DEFAULT_FOLDER_PATH)}</div>
+        <div class="toast-note">貼り付け後に Enter を押すと、目的のフォルダへ移動しやすくなります。</div>
+      `);
+    }
+
     function esc(v) { return String(v ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch])); }
     function fmtNum(v, digits=0) { if (v === null || v === undefined || v === '') return '-'; const n = typeof v === 'bigint' ? Number(v) : Number(v); if (!Number.isFinite(n)) return String(v); return n.toLocaleString('ja-JP',{maximumFractionDigits:digits,minimumFractionDigits:digits}); }
     function log(message) { const text = typeof message === 'string' ? message : JSON.stringify(message,null,2); logText += (logText ? '\n' : '') + text; els.log.textContent = logText; els.log.scrollTop = els.log.scrollHeight; }
