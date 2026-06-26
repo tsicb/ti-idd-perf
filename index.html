@@ -176,7 +176,7 @@
           <p class="main-subtitle">データフォルダを選択して、求人運用データを確認できます。</p>
         </div>
         <div class="toolbar">
-          <label id="folderSelectBtn" class="btn" for="folderInput">📁 データフォルダを選択</label>
+          <button id="folderSelectBtn" class="btn" type="button">📁 データフォルダを選択</button>
           <input id="folderInput" type="file" webkitdirectory directory multiple />
           <button id="refreshBtn" class="btn secondary top-only-control" type="button" disabled>表示を更新</button>
           <button id="copyBtn" class="btn ghost top-only-control" type="button" disabled>表をコピー</button>
@@ -328,21 +328,23 @@
       document.body.removeChild(ta);
       return ok;
     }
-    async function copyDefaultFolderPath() {
-      let copied = false;
-      try {
-        if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(DEFAULT_FOLDER_PATH);
-          copied = true;
-        }
-      } catch (_) { copied = false; }
-      if (!copied) copied = copyTextFallback(DEFAULT_FOLDER_PATH);
+    function copyDefaultFolderPath() {
+      // ファイル選択ダイアログが開く前に、同期コピーを先に試す。
+      // Clipboard API は非同期のため、ダイアログ表示と競合して失敗/遅延することがある。
+      let copied = copyTextFallback(DEFAULT_FOLDER_PATH);
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(DEFAULT_FOLDER_PATH)
+          .then(() => { copied = true; })
+          .catch(() => {});
+      }
+
       showToast(`
         <div class="toast-title">📋 データフォルダの場所をコピーしました</div>
         <div class="toast-note">フォルダ選択画面が開いたら、上部のフォルダパス欄にそのまま貼り付けてください。</div>
         <div class="toast-path">${esc(DEFAULT_FOLDER_PATH)}</div>
         <div class="toast-note">貼り付け後に Enter を押すと、目的のフォルダへ移動しやすくなります。</div>
-      `);
+      `, 20000);
     }
 
     function esc(v) { return String(v ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch])); }
@@ -748,6 +750,16 @@ FROM b;`.trim();
       refreshAll();
     }
 
+    els.folderSelectBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      copyDefaultFolderPath();
+      // トーストを描画してから、フォルダ選択画面を開く。
+      // 短い遅延に留め、ブラウザのユーザー操作扱いが切れにくいようにする。
+      window.setTimeout(() => {
+        els.folderInput.value = '';
+        els.folderInput.click();
+      }, 120);
+    });
     els.folderInput.addEventListener('change', e => handleFiles(e.target.files).catch(err => { console.error(err); log('[ERROR]\n' + (err.stack || err.message)); setStatus('エラー','bad'); }));
     els.refreshBtn.addEventListener('click', () => { textDirty = false; clearLog(); refreshAll(); });
     els.copyBtn.addEventListener('click', copyTable);
