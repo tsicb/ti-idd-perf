@@ -143,6 +143,8 @@
     .month-btn { border:2px solid #e7e5e4; background:#fafaf9; border-radius:14px; padding:10px 8px; font-weight:950; font-family:inherit; cursor:pointer; color:#57534e; }
     .month-btn:hover { border-color:#fdba74; background:#fff7ed; }
     .month-btn.range { background:#ffedd5; border-color:#fed7aa; color:#9a3412; }
+    .month-btn.preview { background:#fef3c7; border-color:#fbbf24; color:#92400e; }
+    .month-btn.preview-end { background:#fdba74; border-color:#f97316; color:#7c2d12; box-shadow:0 3px 0 #ea580c; }
     .month-btn.start, .month-btn.end { background:#f97316; border-color:#fb923c; color:#fff; box-shadow:0 3px 0 #c2410c; }
     .summary-row td { background:#ecfeff; font-weight:950; color:#164e63; border-bottom:3px solid #67e8f9; }
     .summary-row td:first-child::before { content:'★'; color:#f97316; margin-right:6px; }
@@ -285,6 +287,7 @@
     let periodDraftStart = '';
     let periodDraftEnd = '';
     let periodSelecting = 'start';
+    let periodHoverMonth = '';
     let logText = '';
     const registeredFiles = new Set();
 
@@ -404,6 +407,7 @@
       periodDraftStart = els.periodFrom.value || '';
       periodDraftEnd = els.periodTo.value || '';
       periodSelecting = 'start';
+      periodHoverMonth = '';
       renderPeriodModal();
       document.body.classList.add('modal-open');
       if (typeof els.periodModal.showModal === 'function') {
@@ -429,17 +433,38 @@
       const months = appState.availableMonths;
       const start = periodDraftStart;
       const end = periodDraftEnd;
-      els.periodModalNote.textContent = periodSelecting === 'start' ? '開始月を選択してください。' : `${formatMonthLabel(start)} からの終了月を選択してください。`;
+      const hover = periodHoverMonth;
+      const isPreviewing = periodSelecting === 'end' && start && !end && hover;
+      const previewFrom = isPreviewing ? String(Math.min(Number(start), Number(hover))) : '';
+      const previewTo = isPreviewing ? String(Math.max(Number(start), Number(hover))) : '';
+      els.periodModalNote.textContent = periodSelecting === 'start'
+        ? '開始月を選択してください。'
+        : `${formatMonthLabel(start)} からの終了月を選択してください。`;
       els.periodMonthGrid.innerHTML = months.map(m => {
         const isStart = start === m;
         const isEnd = end === m;
-        const inRange = start && end && m >= Math.min(start, end) && m <= Math.max(start, end);
-        const cls = ['month-btn', isStart ? 'start' : '', isEnd ? 'end' : '', inRange ? 'range' : ''].filter(Boolean).join(' ');
-        return `<button type="button" class="${cls}" data-period-month="${esc(m)}">${esc(formatMonthLabel(m))}</button>`;
+        const inRange = start && end && Number(m) >= Math.min(Number(start), Number(end)) && Number(m) <= Math.max(Number(start), Number(end));
+        const inPreview = isPreviewing && Number(m) >= Number(previewFrom) && Number(m) <= Number(previewTo);
+        const isPreviewEnd = isPreviewing && hover === m && !isStart;
+        const cls = ['month-btn', inPreview ? 'preview' : '', isPreviewEnd ? 'preview-end' : '', isStart ? 'start' : '', isEnd ? 'end' : '', inRange ? 'range' : ''].filter(Boolean).join(' ');
+        const title = periodSelecting === 'end' && start && !end ? `${formatMonthLabel(start)} 〜 ${formatMonthLabel(m)} を選択` : `${formatMonthLabel(m)} を選択`;
+        return `<button type="button" class="${cls}" data-period-month="${esc(m)}" title="${esc(title)}">${esc(formatMonthLabel(m))}</button>`;
       }).join('');
       els.periodMonthGrid.querySelectorAll('[data-period-month]').forEach(btn => {
         btn.addEventListener('click', () => choosePeriodMonth(btn.dataset.periodMonth));
+        btn.addEventListener('mouseenter', () => {
+          if (periodSelecting === 'end' && periodDraftStart && !periodDraftEnd && periodHoverMonth !== btn.dataset.periodMonth) {
+            periodHoverMonth = btn.dataset.periodMonth;
+            renderPeriodModal();
+          }
+        });
       });
+      els.periodMonthGrid.onmouseleave = () => {
+        if (periodSelecting === 'end' && periodDraftStart && !periodDraftEnd && periodHoverMonth) {
+          periodHoverMonth = '';
+          renderPeriodModal();
+        }
+      };
     }
 
     function choosePeriodMonth(month) {
@@ -447,10 +472,12 @@
         periodDraftStart = month;
         periodDraftEnd = '';
         periodSelecting = 'end';
+        periodHoverMonth = '';
         renderPeriodModal();
         return;
       }
       periodDraftEnd = month;
+      periodHoverMonth = '';
       let from = periodDraftStart;
       let to = periodDraftEnd;
       if (from > to) [from, to] = [to, from];
