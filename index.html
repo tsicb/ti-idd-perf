@@ -276,6 +276,16 @@
     .pref-highlight-row td { background:#fef9c3; color:#713f12; }
     .pref-highlight-row td:first-child { box-shadow:inset 5px 0 0 #f59e0b; }
     .summary-row.pref-highlight-row td { background:#ecfeff; color:#164e63; box-shadow:none; }
+    .pref-location-cell { display:flex; align-items:center; gap:7px; min-width:0; }
+    .pref-rank-medal { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; flex:0 0 22px; border-radius:999px; font-size:15px; line-height:1; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,.12), inset 0 -1px 0 rgba(0,0,0,.08); }
+    .pref-rank-medal.rank-1 { background:linear-gradient(180deg,#fff7bf,#facc15); }
+    .pref-rank-medal.rank-2 { background:linear-gradient(180deg,#f8fafc,#cbd5e1); }
+    .pref-rank-medal.rank-3 { background:linear-gradient(180deg,#ffedd5,#fb923c); }
+    .pref-name-text { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    .table-wrap tbody tr td { transition:background-color .08s ease, color .08s ease; }
+    .table-wrap tbody tr:not(.pref-highlight-row):hover td { background:#fff7ed; }
+    .table-wrap tbody tr.pref-highlight-row:hover td { background:#fef3c7; }
     @media (max-width:700px) {
       dialog.month-modal { left:50%; top:50%; right:auto; width:calc(100vw - 24px); max-height:calc(100dvh - 24px); padding:14px; }
       .month-grid { grid-template-columns:repeat(3,1fr); max-height:calc(100dvh - 180px); }
@@ -1272,10 +1282,16 @@
       `;
       const rows = await queryRows(conn, sql);
       const highlightedPrefs = detectLocationPrefectures();
-      const sortedRows = sortPrefectureRows(rows).map(row => ({
-        ...row,
-        __prefHighlighted: highlightedPrefs.has(row.label)
-      }));
+      const medalByRank = { 1:'🥇', 2:'🥈', 3:'🥉' };
+      const sortedRows = sortPrefectureRows(rows).map((row, idx) => {
+        const rank = idx + 1;
+        return {
+          ...row,
+          __prefRank: rank,
+          __prefMedal: medalByRank[rank] || '',
+          __prefHighlighted: highlightedPrefs.has(row.label)
+        };
+      });
       renderTable('都道府県', sortedRows, { summaryTotals: sumMetricRows(rows) });
     }
 
@@ -1316,12 +1332,19 @@
       return `<colgroup>${cols.join('')}</colgroup>`;
     }
 
+    function locationCellHtml(row, keyLoc) {
+      if (comparisonMode === 'prefecture' && !row.__summary && row.__prefMedal) {
+        return `<td><span class="pref-location-cell"><span class="pref-rank-medal rank-${esc(row.__prefRank)}" title="CPA順 ${esc(row.__prefRank)}位">${esc(row.__prefMedal)}</span><span class="pref-name-text">${esc(keyLoc.location)}</span></span></td>`;
+      }
+      return `<td>${esc(keyLoc.location)}</td>`;
+    }
+
     function rowHtml(row) {
       const keyLoc = tableKeyLocation(row);
       const periodCell = comparisonMode === 'month' ? `<td>${esc(keyLoc.periodDisplay || '')}</td>` : '';
       const keywordTitle = keyLoc.keywordTitle ? ` title="${esc(keyLoc.keywordTitle)}"` : '';
       const rowClasses = [row.__summary ? 'summary-row' : '', row.__prefHighlighted ? 'pref-highlight-row' : ''].filter(Boolean).join(' ');
-      return `<tr class="${rowClasses}"><td${keywordTitle}>${esc(keyLoc.keyword)}</td><td>${esc(keyLoc.location)}</td>${periodCell}${metricCells(row)}</tr>`;
+      return `<tr class="${rowClasses}"><td${keywordTitle}>${esc(keyLoc.keyword)}</td>${locationCellHtml(row, keyLoc)}${periodCell}${metricCells(row)}</tr>`;
     }
 
     function updateFloatingHorizontalScroll() {
