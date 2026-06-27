@@ -34,7 +34,8 @@
     .intro-content { max-width:860px; }
     .folder-cta-area { margin-top:18px; display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
     .top-hidden-toolbar { display:none!important; }
-    h1 { margin:0; font-size:clamp(25px,3vw,36px); letter-spacing:.02em; color:#292524; display:flex; align-items:center; gap:12px; }
+    h1 { margin:0; font-size:clamp(25px,3vw,36px); letter-spacing:0;
+      font-variant-numeric:tabular-nums; color:#292524; display:flex; align-items:center; gap:12px; }
     h1::before { content:'📊'; font-size:30px; filter:drop-shadow(0 2px 2px rgba(0,0,0,.12)); }
     h2 { margin:0 0 14px; font-size:20px; color:#44403c; }
     h3 { margin:0 0 10px; font-size:16px; }
@@ -286,9 +287,10 @@
       flex:0 0 30px;
       border-radius:999px;
       font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size:12px;
-      font-weight:800;
-      letter-spacing:.02em;
+      font-size:13px;
+      font-weight:950;
+      letter-spacing:0;
+      font-variant-numeric:tabular-nums;
       line-height:1;
       color:#475569;
       background:linear-gradient(180deg,#ffffff,#f1f5f9);
@@ -1304,7 +1306,7 @@
         return {
           ...row,
           __prefRank: rank,
-          __prefRankLabel: String(rank).padStart(2, '0'),
+          __prefRankLabel: String(rank),
           __prefHighlighted: highlightedPrefs.has(row.label)
         };
       });
