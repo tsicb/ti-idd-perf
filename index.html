@@ -203,8 +203,8 @@
             <select id="searchMode"><option value="OR">OR</option><option value="AND">AND</option></select>
           </div>
           <div class="field md">
-            <label class="label" for="campaignFilter">SA条件</label>
-            <select id="campaignFilter"><option value="all">すべて</option><option value="sa-only">SAのみ</option><option value="non-sa-only">SA以外</option></select>
+            <label class="label" for="campaignFilter">SA-条件</label>
+            <select id="campaignFilter"><option value="all">すべて</option><option value="sa-only">SA-のみ</option><option value="non-sa-only">SA-以外</option></select>
           </div>
           <div class="field md">
             <label class="label" for="periodRangeBtn">集計期間</label>
@@ -233,7 +233,7 @@
           </div>
           <button id="clearSelectedBtn" class="btn ghost small" type="button">選択をクリア</button>
         </div>
-        <div id="selectedJobs" class="chips" style="margin-bottom:12px;"></div>
+        <div id="selectedJobs" class="chips" style="display:none;"></div>
         <div id="relatedJobs" class="chips"></div>
       </div>
 
@@ -650,9 +650,9 @@
     }
 
     function renderSelectedJobs() {
-      if (!selectedJobTitles.length) { els.selectedJobs.innerHTML = '<span class="muted">比較に追加された職種はありません。</span>'; return; }
-      els.selectedJobs.innerHTML = selectedJobTitles.map(job => `<button class="chip pinned selected" data-remove-job="${esc(job)}" type="button">${esc(job)} ×</button>`).join('');
-      els.selectedJobs.querySelectorAll('[data-remove-job]').forEach(btn => btn.addEventListener('click', () => { selectedJobTitles = selectedJobTitles.filter(j => j !== btn.dataset.removeJob); renderSelectedJobs(); textDirty = false; refreshAll(); }));
+      // 選択済み職種は関連職種チップ側をオレンジ表示にするため、
+      // 上部の青い重複チップは表示しない。
+      els.selectedJobs.innerHTML = '';
     }
 
     function renderRelated(rows) {
