@@ -168,6 +168,8 @@
     .month-modal-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }
     .month-modal-title { font-size:17px; font-weight:950; color:#292524; }
     .month-modal-note { margin-top:4px; font-size:13px; color:#78716c; font-weight:800; }
+    .month-modal-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .month-modal-actions .btn { white-space:nowrap; }
     .month-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:9px; max-height:calc(100dvh - 190px); overflow:auto; padding:4px 4px 10px; }
     .month-btn { border:2px solid #e7e5e4; background:#fafaf9; border-radius:14px; padding:10px 8px; font-weight:950; font-family:inherit; cursor:pointer; color:#57534e; }
     .month-btn:hover { border-color:#fdba74; background:#fff7ed; }
@@ -246,7 +248,10 @@
               <div class="month-modal-title">集計期間を選択</div>
               <div id="periodModalNote" class="month-modal-note">開始月を選択してください。</div>
             </div>
-            <button id="periodModalClose" class="btn ghost small" type="button">閉じる</button>
+            <div class="month-modal-actions">
+              <button id="periodModalAll" class="btn ghost small" type="button">全期間</button>
+              <button id="periodModalClose" class="btn ghost small" type="button">閉じる</button>
+            </div>
           </div>
           <div id="periodMonthGrid" class="month-grid"></div>
         </dialog>
@@ -307,7 +312,7 @@
     const els = {
       folderInput: document.getElementById('folderInput'), folderSelectBtn: document.getElementById('folderSelectBtn'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), mainStatus: document.getElementById('mainStatus'), toast: document.getElementById('toast'),
       datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'),
-      searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
+      searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalAll: document.getElementById('periodModalAll'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
       relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
       comparisonContent: document.getElementById('comparisonContent'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), log: document.getElementById('log')
     };
@@ -545,6 +550,20 @@
           renderPeriodModal();
         }
       };
+    }
+
+    function chooseAllPeriod() {
+      if (!appState || !appState.availableMonths || appState.availableMonths.length === 0) return;
+      const months = appState.availableMonths;
+      els.periodFrom.value = months[0];
+      els.periodTo.value = months[months.length - 1];
+      periodDraftStart = els.periodFrom.value;
+      periodDraftEnd = els.periodTo.value;
+      periodHoverMonth = '';
+      updatePeriodRangeLabel();
+      closePeriodModal();
+      clearLog();
+      refreshAll();
     }
 
     function choosePeriodMonth(month) {
@@ -892,6 +911,7 @@ FROM b;`.trim();
     [els.searchMode, els.campaignFilter, els.compareAFrom, els.compareATo, els.compareBFrom, els.compareBTo].forEach(el => el.addEventListener('change', () => { clearLog(); refreshAll(); }));
     els.periodRangeBtn.addEventListener('click', (e) => { e.stopPropagation(); openPeriodModal(); });
     els.periodModalClose.addEventListener('click', closePeriodModal);
+    els.periodModalAll.addEventListener('click', chooseAllPeriod);
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePeriodModal(); });
     els.periodModal.addEventListener('click', e => {
       if (e.target === els.periodModal) {
