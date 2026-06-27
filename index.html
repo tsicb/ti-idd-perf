@@ -610,17 +610,26 @@
 
     function readExpr(paths) { return paths.length === 1 ? `read_parquet(${sqlLiteral(paths[0])})` : `read_parquet([${paths.map(sqlLiteral).join(', ')}])`; }
 
-    function baseWhere(extraClauses=[]) {
+    function baseWhere(extraClauses=[], options={}) {
+      const includeTitle = options.includeTitle !== false;
       const mode = els.searchMode.value === 'AND' ? ' AND ' : ' OR ';
       const clauses = [];
       const titleWords = splitKeywords(els.freeWordInput.value);
       const locWords = splitKeywords(els.locationInput.value);
-      if (titleWords.length) clauses.push('(' + titleWords.map(kw => `"タイトル" LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')');
+      if (includeTitle && titleWords.length) clauses.push('(' + titleWords.map(kw => `"タイトル" LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')');
       if (locWords.length) clauses.push('(' + locWords.map(kw => `concat(coalesce("都道府県", ''), coalesce("市区町村", '')) LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')');
       if (els.campaignFilter.value === 'sa-only') clauses.push(`coalesce("キャンペーン", '') LIKE '%SA-%'`);
       if (els.campaignFilter.value === 'non-sa-only') clauses.push(`coalesce("キャンペーン", '') NOT LIKE '%SA-%'`);
       extraClauses.forEach(c => clauses.push(c));
       return clauses.length ? 'WHERE ' + clauses.join(' AND ') : '';
+    }
+
+    function relatedJobExactClause(job) {
+      // 関連職種は「|」区切り。比較表のバッジ行では、フリーワード条件を外し、
+      // 選択した関連職種そのものに該当する行を独立集計する。
+      // 区切り文字を前後に足して、例：「販売」が「販売員」へ誤ヒットしないようにする。
+      const normalizedJob = String(job || '').replace(/\s+/g, '');
+      return `concat('|', regexp_replace(coalesce("関連職種", ''), '\s+', '', 'g'), '|') LIKE ${sqlLiteral('%|' + normalizedJob + '|%')}`;
     }
 
     function isUsefulCandidate(value) {
@@ -773,8 +782,8 @@
 
     async function renderJobComparison(conn, source) {
       if (!selectedJobTitles.length) { renderTable('関連職種', []); return; }
-      const selects = selectedJobTitles.map(job => `SELECT ${sqlLiteral(job)} AS label, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src WHERE "タイトル" LIKE ${sqlLiteral('%' + job + '%')}`).join(' UNION ALL ');
-      const sql = `WITH src AS (SELECT * FROM ${source} ${baseWhere()}) ${selects} ORDER BY count DESC;`;
+      const selects = selectedJobTitles.map(job => `SELECT ${sqlLiteral(job)} AS label, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src WHERE ${relatedJobExactClause(job)}`).join(' UNION ALL ');
+      const sql = `WITH src AS (SELECT * FROM ${source} ${baseWhere([], { includeTitle: false })}) ${selects} ORDER BY count DESC;`;
       const rows = await queryRows(conn, sql);
       renderTable('関連職種', rows);
     }
