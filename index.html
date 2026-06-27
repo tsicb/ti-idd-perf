@@ -63,14 +63,14 @@
     .status.ok { background:#dcfce7; color:#047857; } .status.warn { background:#fef3c7; color:#b45309; } .status.bad { background:#ffe4e6; color:#be123c; }
     .top-only-control { display:none!important; }
     .toast {
-      position:fixed; left:50%; top:50%; z-index:2147483647;
+      position:fixed; left:50%; top:18px; z-index:2147483647;
       width:min(520px, calc(100vw - 32px)); padding:16px 18px; border-radius:22px;
       background:rgba(255,255,255,.97); border:3px solid #fed7aa; box-shadow:0 24px 70px rgba(0,0,0,.26);
-      color:#44403c; font-weight:900; transform:translate(-50%, -50%) scale(.96); opacity:0; pointer-events:none;
+      color:#44403c; font-weight:900; transform:translate(-50%, -8px) scale(.98); opacity:0; pointer-events:none;
       transition:opacity .18s ease, transform .18s ease;
       text-align:left;
     }
-    .toast.show { opacity:1; transform:translate(-50%, -50%) scale(1); }
+    .toast.show { opacity:1; transform:translate(-50%, 0) scale(1); }
     .toast-title { display:flex; align-items:center; gap:8px; font-size:15px; color:#9a3412; margin-bottom:6px; }
     .toast-path { margin:8px 0; padding:9px 10px; border-radius:12px; background:#fff7ed; color:#7c2d12; font-size:12px; word-break:break-all; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace; }
     .toast-note { font-size:13px; color:#57534e; line-height:1.6; }
@@ -191,10 +191,9 @@
           <h1>天市×indeedPLUS運用実績</h1>
           <p class="main-subtitle">社内共有フォルダの運用データを読み込んで表示します。</p>
           <div class="folder-guide" aria-label="データフォルダ選択の説明">
-            <div class="folder-guide-line"><span class="mark">①</span><span>下のボタンを押すと、必要なフォルダパスをコピーしてから、フォルダ選択画面を開きます。</span></div>
+            <div class="folder-guide-line"><span class="mark">①</span><span>下のボタンを押すと、必要なフォルダパスがコピーされ、フォルダ選択画面が開きます。</span></div>
             <div class="folder-guide-line"><span class="mark">②</span><span>フォルダ選択画面が開いたら、コピーされたパスをそのまま貼り付けて Enter を押してください。</span></div>
             <div class="folder-guide-line"><span class="mark">📁</span><span>選択するフォルダ：<span class="folder-path-inline">K:\天市事業\public\1049\共有情報\tenichiプラス\indeedマージレポート\output_dataset</span></span></div>
-            <div class="folder-cta-note">迷ったときは、コピーされたパスをそのまま貼り付ければOKです。</div>
           </div>
           <div class="folder-cta-area">
             <button id="folderSelectBtn" class="btn" type="button">📋 フォルダパスをコピーして選択画面を開く</button>
