@@ -224,6 +224,9 @@
     .month-btn.preview-end { background:#fdba74; border-color:#f97316; color:#7c2d12; box-shadow:0 3px 0 #ea580c; }
     .month-btn.start, .month-btn.end { background:#f97316; border-color:#fb923c; color:#fff; box-shadow:0 3px 0 #c2410c; }
     .summary-row td { background:#ecfeff; font-weight:950; color:#164e63; border-bottom:3px solid #67e8f9; }
+    .pref-highlight-row td { background:#fef9c3; color:#713f12; }
+    .pref-highlight-row td:first-child { box-shadow:inset 5px 0 0 #f59e0b; }
+    .summary-row.pref-highlight-row td { background:#ecfeff; color:#164e63; box-shadow:none; }
     @media (max-width:700px) {
       dialog.month-modal { left:50%; top:50%; right:auto; width:calc(100vw - 24px); max-height:calc(100dvh - 24px); padding:14px; }
       .month-grid { grid-template-columns:repeat(3,1fr); max-height:calc(100dvh - 180px); }
@@ -407,6 +410,7 @@
       '徳島県','香川県','愛媛県','高知県',
       '福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'
     ];
+    const PREFECTURE_ORDER = Object.fromEntries(PREFECTURES.map((pref, idx) => [pref, idx]));
     let toastTimer = null;
 
     function setStatus(text, type='') { els.mainStatus.textContent = text; els.mainStatus.className = `status top-only-control ${type}`.trim(); }
@@ -1033,6 +1037,72 @@
       return v || '（全国）';
     }
 
+    function detectLocationPrefectures() {
+      const input = normalizeMatchText(els.locationInput.value || '');
+      const matched = new Set();
+      if (!input) return matched;
+
+      // まず正式名称で判定する。例：東京都、京都府、大阪府、神奈川県
+      // その後、省略表記（東京、京都、大阪、神奈川など）も拾う。
+      // ただし「北海」は北海道とはみなさない。また「東京都」の中の「京都」は京都府として拾わない。
+      PREFECTURES.forEach(pref => {
+        const full = normalizeMatchText(pref);
+        if (full && input.includes(full)) matched.add(pref);
+      });
+
+      PREFECTURES.forEach(pref => {
+        if (pref === '北海道') return;
+        const shortName = normalizeMatchText(pref.replace(/[都府県]$/, ''));
+        if (!shortName) return;
+
+        let start = 0;
+        while (true) {
+          const idx = input.indexOf(shortName, start);
+          if (idx === -1) break;
+
+          // 「東京都」に含まれる「京都」は京都府として扱わない。
+          const isKyotoInsideTokyo = pref === '京都府' && idx > 0 && input[idx - 1] === '東';
+          if (!isKyotoInsideTokyo) {
+            matched.add(pref);
+            break;
+          }
+          start = idx + shortName.length;
+        }
+      });
+
+      return matched;
+    }
+
+    function sortPrefectureRows(rows) {
+      return [...(rows || [])].sort((a, b) => {
+        const ar = calcRates(a);
+        const br = calcRates(b);
+        const aCpa = ar.cpa;
+        const bCpa = br.cpa;
+        const aHasCpa = aCpa !== null && Number.isFinite(aCpa);
+        const bHasCpa = bCpa !== null && Number.isFinite(bCpa);
+
+        if (aHasCpa && bHasCpa) {
+          if (aCpa !== bCpa) return aCpa - bCpa;
+          const appliesDiff = Number(b.applies || 0) - Number(a.applies || 0);
+          if (appliesDiff) return appliesDiff;
+          const clicksDiff = Number(b.clicks || 0) - Number(a.clicks || 0);
+          if (clicksDiff) return clicksDiff;
+          const impressionsDiff = Number(b.impressions || 0) - Number(a.impressions || 0);
+          if (impressionsDiff) return impressionsDiff;
+          return (PREFECTURE_ORDER[a.label] ?? 999) - (PREFECTURE_ORDER[b.label] ?? 999);
+        }
+        if (aHasCpa) return -1;
+        if (bHasCpa) return 1;
+
+        const clicksDiff = Number(b.clicks || 0) - Number(a.clicks || 0);
+        if (clicksDiff) return clicksDiff;
+        const impressionsDiff = Number(b.impressions || 0) - Number(a.impressions || 0);
+        if (impressionsDiff) return impressionsDiff;
+        return (PREFECTURE_ORDER[a.label] ?? 999) - (PREFECTURE_ORDER[b.label] ?? 999);
+      });
+    }
+
     function formatMonthKeyForDisplay(monthKey) {
       const s = String(monthKey || '');
       if (!/^\d{6}$/.test(s)) return s || '（不明）';
@@ -1150,7 +1220,12 @@
         ORDER BY pref_master.ord ASC;
       `;
       const rows = await queryRows(conn, sql);
-      renderTable('都道府県', rows, { summaryTotals: sumMetricRows(rows) });
+      const highlightedPrefs = detectLocationPrefectures();
+      const sortedRows = sortPrefectureRows(rows).map(row => ({
+        ...row,
+        __prefHighlighted: highlightedPrefs.has(row.label)
+      }));
+      renderTable('都道府県', sortedRows, { summaryTotals: sumMetricRows(rows) });
     }
 
     async function renderMonthComparison(conn, source) {
@@ -1186,7 +1261,8 @@
         const keyLoc = tableKeyLocation(row);
         const periodCell = comparisonMode === 'month' ? `<td>${esc(keyLoc.periodDisplay || '')}</td>` : '';
         const keywordTitle = keyLoc.keywordTitle ? ` title="${esc(keyLoc.keywordTitle)}"` : '';
-        return `<tr class="${row.__summary ? 'summary-row' : ''}"><td${keywordTitle}>${esc(keyLoc.keyword)}</td><td>${esc(keyLoc.location)}</td>${periodCell}${metricCells(row)}</tr>`;
+        const rowClasses = [row.__summary ? 'summary-row' : '', row.__prefHighlighted ? 'pref-highlight-row' : ''].filter(Boolean).join(' ');
+        return `<tr class="${rowClasses}"><td${keywordTitle}>${esc(keyLoc.keyword)}</td><td>${esc(keyLoc.location)}</td>${periodCell}${metricCells(row)}</tr>`;
       }).join('')}</tbody></table></div>${lastTableHelper}`;
     }
 
