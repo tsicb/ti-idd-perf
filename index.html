@@ -63,17 +63,18 @@
     .status.ok { background:#dcfce7; color:#047857; } .status.warn { background:#fef3c7; color:#b45309; } .status.bad { background:#ffe4e6; color:#be123c; }
     .top-only-control { display:none!important; }
     .toast {
-      position:fixed; right:24px; top:24px; z-index:2147483647;
+      position:fixed; left:50%; top:50%; z-index:2147483647;
       width:min(520px, calc(100vw - 32px)); padding:16px 18px; border-radius:22px;
-      background:rgba(255,255,255,.96); border:3px solid #fed7aa; box-shadow:0 18px 50px rgba(0,0,0,.22);
-      color:#44403c; font-weight:900; transform:translateY(-16px); opacity:0; pointer-events:none;
+      background:rgba(255,255,255,.97); border:3px solid #fed7aa; box-shadow:0 24px 70px rgba(0,0,0,.26);
+      color:#44403c; font-weight:900; transform:translate(-50%, -50%) scale(.96); opacity:0; pointer-events:none;
       transition:opacity .18s ease, transform .18s ease;
+      text-align:left;
     }
-    .toast.show { opacity:1; transform:translateY(0); }
+    .toast.show { opacity:1; transform:translate(-50%, -50%) scale(1); }
     .toast-title { display:flex; align-items:center; gap:8px; font-size:15px; color:#9a3412; margin-bottom:6px; }
     .toast-path { margin:8px 0; padding:9px 10px; border-radius:12px; background:#fff7ed; color:#7c2d12; font-size:12px; word-break:break-all; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace; }
     .toast-note { font-size:13px; color:#57534e; line-height:1.6; }
-    @media (max-width:700px) { .toast { right:12px; left:12px; top:12px; width:auto; } }
+    @media (max-width:700px) { .toast { width:calc(100vw - 24px); } }
     .field { display:grid; gap:6px; min-width:180px; flex:1; }
     .field.sm { flex:0 0 150px; min-width:140px; } .field.md { flex:0 0 210px; min-width:180px; }
     label.label { font-size:13px; font-weight:950; color:#57534e; display:flex; align-items:center; gap:6px; }
@@ -125,6 +126,9 @@
     .folder-guide-line .mark { flex:0 0 auto; color:#f97316; }
     .folder-path-inline { margin-top:4px; display:inline-block; max-width:100%; padding:8px 10px; border-radius:13px; background:#fff7ed; border:2px solid #fed7aa; color:#7c2d12; font-size:12px; line-height:1.5; word-break:break-all; }
     .folder-cta-note { margin-top:8px; color:#9a3412; font-size:13px; font-weight:950; }
+    .analysis-title-row { margin-bottom:18px; padding-bottom:16px; border-bottom:4px solid #fff7ed; }
+    .analysis-title-row h1 { font-size:clamp(24px,2.5vw,34px); }
+    #searchRelatedCard > h2 { margin-top:0; }
     @media (max-width:860px) { .header { display:block; } .toolbar { margin-top:18px; } }
     body.modal-open { overflow:hidden; }
 
@@ -208,6 +212,9 @@
 
     <section id="appArea" class="grid hidden" style="margin-top:18px;">
       <div class="card span-12 search-related-card" id="searchRelatedCard">
+        <div class="analysis-title-row">
+          <h1>天市×indeedPLUS運用実績</h1>
+        </div>
         <h2>検索条件</h2>
         <div class="filters">
           <div class="field">
@@ -361,7 +368,7 @@
 
       showToast(`
         <div class="toast-title">📋 フォルダパスをコピーしました</div>
-        <div class="toast-note">選択画面のアドレス欄に貼り付けてください。</div>
+        <div class="toast-note">フォルダ選択画面にそのまま貼り付けて Enter を押してください。</div>
       `, 2800);
     }
 
@@ -430,10 +437,10 @@
         ['months', `読み込み可能な月：${esc(availableMonths.length)}か月分`],
         ['latest', `最新データ：${esc(formatMonthLabel(monthMax))}`]
       ]);
-      els.datasetInfo.classList.remove('hidden');
+      els.datasetInfo.classList.add('hidden');
       renderPeriodOptions();
+      document.getElementById('introCard')?.classList.add('hidden');
       els.appArea.classList.remove('hidden');
-      document.getElementById('introCard')?.classList.add('data-loaded');
       els.refreshBtn.disabled = false;
       setStatus('データ読込完了', 'ok');
       await refreshAll();
