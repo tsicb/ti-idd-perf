@@ -749,6 +749,24 @@
       return `"タイトル" LIKE ${sqlLiteral('%' + raw + '%')}`;
     }
 
+    function freeWordClauseGroup() {
+      const mode = els.searchMode.value === 'AND' ? ' AND ' : ' OR ';
+      const titleWords = splitKeywords(els.freeWordInput.value);
+      return titleWords.length ? '(' + titleWords.map(freeWordKeywordClause).join(mode) + ')' : '';
+    }
+
+    function selectedRelatedClauseGroup() {
+      return selectedJobTitles.length ? '(' + selectedJobTitles.map(job => relatedJobExactClause(job)).join(' OR ') + ')' : '';
+    }
+
+    function monthTrendWhere() {
+      // 月別推移では、フリーワード条件と選択中の関連職種を OR で合算する。
+      // SQLのWHERE条件として一度に絞り込むため、同じ求人行が複数条件に当たっても重複カウントされない。
+      const unionParts = [freeWordClauseGroup(), selectedRelatedClauseGroup()].filter(Boolean);
+      const extraClauses = unionParts.length ? ['(' + unionParts.join(' OR ') + ')'] : [];
+      return baseWhere(extraClauses, { includeTitle: false });
+    }
+
     function baseWhere(extraClauses=[], options={}) {
       const includeFreeWord = options.includeTitle !== false;
       const mode = els.searchMode.value === 'AND' ? ' AND ' : ' OR ';
@@ -1012,10 +1030,36 @@
       return parts.length ? parts.join(' OR ') : '（指定なし）';
     }
 
+    function monthTrendKeywordText() {
+      const free = (els.freeWordInput.value || '').trim();
+      const n = selectedJobTitles.length;
+      if (free && n === 0) return free;
+      if (!free && n === 0) return '全体';
+      if (!free && n === 1) return selectedJobTitles[0];
+      if (!free && n >= 2) return `選択${n}職種`;
+      if (free && n === 1) return `${free}＋${selectedJobTitles[0]}`;
+      return `${free}＋選択${n}職種`;
+    }
+
+    function monthTrendKeywordTooltip() {
+      const free = (els.freeWordInput.value || '').trim();
+      const lines = [];
+      if (free) lines.push(`フリーワード：${free}`);
+      if (selectedJobTitles.length) lines.push(`選択職種：${selectedJobTitles.join('、')}`);
+      if (free || selectedJobTitles.length) {
+        lines.push('集計条件：いずれかに一致する求人を重複なしで集計');
+      } else {
+        lines.push('集計条件：選択期間内の全求人を集計');
+      }
+      return lines.join('
+');
+    }
+
     function tableKeyLocation(row) {
       if (comparisonMode === 'month') {
         return {
-          keyword: currentKeywordText(),
+          keyword: monthTrendKeywordText(),
+          keywordTitle: monthTrendKeywordTooltip(),
           location: currentLocationText(),
           periodDisplay: row.__summary ? '期間総計' : (row.period_display || formatMonthKeyForDisplay(row.label)),
           periodCopy: row.__summary ? '期間総計' : (row.period_copy || formatMonthKeyForCopy(row.label))
@@ -1048,13 +1092,16 @@
     }
 
     async function renderMonthComparison(conn, source) {
-      const sql = `WITH src AS (SELECT * FROM ${source} ${baseWhere()}) SELECT CAST("集計年月キー" AS VARCHAR) AS label, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src GROUP BY label ORDER BY label ASC;`;
+      const where = monthTrendWhere();
+      const summarySql = `WITH src AS (SELECT * FROM ${source} ${where}) SELECT COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src;`;
+      const summaryTotals = (await queryRows(conn, summarySql))[0] || {};
+      const sql = `WITH src AS (SELECT * FROM ${source} ${where}) SELECT CAST("集計年月キー" AS VARCHAR) AS label, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src GROUP BY label ORDER BY label ASC;`;
       const rows = (await queryRows(conn, sql)).map(row => ({
         ...row,
         period_display: formatMonthKeyForDisplay(row.label),
         period_copy: formatMonthKeyForCopy(row.label)
       }));
-      renderTable('集計月', rows);
+      renderTable('集計月', rows, { summaryTotals });
     }
 
 
@@ -1076,12 +1123,14 @@
       els.comparisonContent.innerHTML = `<div class="table-wrap"><table><thead><tr>${tableHeaders()}</tr></thead><tbody>${lastDisplayRows.map(row => {
         const keyLoc = tableKeyLocation(row);
         const periodCell = comparisonMode === 'month' ? `<td>${esc(keyLoc.periodDisplay || '')}</td>` : '';
-        return `<tr class="${row.__summary ? 'summary-row' : ''}"><td>${esc(keyLoc.keyword)}</td><td>${esc(keyLoc.location)}</td>${periodCell}${metricCells(row)}</tr>`;
+        const keywordTitle = keyLoc.keywordTitle ? ` title="${esc(keyLoc.keywordTitle)}"` : '';
+        return `<tr class="${row.__summary ? 'summary-row' : ''}"><td${keywordTitle}>${esc(keyLoc.keyword)}</td><td>${esc(keyLoc.location)}</td>${periodCell}${metricCells(row)}</tr>`;
       }).join('')}</tbody></table></div>${lastTableHelper}`;
     }
 
-    function renderTable(labelName, rows) {
-      const summary = latestTotals ? [{ label: currentKeywordText(), __summary: true, ...latestTotals }] : [];
+    function renderTable(labelName, rows, options={}) {
+      const summaryTotals = Object.prototype.hasOwnProperty.call(options, 'summaryTotals') ? options.summaryTotals : latestTotals;
+      const summary = summaryTotals ? [{ label: currentKeywordText(), __summary: true, ...summaryTotals }] : [];
       const displayRows = summary.concat(rows || []);
       lastDisplayRows = displayRows;
       lastTableHelper = (!rows || rows.length === 0) && comparisonMode === 'job'
