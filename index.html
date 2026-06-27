@@ -109,11 +109,31 @@
     .pill { display:inline-flex; align-items:center; border-radius:999px; padding:4px 9px; font-size:12px; font-weight:900; }
     .pill.ok { background:#d1fae5; color:#047857; } .pill.warn { background:#fef3c7; color:#b45309; } .pill.bad { background:#ffe4e6; color:#be123c; } .pill.sky { background:#e0f2fe; color:#0369a1; }
     .chip {
-      border:2px solid #fed7aa; background:#fff7ed; color:#9a3412; border-radius:999px; padding:7px 11px;
-      cursor:pointer; font-weight:900; font-size:13px; font-family:inherit; transition:.12s;
+      border:2px solid #fed7aa;
+      background:linear-gradient(to bottom,#fff7ed,#ffedd5);
+      color:#9a3412;
+      border-radius:999px;
+      padding:7px 12px 8px;
+      cursor:pointer;
+      font-weight:950;
+      font-size:13px;
+      font-family:inherit;
+      transition:transform .08s ease, box-shadow .08s ease, filter .08s ease, background .12s ease, border-color .12s ease;
+      box-shadow:0 4px 0 #fdba74, 0 7px 14px -10px rgba(154,52,18,.55);
+      transform:translateY(0);
+      will-change:transform;
+      user-select:none;
     }
-    .chip:hover { filter:brightness(.98); transform:translateY(-1px); }
-    .chip.selected { background:#f97316; color:#fff; border-color:#fdba74; }
+    .chip:hover { filter:brightness(1.01); transform:translateY(-1px); box-shadow:0 5px 0 #fdba74, 0 10px 16px -11px rgba(154,52,18,.60); }
+    .chip:active, .chip.is-pressing { transform:translateY(3px) scale(.985); box-shadow:0 1px 0 #fdba74, 0 4px 10px -12px rgba(154,52,18,.45); filter:brightness(.98); }
+    .chip.selected {
+      background:linear-gradient(to bottom,#fb923c,#f97316);
+      color:#fff;
+      border-color:#fdba74;
+      box-shadow:0 4px 0 #c2410c, 0 8px 15px -10px rgba(194,65,12,.65);
+    }
+    .chip.selected:hover { box-shadow:0 5px 0 #c2410c, 0 10px 16px -11px rgba(194,65,12,.70); }
+    .chip.selected:active, .chip.selected.is-pressing { transform:translateY(3px) scale(.985); box-shadow:0 1px 0 #c2410c, 0 4px 10px -12px rgba(194,65,12,.50); }
     .chip.pinned { background:#0ea5e9; color:#fff; border-color:#7dd3fc; }
     .tabs { display:flex; gap:10px; flex-wrap:wrap; }
     .tab { border:0; border-radius:999px; padding:10px 15px; cursor:pointer; font-weight:950; background:#f5f5f4; color:#57534e; font-family:inherit; }
@@ -204,7 +224,6 @@
     .month-btn.preview-end { background:#fdba74; border-color:#f97316; color:#7c2d12; box-shadow:0 3px 0 #ea580c; }
     .month-btn.start, .month-btn.end { background:#f97316; border-color:#fb923c; color:#fff; box-shadow:0 3px 0 #c2410c; }
     .summary-row td { background:#ecfeff; font-weight:950; color:#164e63; border-bottom:3px solid #67e8f9; }
-    .summary-row td:first-child::before { content:'★'; color:#f97316; margin-right:6px; }
     @media (max-width:700px) {
       dialog.month-modal { left:50%; top:50%; right:auto; width:calc(100vw - 24px); max-height:calc(100dvh - 24px); padding:14px; }
       .month-grid { grid-template-columns:repeat(3,1fr); max-height:calc(100dvh - 180px); }
@@ -863,7 +882,20 @@
       renderSelectedJobs();
       if (!rows.length) { els.relatedJobs.innerHTML = '<div class="empty">関連する職種が見つかりません。</div>'; return; }
       els.relatedJobs.innerHTML = rows.map(row => `<button class="chip ${selectedJobTitles.includes(row.related_job) ? 'selected' : ''}" data-job="${esc(row.related_job)}" type="button">${esc(row.related_job)}</button>`).join('');
-      els.relatedJobs.querySelectorAll('[data-job]').forEach(btn => btn.addEventListener('click', () => { const job = btn.dataset.job; selectedJobTitles = selectedJobTitles.includes(job) ? selectedJobTitles.filter(j => j !== job) : [...selectedJobTitles, job]; renderSelectedJobs(); textDirty = false; refreshAll(); }));
+      els.relatedJobs.querySelectorAll('[data-job]').forEach(btn => btn.addEventListener('click', () => {
+        const job = btn.dataset.job;
+        const willSelect = !selectedJobTitles.includes(job);
+
+        // 集計完了を待たず、クリック直後に押し込み感と選択色だけ先に返す。
+        btn.classList.add('is-pressing');
+        btn.classList.toggle('selected', willSelect);
+        window.setTimeout(() => btn.classList.remove('is-pressing'), 180);
+
+        selectedJobTitles = willSelect ? [...selectedJobTitles, job] : selectedJobTitles.filter(j => j !== job);
+        renderSelectedJobs();
+        textDirty = false;
+        refreshAll();
+      }));
     }
 
     async function renderComparison(conn, source, db) {
