@@ -709,6 +709,12 @@
     }
 
     function renderRelated(rows) {
+      // 検索条件変更によって関連職種候補の集合が変わった場合、
+      // いま画面に表示されている候補バッジに含まれない過去の選択は解除する。
+      // これにより、比較表には「フリーワード行」＋「現在ONのバッジ行」だけが残る。
+      const currentBadgeJobs = new Set(rows.map(row => row.related_job));
+      selectedJobTitles = selectedJobTitles.filter(job => currentBadgeJobs.has(job));
+
       renderSelectedJobs();
       if (!rows.length) { els.relatedJobs.innerHTML = '<div class="empty">関連する職種が見つかりません。</div>'; return; }
       els.relatedJobs.innerHTML = rows.map(row => `<button class="chip ${selectedJobTitles.includes(row.related_job) ? 'selected' : ''}" data-job="${esc(row.related_job)}" type="button">${esc(row.related_job)} <span class="muted">${fmtNum(row.count)}</span></button>`).join('');
