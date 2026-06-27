@@ -97,26 +97,34 @@
     .unit { color:var(--muted); font-size:13px; margin-left:3px; }
     .comparison-card { overflow:visible; }
     .comparison-toolbar {
-      position:sticky; top:0; z-index:40;
+      position:sticky; top:0; z-index:50;
       margin:-2px -2px 12px; padding:2px 2px 12px;
-      background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.91));
+      background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,255,255,.94));
       backdrop-filter:blur(12px);
       border-radius:24px 24px 18px 18px;
-      box-shadow:0 10px 18px -18px rgba(0,0,0,.45);
+      box-shadow:0 8px 16px -18px rgba(0,0,0,.34);
     }
-    .table-wrap { overflow-x:auto; overflow-y:visible; max-height:none; border:4px solid #fff; border-radius:22px; background:#fff; box-shadow:inset 0 2px 8px rgba(0,0,0,.03); }
+    .comparison-freeze-pane {
+      position:sticky; top:var(--comparison-toolbar-offset); z-index:45;
+      overflow-x:auto; overflow-y:hidden;
+      border:4px solid #fff; border-bottom:0; border-radius:22px 22px 0 0;
+      background:#fff;
+      box-shadow:0 8px 18px -18px rgba(0,0,0,.36);
+    }
+    .comparison-freeze-pane::-webkit-scrollbar { height:0; }
+    .table-wrap { overflow-x:auto; overflow-y:visible; max-height:none; border:4px solid #fff; border-top:0; border-radius:0 0 22px 22px; background:#fff; box-shadow:inset 0 2px 8px rgba(0,0,0,.03); }
     .table-wrap::-webkit-scrollbar { height:20px; }
     .table-wrap::-webkit-scrollbar-track { background:#f5f5f4; border-radius:999px; }
     .table-wrap::-webkit-scrollbar-thumb { background:linear-gradient(to bottom,#d6d3d1,#a8a29e); border-radius:999px; border:3px solid #f5f5f4; }
     table { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
-    th,td { padding:6px 10px; border-right:1px solid #f5f5f4; border-bottom:1px solid #f5f5f4; text-align:left; vertical-align:middle; white-space:nowrap; line-height:1.25; }
+    .metric-table { table-layout:fixed; min-width:100%; }
+    th,td { padding:6px 10px; border-right:1px solid #f5f5f4; border-bottom:1px solid #f5f5f4; text-align:left; vertical-align:middle; white-space:nowrap; line-height:1.25; overflow:hidden; text-overflow:ellipsis; }
     th { background:#f5f5f4; color:#57534e; font-size:12px; font-weight:950; padding-top:8px; padding-bottom:8px; }
-    .table-wrap thead th { position:sticky; top:var(--comparison-toolbar-offset); z-index:32; box-shadow:0 2px 0 #e7e5e4; }
-    .table-wrap th:nth-child(n+3), .table-wrap td:nth-child(n+3) { text-align:right; font-family:Consolas, Menlo, 'SFMono-Regular', 'Liberation Mono', ui-monospace, monospace; font-variant-numeric:tabular-nums lining-nums; font-feature-settings:'tnum' 1, 'lnum' 1; letter-spacing:0; }
-    .table-wrap th:nth-child(n+3) { font-family:'Zen Maru Gothic', system-ui, sans-serif; }
+    .table-wrap th:nth-child(n+3), .table-wrap td:nth-child(n+3), .comparison-freeze-pane th:nth-child(n+3), .comparison-freeze-pane td:nth-child(n+3) { text-align:right; font-family:Consolas, Menlo, 'SFMono-Regular', 'Liberation Mono', ui-monospace, monospace; font-variant-numeric:tabular-nums lining-nums; font-feature-settings:'tnum' 1, 'lnum' 1; letter-spacing:0; }
+    .table-wrap th:nth-child(n+3), .comparison-freeze-pane th:nth-child(n+3) { font-family:'Zen Maru Gothic', system-ui, sans-serif; }
     .th-unit { color:#a8a29e; font-size:10px; font-weight:950; margin-left:2px; }
     .summary-row td:nth-child(n+3) { font-weight:950; }
-    .table-wrap tbody tr.summary-row td { position:sticky; top:var(--comparison-summary-offset); z-index:28; box-shadow:0 3px 0 rgba(14,165,233,.16); }
+    .comparison-freeze-pane .summary-row td { box-shadow:0 3px 0 rgba(14,165,233,.16); }
     tr:last-child td { border-bottom:0; }
     .pill { display:inline-flex; align-items:center; border-radius:999px; padding:4px 9px; font-size:12px; font-weight:900; }
     .pill.ok { background:#d1fae5; color:#047857; } .pill.warn { background:#fef3c7; color:#b45309; } .pill.bad { background:#ffe4e6; color:#be123c; } .pill.sky { background:#e0f2fe; color:#0369a1; }
@@ -1264,11 +1272,41 @@
         const marginBottom = parseFloat(style.marginBottom || '0') || 0;
         toolbarOffset = Math.ceil(toolbar.getBoundingClientRect().height + marginBottom);
       }
-      const headerRow = els.comparisonContent ? els.comparisonContent.querySelector('.table-wrap thead tr') : null;
-      let headerHeight = 36;
-      if (headerRow) headerHeight = Math.ceil(headerRow.getBoundingClientRect().height);
       document.documentElement.style.setProperty('--comparison-toolbar-offset', `${toolbarOffset}px`);
-      document.documentElement.style.setProperty('--comparison-summary-offset', `${toolbarOffset + headerHeight}px`);
+    }
+
+    function tableColGroup() {
+      const cols = ['<col style="width:190px">', '<col style="width:140px">'];
+      if (comparisonMode === 'month') cols.push('<col style="width:120px">');
+      visibleMetricIds.forEach(id => {
+        if (id === 'cost') cols.push('<col style="width:150px">');
+        else if (id === 'impressions' || id === 'clicks') cols.push('<col style="width:140px">');
+        else cols.push('<col style="width:120px">');
+      });
+      return `<colgroup>${cols.join('')}</colgroup>`;
+    }
+
+    function rowHtml(row) {
+      const keyLoc = tableKeyLocation(row);
+      const periodCell = comparisonMode === 'month' ? `<td>${esc(keyLoc.periodDisplay || '')}</td>` : '';
+      const keywordTitle = keyLoc.keywordTitle ? ` title="${esc(keyLoc.keywordTitle)}"` : '';
+      const rowClasses = [row.__summary ? 'summary-row' : '', row.__prefHighlighted ? 'pref-highlight-row' : ''].filter(Boolean).join(' ');
+      return `<tr class="${rowClasses}"><td${keywordTitle}>${esc(keyLoc.keyword)}</td><td>${esc(keyLoc.location)}</td>${periodCell}${metricCells(row)}</tr>`;
+    }
+
+    function syncComparisonHorizontalScroll() {
+      const freeze = els.comparisonContent ? els.comparisonContent.querySelector('.comparison-freeze-pane') : null;
+      const body = els.comparisonContent ? els.comparisonContent.querySelector('.table-wrap') : null;
+      if (!freeze || !body) return;
+      let syncing = false;
+      const sync = (from, to) => {
+        if (syncing) return;
+        syncing = true;
+        to.scrollLeft = from.scrollLeft;
+        window.requestAnimationFrame(() => { syncing = false; });
+      };
+      freeze.addEventListener('scroll', () => sync(freeze, body), { passive:true });
+      body.addEventListener('scroll', () => sync(body, freeze), { passive:true });
     }
 
     function setCopyRows(displayRows) {
@@ -1286,14 +1324,18 @@
         requestAnimationFrame(updateComparisonStickyOffsets);
         return;
       }
-      els.comparisonContent.innerHTML = `<div class="table-wrap"><table><thead><tr>${tableHeaders()}</tr></thead><tbody>${lastDisplayRows.map(row => {
-        const keyLoc = tableKeyLocation(row);
-        const periodCell = comparisonMode === 'month' ? `<td>${esc(keyLoc.periodDisplay || '')}</td>` : '';
-        const keywordTitle = keyLoc.keywordTitle ? ` title="${esc(keyLoc.keywordTitle)}"` : '';
-        const rowClasses = [row.__summary ? 'summary-row' : '', row.__prefHighlighted ? 'pref-highlight-row' : ''].filter(Boolean).join(' ');
-        return `<tr class="${rowClasses}"><td${keywordTitle}>${esc(keyLoc.keyword)}</td><td>${esc(keyLoc.location)}</td>${periodCell}${metricCells(row)}</tr>`;
-      }).join('')}</tbody></table></div>${lastTableHelper}`;
-      requestAnimationFrame(updateComparisonStickyOffsets);
+      const colGroup = tableColGroup();
+      const headerHtml = `<tr>${tableHeaders()}</tr>`;
+      const summaryRow = lastDisplayRows[0] && lastDisplayRows[0].__summary ? lastDisplayRows[0] : null;
+      const bodyRows = summaryRow ? lastDisplayRows.slice(1) : lastDisplayRows;
+      const freezeHtml = summaryRow
+        ? `<div class="comparison-freeze-pane"><table class="metric-table">${colGroup}<thead>${headerHtml}</thead><tbody>${rowHtml(summaryRow)}</tbody></table></div>`
+        : `<div class="comparison-freeze-pane"><table class="metric-table">${colGroup}<thead>${headerHtml}</thead></table></div>`;
+      const bodyHtml = bodyRows.length
+        ? bodyRows.map(row => rowHtml(row)).join('')
+        : '<tr><td colspan="99" class="empty">表示できる比較行がありません。</td></tr>';
+      els.comparisonContent.innerHTML = `${freezeHtml}<div class="table-wrap"><table class="metric-table">${colGroup}<tbody>${bodyHtml}</tbody></table></div>${lastTableHelper}`;
+      requestAnimationFrame(() => { updateComparisonStickyOffsets(); syncComparisonHorizontalScroll(); });
     }
 
     function renderTable(labelName, rows, options={}) {
