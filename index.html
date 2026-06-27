@@ -345,7 +345,7 @@
         <h2>検索条件</h2>
         <div class="filters">
           <div class="field">
-            <label class="label" for="freeWordInput">🔎 フリーワード <span class="muted">※職種語は精度優先で検索</span></label>
+            <label class="label" for="freeWordInput">🔎 フリーワード</label>
             <input id="freeWordInput" type="text" placeholder="例：接客 販売" />
           </div>
           <div class="field">
@@ -1451,7 +1451,7 @@
         : `<div class="comparison-freeze-pane"><table class="metric-table">${colGroup}<thead>${headerHtml}</thead></table></div>`;
       const bodyHtml = bodyRows.length
         ? bodyRows.map(row => rowHtml(row)).join('')
-        : '<tr><td colspan="99" class="empty">表示できる比較行がありません。</td></tr>';
+        : '';
       els.comparisonContent.innerHTML = `${freezeHtml}<div class="table-wrap"><table class="metric-table">${colGroup}<tbody>${bodyHtml}</tbody></table></div>${lastTableHelper}`;
       requestAnimationFrame(() => { updateComparisonStickyOffsets(); syncComparisonHorizontalScroll(); });
     }
