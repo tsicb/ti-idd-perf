@@ -98,11 +98,12 @@
     .table-wrap::-webkit-scrollbar { height:20px; width:12px; }
     .table-wrap::-webkit-scrollbar-track { background:#f5f5f4; border-radius:999px; }
     .table-wrap::-webkit-scrollbar-thumb { background:linear-gradient(to bottom,#d6d3d1,#a8a29e); border-radius:999px; border:3px solid #f5f5f4; }
-    table { width:100%; border-collapse:separate; border-spacing:0; font-size:14px; }
-    th,td { padding:11px 13px; border-right:2px solid #f5f5f4; border-bottom:2px solid #f5f5f4; text-align:left; vertical-align:top; white-space:nowrap; }
-    th { background:#f5f5f4; color:#57534e; font-size:13px; font-weight:950; position:sticky; top:0; z-index:2; }
-    .table-wrap th:nth-child(n+3), .table-wrap td:nth-child(n+3) { text-align:right; font-variant-numeric:tabular-nums; }
-    .th-unit { color:#a8a29e; font-size:11px; font-weight:950; margin-left:3px; }
+    table { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
+    th,td { padding:6px 10px; border-right:1px solid #f5f5f4; border-bottom:1px solid #f5f5f4; text-align:left; vertical-align:middle; white-space:nowrap; line-height:1.25; }
+    th { background:#f5f5f4; color:#57534e; font-size:12px; font-weight:950; position:sticky; top:0; z-index:2; padding-top:8px; padding-bottom:8px; }
+    .table-wrap th:nth-child(n+3), .table-wrap td:nth-child(n+3) { text-align:right; font-family:Consolas, Menlo, 'SFMono-Regular', 'Liberation Mono', ui-monospace, monospace; font-variant-numeric:tabular-nums lining-nums; font-feature-settings:'tnum' 1, 'lnum' 1; letter-spacing:0; }
+    .table-wrap th:nth-child(n+3) { font-family:'Zen Maru Gothic', system-ui, sans-serif; }
+    .th-unit { color:#a8a29e; font-size:10px; font-weight:950; margin-left:2px; }
     .summary-row td:nth-child(n+3) { font-weight:950; }
     tr:last-child td { border-bottom:0; }
     .pill { display:inline-flex; align-items:center; border-radius:999px; padding:4px 9px; font-size:12px; font-weight:900; }
@@ -381,6 +382,7 @@
 
     function esc(v) { return String(v ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch])); }
     function fmtNum(v, digits=0) { if (v === null || v === undefined || v === '') return '-'; const n = typeof v === 'bigint' ? Number(v) : Number(v); if (!Number.isFinite(n)) return String(v); return n.toLocaleString('ja-JP',{maximumFractionDigits:digits,minimumFractionDigits:digits}); }
+    function fmtMoney(v) { if (v === null || v === undefined || v === '') return '-'; const n = typeof v === 'bigint' ? Number(v) : Number(v); if (!Number.isFinite(n)) return String(v); return n < 0 ? `-¥${fmtNum(Math.abs(n))}` : `¥${fmtNum(n)}`; }
     function log(message) { const text = typeof message === 'string' ? message : JSON.stringify(message,null,2); logText += (logText ? '\n' : '') + text; els.log.textContent = logText; els.log.scrollTop = els.log.scrollHeight; }
     function clearLog() { logText = ''; els.log.textContent = ''; }
     function filePath(file) { return file.webkitRelativePath || file.name; }
@@ -755,7 +757,7 @@
     function metricCells(row) {
       const r = calcRates(row);
       return `<td>${fmtNum(row.count)}</td>` +
-        `<td>${fmtNum(row.cost)}</td>` +
+        `<td>${fmtMoney(row.cost)}</td>` +
         `<td>${fmtNum(row.impressions)}</td>` +
         `<td>${fmtNum(row.clicks)}</td>` +
         `<td>${fmtNum(row.apply_starts)}</td>` +
@@ -763,8 +765,8 @@
         `<td>${r.ctr===null?'-':fmtNum(r.ctr,2)+'%'}</td>` +
         `<td>${r.applyStartRate===null?'-':fmtNum(r.applyStartRate,2)+'%'}</td>` +
         `<td>${r.cvr===null?'-':fmtNum(r.cvr,2)+'%'}</td>` +
-        `<td>${r.cpc===null?'-':fmtNum(r.cpc)}</td>` +
-        `<td>${r.cpa===null?'-':fmtNum(r.cpa)}</td>`;
+        `<td>${r.cpc===null?'-':fmtMoney(r.cpc)}</td>` +
+        `<td>${r.cpa===null?'-':fmtMoney(r.cpa)}</td>`;
     }
 
     function currentKeywordText() {
