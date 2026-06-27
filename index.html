@@ -397,6 +397,16 @@
     let logText = '';
     const registeredFiles = new Set();
     const DEFAULT_FOLDER_PATH = String.raw`K:\天市事業\public\1049\共有情報\tenichiプラス\indeedマージレポート\output_dataset`;
+    const PREFECTURES = [
+      '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県',
+      '茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県',
+      '新潟県','富山県','石川県','福井県','山梨県','長野県',
+      '岐阜県','静岡県','愛知県','三重県',
+      '滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県',
+      '鳥取県','島根県','岡山県','広島県','山口県',
+      '徳島県','香川県','愛媛県','高知県',
+      '福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'
+    ];
     let toastTimer = null;
 
     function setStatus(text, type='') { els.mainStatus.textContent = text; els.mainStatus.className = `status top-only-control ${type}`.trim(); }
@@ -759,22 +769,32 @@
       return selectedJobTitles.length ? '(' + selectedJobTitles.map(job => relatedJobExactClause(job)).join(' OR ') + ')' : '';
     }
 
-    function monthTrendWhere() {
-      // 月別推移では、フリーワード条件と選択中の関連職種を OR で合算する。
+    function unionFreeAndSelectedWhere(options={}) {
+      // フリーワード条件と選択中の関連職種を OR で合算する。
       // SQLのWHERE条件として一度に絞り込むため、同じ求人行が複数条件に当たっても重複カウントされない。
       const unionParts = [freeWordClauseGroup(), selectedRelatedClauseGroup()].filter(Boolean);
       const extraClauses = unionParts.length ? ['(' + unionParts.join(' OR ') + ')'] : [];
-      return baseWhere(extraClauses, { includeTitle: false });
+      return baseWhere(extraClauses, { includeTitle: false, includeLocation: options.includeLocation });
+    }
+
+    function monthTrendWhere() {
+      return unionFreeAndSelectedWhere({ includeLocation: true });
+    }
+
+    function prefectureComparisonWhere() {
+      // 都道府県比較では勤務地入力による絞り込みは行わず、47都道府県を横断して比較する。
+      return unionFreeAndSelectedWhere({ includeLocation: false });
     }
 
     function baseWhere(extraClauses=[], options={}) {
       const includeFreeWord = options.includeTitle !== false;
+      const includeLocation = options.includeLocation !== false;
       const mode = els.searchMode.value === 'AND' ? ' AND ' : ' OR ';
       const clauses = [];
       const titleWords = splitKeywords(els.freeWordInput.value);
       const locWords = splitKeywords(els.locationInput.value);
       if (includeFreeWord && titleWords.length) clauses.push('(' + titleWords.map(freeWordKeywordClause).join(mode) + ')');
-      if (locWords.length) clauses.push('(' + locWords.map(kw => `concat(coalesce("都道府県", ''), coalesce("市区町村", '')) LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')');
+      if (includeLocation && locWords.length) clauses.push('(' + locWords.map(kw => `concat(coalesce("都道府県", ''), coalesce("市区町村", '')) LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')');
       if (els.campaignFilter.value === 'sa-only') clauses.push(`coalesce("キャンペーン", '') LIKE '%SA-%'`);
       if (els.campaignFilter.value === 'non-sa-only') clauses.push(`coalesce("キャンペーン", '') NOT LIKE '%SA-%'`);
       extraClauses.forEach(c => clauses.push(c));
@@ -1054,6 +1074,18 @@
       return lines.join('\n');
     }
 
+    function sumMetricRows(rows) {
+      return (rows || []).reduce((acc, row) => {
+        acc.count += Number(row.count || 0);
+        acc.cost += Number(row.cost || 0);
+        acc.impressions += Number(row.impressions || 0);
+        acc.clicks += Number(row.clicks || 0);
+        acc.apply_starts += Number(row.apply_starts || 0);
+        acc.applies += Number(row.applies || 0);
+        return acc;
+      }, { count:0, cost:0, impressions:0, clicks:0, apply_starts:0, applies:0 });
+    }
+
     function tableKeyLocation(row) {
       if (comparisonMode === 'month') {
         return {
@@ -1064,14 +1096,18 @@
           periodCopy: row.__summary ? '期間総計' : (row.period_copy || formatMonthKeyForCopy(row.label))
         };
       }
+      if (comparisonMode === 'prefecture') {
+        return {
+          keyword: monthTrendKeywordText(),
+          keywordTitle: monthTrendKeywordTooltip(),
+          location: row.__summary ? '全国' : (row.label || '（不明）')
+        };
+      }
       if (row.__summary) {
         return { keyword: currentKeywordText(), location: currentLocationText() };
       }
       if (comparisonMode === 'job') {
         return { keyword: row.label || '（指定なし）', location: currentLocationText() };
-      }
-      if (comparisonMode === 'prefecture') {
-        return { keyword: combinedKeywordText(), location: row.label || '（不明）' };
       }
       return { keyword: row.label || currentKeywordText(), location: currentLocationText() };
     }
@@ -1085,9 +1121,36 @@
     }
 
     async function renderPrefComparison(conn, source) {
-      const sql = `WITH src AS (SELECT * FROM ${source} ${baseWhere()}) SELECT coalesce("都道府県", '（不明）') AS label, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src GROUP BY label ORDER BY CASE WHEN applies > 0 THEN cost / applies ELSE 999999999 END ASC, count DESC;`;
+      const where = prefectureComparisonWhere();
+      const prefValues = PREFECTURES.map((pref, idx) => `(${idx + 1}, ${sqlLiteral(pref)})`).join(', ');
+      const sql = `
+        WITH pref_master(ord, label) AS (VALUES ${prefValues}),
+        src AS (SELECT * FROM ${source} ${where}),
+        agg AS (
+          SELECT "都道府県" AS label,
+                 COUNT(*) AS count,
+                 COALESCE(SUM("消化金額"),0) AS cost,
+                 COALESCE(SUM("表示回数"),0) AS impressions,
+                 COALESCE(SUM("クリック数"),0) AS clicks,
+                 COALESCE(SUM("応募開始数"),0) AS apply_starts,
+                 COALESCE(SUM("応募数"),0) AS applies
+          FROM src
+          WHERE "都道府県" IN (SELECT label FROM pref_master)
+          GROUP BY "都道府県"
+        )
+        SELECT pref_master.label AS label,
+               COALESCE(agg.count,0) AS count,
+               COALESCE(agg.cost,0) AS cost,
+               COALESCE(agg.impressions,0) AS impressions,
+               COALESCE(agg.clicks,0) AS clicks,
+               COALESCE(agg.apply_starts,0) AS apply_starts,
+               COALESCE(agg.applies,0) AS applies
+        FROM pref_master
+        LEFT JOIN agg ON pref_master.label = agg.label
+        ORDER BY pref_master.ord ASC;
+      `;
       const rows = await queryRows(conn, sql);
-      renderTable('都道府県', rows);
+      renderTable('都道府県', rows, { summaryTotals: sumMetricRows(rows) });
     }
 
     async function renderMonthComparison(conn, source) {
