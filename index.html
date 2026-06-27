@@ -590,20 +590,6 @@
       els.periodFrom.value = months.includes(fromDefault) ? fromDefault : months[0];
       els.periodTo.value = months.includes(max) ? max : months[months.length - 1];
 
-      const opts = months.map(m => `<option value="${esc(m)}">${esc(formatMonthLabel(m))}</option>`).join('');
-      els.compareAFrom.innerHTML = opts;
-      els.compareATo.innerHTML = opts;
-      els.compareBFrom.innerHTML = opts;
-      els.compareBTo.innerHTML = opts;
-
-      const bFrom = months.includes(fromDefault) ? fromDefault : months[0];
-      const bTo = months.includes(max) ? max : months[months.length - 1];
-      const aFromCandidate = addMonths(bFrom, -12);
-      const aToCandidate = addMonths(bTo, -12);
-      els.compareBFrom.value = bFrom;
-      els.compareBTo.value = bTo;
-      els.compareAFrom.value = months.includes(aFromCandidate) ? aFromCandidate : months[0];
-      els.compareATo.value = months.includes(aToCandidate) ? aToCandidate : (months.includes(addMonths(bFrom, -1)) ? addMonths(bFrom, -1) : months[0]);
       updatePeriodRangeLabel();
       renderPeriodModal();
     }
