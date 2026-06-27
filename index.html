@@ -616,14 +616,36 @@
     }
 
     function calcRates(row) {
-      const cost = Number(row.cost || 0), imps = Number(row.impressions || 0), clicks = Number(row.clicks || 0), applies = Number(row.applies || 0);
-      return { ctr: imps ? clicks / imps * 100 : null, cvr: clicks ? applies / clicks * 100 : null, cpc: clicks ? cost / clicks : null, cpa: applies ? cost / applies : null };
+      const cost = Number(row.cost || 0);
+      const imps = Number(row.impressions || 0);
+      const clicks = Number(row.clicks || 0);
+      const applyStarts = Number(row.apply_starts || 0);
+      const applies = Number(row.applies || 0);
+      return {
+        ctr: imps ? clicks / imps * 100 : null,
+        applyStartRate: clicks ? applyStarts / clicks * 100 : null,
+        cvr: clicks ? applies / clicks * 100 : null,
+        cpc: clicks ? cost / clicks : null,
+        cpa: applies ? cost / applies : null
+      };
     }
 
     function renderStats(row) {
       if (!els.stats) return;
       const r = calcRates(row);
-      const items = [['該当件数',fmtNum(row.count),'件'],['消化金額',fmtNum(row.cost),'円'],['表示回数',fmtNum(row.impressions),'回'],['クリック数',fmtNum(row.clicks),'回'],['応募開始数',fmtNum(row.apply_starts),'件'],['応募数',fmtNum(row.applies),'件'],['CVR',r.cvr===null?'-':fmtNum(r.cvr,2),'%'],['CPA',r.cpa===null?'-':fmtNum(r.cpa),'円']];
+      const items = [
+        ['該当件数',fmtNum(row.count),'件'],
+        ['消化金額',fmtNum(row.cost),'円'],
+        ['表示回数',fmtNum(row.impressions),'回'],
+        ['クリック数',fmtNum(row.clicks),'回'],
+        ['応募開始数',fmtNum(row.apply_starts),'件'],
+        ['応募数',fmtNum(row.applies),'件'],
+        ['クリック率',r.ctr===null?'-':fmtNum(r.ctr,2),'%'],
+        ['応募開始率',r.applyStartRate===null?'-':fmtNum(r.applyStartRate,2),'%'],
+        ['応募率',r.cvr===null?'-':fmtNum(r.cvr,2),'%'],
+        ['CPC',r.cpc===null?'-':fmtNum(r.cpc),'円'],
+        ['CPA',r.cpa===null?'-':fmtNum(r.cpa),'円']
+      ];
       els.stats.innerHTML = items.map(([title,value,unit]) => `<div class="stat"><div class="stat-title">${esc(title)}</div><div class="stat-value">${esc(value)}<span class="unit">${esc(unit)}</span></div></div>`).join('');
     }
 
@@ -652,8 +674,58 @@
       els.periodCompareControls.classList.toggle('hidden', comparisonMode !== 'period');
     }
 
-    function metricHeaders() { return '<th>該当件数</th><th>消化金額</th><th>表示回数</th><th>クリック数</th><th>応募開始数</th><th>応募数</th><th>CVR</th><th>CPA</th>'; }
-    function metricCells(row) { const r = calcRates(row); return `<td>${fmtNum(row.count)}</td><td>${fmtNum(row.cost)}</td><td>${fmtNum(row.impressions)}</td><td>${fmtNum(row.clicks)}</td><td>${fmtNum(row.apply_starts)}</td><td>${fmtNum(row.applies)}</td><td>${r.cvr===null?'-':fmtNum(r.cvr,2)+'%'}</td><td>${r.cpa===null?'-':fmtNum(r.cpa)+'円'}</td>`; }
+    function metricHeaders() {
+      return '<th>検索キーワード</th><th>勤務地</th><th>該当件数</th><th>消化金額</th><th>表示回数</th><th>クリック数</th><th>応募開始数</th><th>応募数</th><th>クリック率</th><th>応募開始率</th><th>応募率</th><th>CPC</th><th>CPA</th>';
+    }
+
+    function metricCells(row) {
+      const r = calcRates(row);
+      return `<td>${fmtNum(row.count)}</td>` +
+        `<td>${fmtNum(row.cost)}</td>` +
+        `<td>${fmtNum(row.impressions)}</td>` +
+        `<td>${fmtNum(row.clicks)}</td>` +
+        `<td>${fmtNum(row.apply_starts)}</td>` +
+        `<td>${fmtNum(row.applies)}</td>` +
+        `<td>${r.ctr===null?'-':fmtNum(r.ctr,2)+'%'}</td>` +
+        `<td>${r.applyStartRate===null?'-':fmtNum(r.applyStartRate,2)+'%'}</td>` +
+        `<td>${r.cvr===null?'-':fmtNum(r.cvr,2)+'%'}</td>` +
+        `<td>${r.cpc===null?'-':fmtNum(r.cpc)+'円'}</td>` +
+        `<td>${r.cpa===null?'-':fmtNum(r.cpa)+'円'}</td>`;
+    }
+
+    function currentKeywordText() {
+      const v = (els.freeWordInput.value || '').trim();
+      return v || '（指定なし）';
+    }
+
+    function currentLocationText() {
+      const v = (els.locationInput.value || '').trim();
+      return v || '（全国）';
+    }
+
+    function combinedKeywordText() {
+      const parts = [(els.freeWordInput.value || '').trim(), ...selectedJobTitles].filter(Boolean);
+      return parts.length ? parts.join(' OR ') : '（指定なし）';
+    }
+
+    function tableKeyLocation(row) {
+      if (row.__summary) {
+        return { keyword: currentKeywordText(), location: currentLocationText() };
+      }
+      if (comparisonMode === 'job') {
+        return { keyword: row.label || '（指定なし）', location: currentLocationText() };
+      }
+      if (comparisonMode === 'prefecture') {
+        return { keyword: combinedKeywordText(), location: row.label || '（不明）' };
+      }
+      if (comparisonMode === 'month') {
+        return { keyword: row.label || '（不明）', location: currentLocationText() };
+      }
+      if (comparisonMode === 'period') {
+        return { keyword: row.label || '（不明）', location: currentLocationText() };
+      }
+      return { keyword: row.label || currentKeywordText(), location: currentLocationText() };
+    }
 
     async function renderJobComparison(conn, source) {
       if (!selectedJobTitles.length) { renderTable('関連職種', []); return; }
@@ -726,20 +798,43 @@ FROM b;`.trim();
     }
 
     function renderTable(labelName, rows) {
-      const summary = latestTotals ? [{ label: '検索結果（合計）', __summary: true, ...latestTotals }] : [];
+      const summary = latestTotals ? [{ label: currentKeywordText(), __summary: true, ...latestTotals }] : [];
       const displayRows = summary.concat(rows || []);
-      lastCopyRows = displayRows.map(row => ({ label: row.label, ...row, ...calcRates(row) }));
+      lastCopyRows = displayRows.map(row => {
+        const keyLoc = tableKeyLocation(row);
+        return { ...keyLoc, ...row, ...calcRates(row) };
+      });
       els.copyBtn.disabled = displayRows.length === 0;
       if (!displayRows.length) { els.comparisonContent.innerHTML = '<div class="empty">該当データがありません。</div>'; return; }
       const helper = (!rows || rows.length === 0) && comparisonMode === 'job' ? '<div class="empty" style="margin-top:12px;">上の職種候補をクリックすると、比較行を追加できます。</div>' : '';
-      els.comparisonContent.innerHTML = `<div class="table-wrap"><table><thead><tr><th>${esc(labelName)}</th>${metricHeaders()}</tr></thead><tbody>${displayRows.map(row => `<tr class="${row.__summary ? 'summary-row' : ''}"><td>${esc(row.label)}</td>${metricCells(row)}</tr>`).join('')}</tbody></table></div>${helper}`;
+      els.comparisonContent.innerHTML = `<div class="table-wrap"><table><thead><tr>${metricHeaders()}</tr></thead><tbody>${displayRows.map(row => {
+        const keyLoc = tableKeyLocation(row);
+        return `<tr class="${row.__summary ? 'summary-row' : ''}"><td>${esc(keyLoc.keyword)}</td><td>${esc(keyLoc.location)}</td>${metricCells(row)}</tr>`;
+      }).join('')}</tbody></table></div>${helper}`;
     }
 
     function copyTable() {
       if (!lastCopyRows.length) return;
-      const headers = ['ラベル','該当件数','消化金額','表示回数','クリック数','応募開始数','応募数','CVR','CPA'];
+      const headers = ['検索キーワード','勤務地','該当件数','消化金額','表示回数','クリック数','応募開始数','応募数','クリック率','応募開始率','応募率','CPC','CPA'];
       const lines = [headers.join('\t')];
-      lastCopyRows.forEach(row => lines.push([row.label,row.count,row.cost,row.impressions,row.clicks,row.apply_starts,row.applies,row.cvr ?? '',row.cpa ?? ''].join('\t')));
+      lastCopyRows.forEach(row => {
+        const r = calcRates(row);
+        lines.push([
+          row.keyword,
+          row.location,
+          row.count,
+          row.cost,
+          row.impressions,
+          row.clicks,
+          row.apply_starts,
+          row.applies,
+          r.ctr === null ? '' : r.ctr,
+          r.applyStartRate === null ? '' : r.applyStartRate,
+          r.cvr === null ? '' : r.cvr,
+          r.cpc === null ? '' : r.cpc,
+          r.cpa === null ? '' : r.cpa
+        ].join('\t'));
+      });
       navigator.clipboard.writeText(lines.join('\n')).catch(() => {});
     }
 
