@@ -101,6 +101,9 @@
     table { width:100%; border-collapse:separate; border-spacing:0; font-size:14px; }
     th,td { padding:11px 13px; border-right:2px solid #f5f5f4; border-bottom:2px solid #f5f5f4; text-align:left; vertical-align:top; white-space:nowrap; }
     th { background:#f5f5f4; color:#57534e; font-size:13px; font-weight:950; position:sticky; top:0; z-index:2; }
+    .table-wrap th:nth-child(n+3), .table-wrap td:nth-child(n+3) { text-align:right; font-variant-numeric:tabular-nums; }
+    .th-unit { color:#a8a29e; font-size:11px; font-weight:950; margin-left:3px; }
+    .summary-row td:nth-child(n+3) { font-weight:950; }
     tr:last-child td { border-bottom:0; }
     .pill { display:inline-flex; align-items:center; border-radius:999px; padding:4px 9px; font-size:12px; font-weight:900; }
     .pill.ok { background:#d1fae5; color:#047857; } .pill.warn { background:#fef3c7; color:#b45309; } .pill.bad { background:#ffe4e6; color:#be123c; } .pill.sky { background:#e0f2fe; color:#0369a1; }
@@ -734,7 +737,19 @@
     }
 
     function metricHeaders() {
-      return '<th>検索キーワード</th><th>勤務地</th><th>該当件数</th><th>消化金額</th><th>表示回数</th><th>クリック数</th><th>応募開始数</th><th>応募数</th><th>クリック率</th><th>応募開始率</th><th>応募率</th><th>CPC</th><th>CPA</th>';
+      return '<th>検索キーワード</th>' +
+        '<th>勤務地</th>' +
+        '<th>該当件数<span class="th-unit">（件）</span></th>' +
+        '<th>消化金額<span class="th-unit">（円）</span></th>' +
+        '<th>表示回数<span class="th-unit">（回）</span></th>' +
+        '<th>クリック数<span class="th-unit">（回）</span></th>' +
+        '<th>応募開始数<span class="th-unit">（件）</span></th>' +
+        '<th>応募数<span class="th-unit">（件）</span></th>' +
+        '<th>クリック率<span class="th-unit">（%）</span></th>' +
+        '<th>応募開始率<span class="th-unit">（%）</span></th>' +
+        '<th>応募率<span class="th-unit">（%）</span></th>' +
+        '<th>CPC<span class="th-unit">（円）</span></th>' +
+        '<th>CPA<span class="th-unit">（円）</span></th>';
     }
 
     function metricCells(row) {
@@ -748,8 +763,8 @@
         `<td>${r.ctr===null?'-':fmtNum(r.ctr,2)+'%'}</td>` +
         `<td>${r.applyStartRate===null?'-':fmtNum(r.applyStartRate,2)+'%'}</td>` +
         `<td>${r.cvr===null?'-':fmtNum(r.cvr,2)+'%'}</td>` +
-        `<td>${r.cpc===null?'-':fmtNum(r.cpc)+'円'}</td>` +
-        `<td>${r.cpa===null?'-':fmtNum(r.cpa)+'円'}</td>`;
+        `<td>${r.cpc===null?'-':fmtNum(r.cpc)}</td>` +
+        `<td>${r.cpa===null?'-':fmtNum(r.cpa)}</td>`;
     }
 
     function currentKeywordText() {
@@ -874,7 +889,7 @@ FROM b;`.trim();
 
     function copyTable() {
       if (!lastCopyRows.length) return;
-      const headers = ['検索キーワード','勤務地','該当件数','消化金額','表示回数','クリック数','応募開始数','応募数','クリック率','応募開始率','応募率','CPC','CPA'];
+      const headers = ['検索キーワード','勤務地','該当件数（件）','消化金額（円）','表示回数（回）','クリック数（回）','応募開始数（件）','応募数（件）','クリック率（%）','応募開始率（%）','応募率（%）','CPC（円）','CPA（円）'];
       const lines = [headers.join('\t')];
       lastCopyRows.forEach(row => {
         const r = calcRates(row);
