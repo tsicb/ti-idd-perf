@@ -264,7 +264,7 @@
         <div class="related-head">
           <div>
             <h2 style="margin-bottom:4px;">関連する職種</h2>
-            <p class="muted" style="margin:0;font-size:13px;">クリックすると比較表に追加できます。</p>
+            <p class="muted" style="margin:0;font-size:13px;">クリックすると比較表に追加できます。数値は下の比較表で確認できます。</p>
           </div>
           <button id="clearSelectedBtn" class="btn ghost small" type="button">選択をクリア</button>
         </div>
@@ -805,7 +805,7 @@
 
       renderSelectedJobs();
       if (!rows.length) { els.relatedJobs.innerHTML = '<div class="empty">関連する職種が見つかりません。</div>'; return; }
-      els.relatedJobs.innerHTML = rows.map(row => `<button class="chip ${selectedJobTitles.includes(row.related_job) ? 'selected' : ''}" data-job="${esc(row.related_job)}" type="button">${esc(row.related_job)} <span class="muted">${fmtNum(row.count)}</span></button>`).join('');
+      els.relatedJobs.innerHTML = rows.map(row => `<button class="chip ${selectedJobTitles.includes(row.related_job) ? 'selected' : ''}" data-job="${esc(row.related_job)}" type="button">${esc(row.related_job)}</button>`).join('');
       els.relatedJobs.querySelectorAll('[data-job]').forEach(btn => btn.addEventListener('click', () => { const job = btn.dataset.job; selectedJobTitles = selectedJobTitles.includes(job) ? selectedJobTitles.filter(j => j !== job) : [...selectedJobTitles, job]; renderSelectedJobs(); textDirty = false; refreshAll(); }));
     }
 
