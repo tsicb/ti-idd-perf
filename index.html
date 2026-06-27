@@ -114,6 +114,12 @@
     .kv div:nth-child(odd) { display:none; }
     .kv div:nth-child(even) { background:#f5f5f4; color:#57534e; border:2px solid #fff; border-radius:999px; padding:7px 11px; font-size:13px; font-weight:900; }
     .main-subtitle { margin:8px 0 0; color:#78716c; font-weight:800; }
+    .folder-guide { margin-top:14px; display:grid; gap:8px; max-width:760px; }
+    .folder-guide-line { display:flex; gap:8px; align-items:flex-start; color:#57534e; font-size:14px; font-weight:900; line-height:1.75; }
+    .folder-guide-line .mark { flex:0 0 auto; color:#f97316; }
+    .folder-path-inline { margin-top:4px; display:inline-block; max-width:100%; padding:8px 10px; border-radius:13px; background:#fff7ed; border:2px solid #fed7aa; color:#7c2d12; font-size:12px; line-height:1.5; word-break:break-all; }
+    .folder-cta-note { margin-top:8px; color:#9a3412; font-size:13px; font-weight:950; }
+    @media (max-width:860px) { .header { display:block; } .toolbar { margin-top:18px; } }
     body.modal-open { overflow:hidden; }
 
     .search-related-card { position:relative; z-index:50; }
@@ -173,10 +179,16 @@
       <div class="header">
         <div>
           <h1>天市×indeedPLUS運用実績</h1>
-          <p class="main-subtitle">データフォルダを選択して、求人運用データを確認できます。</p>
+          <p class="main-subtitle">社内共有フォルダの運用データを読み込んで表示します。</p>
+          <div class="folder-guide" aria-label="データフォルダ選択の説明">
+            <div class="folder-guide-line"><span class="mark">①</span><span>下のボタンを押すと、必要なフォルダパスをコピーしてから、フォルダ選択画面を開きます。</span></div>
+            <div class="folder-guide-line"><span class="mark">②</span><span>フォルダ選択画面が開いたら、上部のアドレス欄に貼り付けて Enter を押してください。</span></div>
+            <div class="folder-guide-line"><span class="mark">📁</span><span>選択するフォルダ：<span class="folder-path-inline">K:\天市事業\public\1049\共有情報\tenichiプラス\indeedマージレポート\output_dataset</span></span></div>
+            <div class="folder-cta-note">迷ったときは、コピーされたパスをそのまま貼り付ければOKです。</div>
+          </div>
         </div>
         <div class="toolbar">
-          <button id="folderSelectBtn" class="btn" type="button">📁 データフォルダを選択</button>
+          <button id="folderSelectBtn" class="btn" type="button">📋 フォルダパスをコピーして選択画面を開く</button>
           <input id="folderInput" type="file" webkitdirectory directory multiple />
           <button id="refreshBtn" class="btn secondary top-only-control" type="button" disabled>表示を更新</button>
           <button id="copyBtn" class="btn ghost top-only-control" type="button" disabled>表をコピー</button>
@@ -340,11 +352,9 @@
       }
 
       showToast(`
-        <div class="toast-title">📋 データフォルダの場所をコピーしました</div>
-        <div class="toast-note">フォルダ選択画面が開いたら、上部のフォルダパス欄にそのまま貼り付けてください。</div>
-        <div class="toast-path">${esc(DEFAULT_FOLDER_PATH)}</div>
-        <div class="toast-note">貼り付け後に Enter を押すと、目的のフォルダへ移動しやすくなります。</div>
-      `, 20000);
+        <div class="toast-title">📋 フォルダパスをコピーしました</div>
+        <div class="toast-note">選択画面のアドレス欄に貼り付けてください。</div>
+      `, 2800);
     }
 
     function esc(v) { return String(v ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch])); }
