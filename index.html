@@ -118,6 +118,28 @@
     .tabs { display:flex; gap:10px; flex-wrap:wrap; }
     .tab { border:0; border-radius:999px; padding:10px 15px; cursor:pointer; font-weight:950; background:#f5f5f4; color:#57534e; font-family:inherit; }
     .tab.active { background:#0ea5e9; color:#fff; box-shadow:0 4px 0 #0369a1; }
+    .table-head-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:10px; }
+    .column-menu-wrap { position:relative; }
+    .column-popover {
+      position:absolute; right:0; top:calc(100% + 10px); z-index:1000;
+      width:min(390px, calc(100vw - 40px)); background:#fff; border:3px solid #fff; border-radius:22px;
+      box-shadow:0 22px 52px -18px rgba(0,0,0,.30); padding:14px;
+    }
+    .column-popover.hidden { display:none; }
+    .column-popover-title { font-weight:950; color:#44403c; margin-bottom:10px; font-size:14px; }
+    .preset-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+    .preset-btn {
+      border:2px solid #e7e5e4; border-radius:14px; background:#fafaf9; padding:9px 8px;
+      cursor:pointer; font-family:inherit; font-weight:950; color:#57534e; text-align:center;
+    }
+    .preset-btn small { display:block; margin-top:3px; font-size:10px; color:#a8a29e; font-weight:900; line-height:1.2; }
+    .preset-btn.active { background:#e0f2fe; border-color:#7dd3fc; color:#0369a1; }
+    .column-check-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px 10px; padding-top:10px; border-top:2px dashed #f5f5f4; }
+    .column-check {
+      display:flex; align-items:center; gap:8px; font-size:13px; font-weight:900; color:#57534e; cursor:pointer; user-select:none;
+    }
+    .column-check input { accent-color:#f97316; width:16px; height:16px; }
+    @media (max-width:720px) { .column-popover { right:auto; left:0; } .column-check-grid { grid-template-columns:1fr; } .preset-row { grid-template-columns:1fr; } }
     .hidden { display:none!important; }
     .log { display:none; white-space:pre-wrap; background:#1c1917; color:#fafaf9; border-radius:18px; padding:14px; font-size:12px; max-height:280px; overflow:auto; }
     .empty { color:#78716c; padding:18px; background:#fafaf9; border-radius:18px; border:2px dashed #d6d3d1; font-weight:800; }
@@ -275,11 +297,17 @@
       <div class="card span-12">
         <div class="header" style="margin-bottom:12px;">
           <h2>比較表</h2>
-          <div class="tabs">
-            <button class="tab active" data-mode="job" type="button">職種比較</button>
-            <button class="tab" data-mode="prefecture" type="button">都道府県比較</button>
-            <button class="tab" data-mode="month" type="button">月別推移</button>
-            <button class="tab" data-mode="period" type="button">期間A/B比較</button>
+          <div class="table-head-actions">
+            <div class="tabs">
+              <button class="tab active" data-mode="job" type="button">職種比較</button>
+              <button class="tab" data-mode="prefecture" type="button">都道府県比較</button>
+              <button class="tab" data-mode="month" type="button">月別推移</button>
+              <button class="tab" data-mode="period" type="button">期間A/B比較</button>
+            </div>
+            <div class="column-menu-wrap">
+              <button id="columnMenuBtn" class="btn ghost small" type="button">表示列：標準</button>
+              <div id="columnPopover" class="column-popover hidden"></div>
+            </div>
           </div>
         </div>
         <div id="periodCompareControls" class="filters hidden" style="margin-bottom:14px;padding:14px;background:#fafaf9;border-radius:18px;border:1px solid #e7e5e4;">
@@ -318,7 +346,7 @@
       datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'),
       searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalAll: document.getElementById('periodModalAll'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
       relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
-      comparisonContent: document.getElementById('comparisonContent'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), log: document.getElementById('log')
+      comparisonContent: document.getElementById('comparisonContent'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), columnMenuBtn: document.getElementById('columnMenuBtn'), columnPopover: document.getElementById('columnPopover'), log: document.getElementById('log')
     };
 
     // カード（backdrop-filter）内にモーダルを置くと、下のカードの重なり順に負けることがあるため、body直下へ移動します。
@@ -331,7 +359,36 @@
     let selectedJobTitles = [];
     let comparisonMode = 'job';
     let lastCopyRows = [];
+    let lastDisplayRows = [];
+    let lastTableHelper = '';
     let latestTotals = null;
+
+    const METRIC_COLUMNS = [
+      { id:'count', label:'該当件数', unit:'件', header:'該当件数<span class="th-unit">（件）</span>' },
+      { id:'cost', label:'消化金額', unit:'円', header:'消化金額<span class="th-unit">（円）</span>' },
+      { id:'impressions', label:'表示回数', unit:'回', header:'表示回数<span class="th-unit">（回）</span>' },
+      { id:'clicks', label:'クリック数', unit:'回', header:'クリック数<span class="th-unit">（回）</span>' },
+      { id:'apply_starts', label:'応募開始数', unit:'件', header:'応募開始数<span class="th-unit">（件）</span>' },
+      { id:'applies', label:'応募数', unit:'件', header:'応募数<span class="th-unit">（件）</span>' },
+      { id:'ctr', label:'クリック率', unit:'%', header:'クリック率<span class="th-unit">（%）</span>' },
+      { id:'applyStartRate', label:'応募開始率', unit:'%', header:'応募開始率<span class="th-unit">（%）</span>' },
+      { id:'cvr', label:'応募率', unit:'%', header:'応募率<span class="th-unit">（%）</span>' },
+      { id:'cpc', label:'CPC', unit:'円', header:'CPC<span class="th-unit">（円）</span>' },
+      { id:'cpa', label:'CPA', unit:'円', header:'CPA<span class="th-unit">（円）</span>' }
+    ];
+    const METRIC_MAP = Object.fromEntries(METRIC_COLUMNS.map(col => [col.id, col]));
+    const COLUMN_PRESETS = {
+      standard: ['count','cost','impressions','clicks','applies','cvr','cpc','cpa'],
+      simple: ['ctr','applyStartRate','cvr','cpc','cpa'],
+      detail: METRIC_COLUMNS.map(col => col.id)
+    };
+    const COLUMN_PRESET_META = [
+      { id:'standard', label:'標準', note:'よく使う指標' },
+      { id:'simple', label:'シンプル', note:'率・単価中心' },
+      { id:'detail', label:'詳細', note:'すべて表示' }
+    ];
+    let visibleMetricIds = [...COLUMN_PRESETS.standard];
+    let activeColumnPreset = 'standard';
     let textDirty = false;
     let periodDraftStart = '';
     let periodDraftEnd = '';
@@ -493,7 +550,7 @@
 
     async function handleFiles(fileList) {
       const files = Array.from(fileList || []);
-      clearLog(); selectedJobTitles = []; registeredFiles.clear(); lastCopyRows = []; els.copyBtn.disabled = true;
+      clearLog(); selectedJobTitles = []; registeredFiles.clear(); lastCopyRows = []; lastDisplayRows = []; lastTableHelper = ''; els.copyBtn.disabled = true;
       if (!files.length) return;
       setStatus('データ確認中...', 'warn');
       const manifestItem = findManifestFile(files);
@@ -821,35 +878,112 @@
       els.periodCompareControls.classList.toggle('hidden', comparisonMode !== 'period');
     }
 
+    function updateColumnMenuLabel() {
+      const preset = detectColumnPreset();
+      activeColumnPreset = preset;
+      const label = preset === 'standard' ? '標準' : preset === 'simple' ? 'シンプル' : preset === 'detail' ? '詳細' : 'カスタム';
+      if (els.columnMenuBtn) els.columnMenuBtn.textContent = `表示列：${label}`;
+    }
+
+    function detectColumnPreset() {
+      const current = visibleMetricIds.join('|');
+      for (const [key, cols] of Object.entries(COLUMN_PRESETS)) {
+        if (cols.join('|') === current) return key;
+      }
+      return 'custom';
+    }
+
+    function setVisibleColumns(ids) {
+      const safeIds = ids.filter(id => METRIC_MAP[id]);
+      visibleMetricIds = safeIds.length ? safeIds : [...COLUMN_PRESETS.standard];
+      updateColumnMenuLabel();
+      renderColumnPopover();
+      repaintCurrentTable();
+    }
+
+    function applyColumnPreset(presetId) {
+      const cols = COLUMN_PRESETS[presetId];
+      if (!cols) return;
+      setVisibleColumns([...cols]);
+    }
+
+    function toggleMetricColumn(id) {
+      if (!METRIC_MAP[id]) return;
+      const next = visibleMetricIds.includes(id)
+        ? visibleMetricIds.filter(colId => colId !== id)
+        : [...visibleMetricIds, id];
+      setVisibleColumns(next);
+    }
+
+    function renderColumnPopover() {
+      if (!els.columnPopover) return;
+      const preset = detectColumnPreset();
+      els.columnPopover.innerHTML = `
+        <div class="column-popover-title">表示パターン</div>
+        <div class="preset-row">
+          ${COLUMN_PRESET_META.map(item => `
+            <button class="preset-btn ${preset === item.id ? 'active' : ''}" data-preset="${esc(item.id)}" type="button">
+              ${esc(item.label)}<small>${esc(item.note)}</small>
+            </button>
+          `).join('')}
+        </div>
+        <div class="column-popover-title" style="margin-top:2px;">表示する列</div>
+        <div class="column-check-grid">
+          ${METRIC_COLUMNS.map(col => `
+            <label class="column-check">
+              <input type="checkbox" data-column-id="${esc(col.id)}" ${visibleMetricIds.includes(col.id) ? 'checked' : ''} />
+              <span>${esc(col.label)}<span class="th-unit">（${esc(col.unit)}）</span></span>
+            </label>
+          `).join('')}
+        </div>
+      `;
+      els.columnPopover.querySelectorAll('[data-preset]').forEach(btn => {
+        btn.addEventListener('click', () => applyColumnPreset(btn.dataset.preset));
+      });
+      els.columnPopover.querySelectorAll('[data-column-id]').forEach(input => {
+        input.addEventListener('change', () => toggleMetricColumn(input.dataset.columnId));
+      });
+    }
+
     function metricHeaders() {
-      return '<th>検索キーワード</th>' +
-        '<th>勤務地</th>' +
-        '<th>該当件数<span class="th-unit">（件）</span></th>' +
-        '<th>消化金額<span class="th-unit">（円）</span></th>' +
-        '<th>表示回数<span class="th-unit">（回）</span></th>' +
-        '<th>クリック数<span class="th-unit">（回）</span></th>' +
-        '<th>応募開始数<span class="th-unit">（件）</span></th>' +
-        '<th>応募数<span class="th-unit">（件）</span></th>' +
-        '<th>クリック率<span class="th-unit">（%）</span></th>' +
-        '<th>応募開始率<span class="th-unit">（%）</span></th>' +
-        '<th>応募率<span class="th-unit">（%）</span></th>' +
-        '<th>CPC<span class="th-unit">（円）</span></th>' +
-        '<th>CPA<span class="th-unit">（円）</span></th>';
+      return '<th>検索キーワード</th><th>勤務地</th>' +
+        visibleMetricIds.map(id => `<th>${METRIC_MAP[id].header}</th>`).join('');
+    }
+
+    function metricValueForDisplay(row, id) {
+      const r = calcRates(row);
+      if (id === 'count') return fmtNum(row.count);
+      if (id === 'cost') return fmtMoney(row.cost);
+      if (id === 'impressions') return fmtNum(row.impressions);
+      if (id === 'clicks') return fmtNum(row.clicks);
+      if (id === 'apply_starts') return fmtNum(row.apply_starts);
+      if (id === 'applies') return fmtNum(row.applies);
+      if (id === 'ctr') return r.ctr === null ? '-' : fmtNum(r.ctr, 2) + '%';
+      if (id === 'applyStartRate') return r.applyStartRate === null ? '-' : fmtNum(r.applyStartRate, 2) + '%';
+      if (id === 'cvr') return r.cvr === null ? '-' : fmtNum(r.cvr, 2) + '%';
+      if (id === 'cpc') return r.cpc === null ? '-' : fmtMoney(r.cpc);
+      if (id === 'cpa') return r.cpa === null ? '-' : fmtMoney(r.cpa);
+      return '';
+    }
+
+    function metricValueForCopy(row, id) {
+      const r = calcRates(row);
+      if (id === 'count') return row.count;
+      if (id === 'cost') return row.cost;
+      if (id === 'impressions') return row.impressions;
+      if (id === 'clicks') return row.clicks;
+      if (id === 'apply_starts') return row.apply_starts;
+      if (id === 'applies') return row.applies;
+      if (id === 'ctr') return r.ctr === null ? '' : r.ctr;
+      if (id === 'applyStartRate') return r.applyStartRate === null ? '' : r.applyStartRate;
+      if (id === 'cvr') return r.cvr === null ? '' : r.cvr;
+      if (id === 'cpc') return r.cpc === null ? '' : r.cpc;
+      if (id === 'cpa') return r.cpa === null ? '' : r.cpa;
+      return '';
     }
 
     function metricCells(row) {
-      const r = calcRates(row);
-      return `<td>${fmtNum(row.count)}</td>` +
-        `<td>${fmtMoney(row.cost)}</td>` +
-        `<td>${fmtNum(row.impressions)}</td>` +
-        `<td>${fmtNum(row.clicks)}</td>` +
-        `<td>${fmtNum(row.apply_starts)}</td>` +
-        `<td>${fmtNum(row.applies)}</td>` +
-        `<td>${r.ctr===null?'-':fmtNum(r.ctr,2)+'%'}</td>` +
-        `<td>${r.applyStartRate===null?'-':fmtNum(r.applyStartRate,2)+'%'}</td>` +
-        `<td>${r.cvr===null?'-':fmtNum(r.cvr,2)+'%'}</td>` +
-        `<td>${r.cpc===null?'-':fmtMoney(r.cpc)}</td>` +
-        `<td>${r.cpa===null?'-':fmtMoney(r.cpa)}</td>`;
+      return visibleMetricIds.map(id => `<td>${esc(metricValueForDisplay(row, id))}</td>`).join('');
     }
 
     function currentKeywordText() {
@@ -956,42 +1090,45 @@ FROM b;`.trim();
       renderTable('比較期間', rows);
     }
 
-    function renderTable(labelName, rows) {
-      const summary = latestTotals ? [{ label: currentKeywordText(), __summary: true, ...latestTotals }] : [];
-      const displayRows = summary.concat(rows || []);
+    function setCopyRows(displayRows) {
       lastCopyRows = displayRows.map(row => {
         const keyLoc = tableKeyLocation(row);
         return { ...keyLoc, ...row, ...calcRates(row) };
       });
       els.copyBtn.disabled = displayRows.length === 0;
-      if (!displayRows.length) { els.comparisonContent.innerHTML = '<div class="empty">該当データがありません。</div>'; return; }
-      const helper = (!rows || rows.length === 0) && comparisonMode === 'job' ? '<div class="empty" style="margin-top:12px;">上の職種候補をクリックすると、比較行を追加できます。</div>' : '';
-      els.comparisonContent.innerHTML = `<div class="table-wrap"><table><thead><tr>${metricHeaders()}</tr></thead><tbody>${displayRows.map(row => {
+    }
+
+    function repaintCurrentTable() {
+      setCopyRows(lastDisplayRows);
+      if (!lastDisplayRows.length) {
+        els.comparisonContent.innerHTML = '<div class="empty">該当データがありません。</div>';
+        return;
+      }
+      els.comparisonContent.innerHTML = `<div class="table-wrap"><table><thead><tr>${metricHeaders()}</tr></thead><tbody>${lastDisplayRows.map(row => {
         const keyLoc = tableKeyLocation(row);
         return `<tr class="${row.__summary ? 'summary-row' : ''}"><td>${esc(keyLoc.keyword)}</td><td>${esc(keyLoc.location)}</td>${metricCells(row)}</tr>`;
-      }).join('')}</tbody></table></div>${helper}`;
+      }).join('')}</tbody></table></div>${lastTableHelper}`;
+    }
+
+    function renderTable(labelName, rows) {
+      const summary = latestTotals ? [{ label: currentKeywordText(), __summary: true, ...latestTotals }] : [];
+      const displayRows = summary.concat(rows || []);
+      lastDisplayRows = displayRows;
+      lastTableHelper = (!rows || rows.length === 0) && comparisonMode === 'job'
+        ? '<div class="empty" style="margin-top:12px;">上の職種候補をクリックすると、比較行を追加できます。</div>'
+        : '';
+      repaintCurrentTable();
     }
 
     function copyTable() {
       if (!lastCopyRows.length) return;
-      const headers = ['検索キーワード','勤務地','該当件数（件）','消化金額（円）','表示回数（回）','クリック数（回）','応募開始数（件）','応募数（件）','クリック率（%）','応募開始率（%）','応募率（%）','CPC（円）','CPA（円）'];
+      const headers = ['検索キーワード','勤務地', ...visibleMetricIds.map(id => `${METRIC_MAP[id].label}（${METRIC_MAP[id].unit}）`)];
       const lines = [headers.join('\t')];
       lastCopyRows.forEach(row => {
-        const r = calcRates(row);
         lines.push([
           row.keyword,
           row.location,
-          row.count,
-          row.cost,
-          row.impressions,
-          row.clicks,
-          row.apply_starts,
-          row.applies,
-          r.ctr === null ? '' : r.ctr,
-          r.applyStartRate === null ? '' : r.applyStartRate,
-          r.cvr === null ? '' : r.cvr,
-          r.cpc === null ? '' : r.cpc,
-          r.cpa === null ? '' : r.cpa
+          ...visibleMetricIds.map(id => metricValueForCopy(row, id))
         ].join('\t'));
       });
       navigator.clipboard.writeText(lines.join('\n')).catch(() => {});
@@ -1017,6 +1154,12 @@ FROM b;`.trim();
     els.folderInput.addEventListener('change', e => handleFiles(e.target.files).catch(err => { console.error(err); log('[ERROR]\n' + (err.stack || err.message)); setStatus('エラー','bad'); }));
     els.refreshBtn.addEventListener('click', () => { textDirty = false; clearLog(); refreshAll(); });
     els.copyBtn.addEventListener('click', copyTable);
+    els.columnMenuBtn.addEventListener('click', (e) => { e.stopPropagation(); renderColumnPopover(); els.columnPopover.classList.toggle('hidden'); });
+    document.addEventListener('click', (e) => {
+      if (!els.columnPopover || !els.columnMenuBtn) return;
+      if (els.columnPopover.contains(e.target) || els.columnMenuBtn.contains(e.target)) return;
+      els.columnPopover.classList.add('hidden');
+    });
     els.clearSelectedBtn.addEventListener('click', () => { selectedJobTitles = []; renderSelectedJobs(); textDirty = false; refreshAll(); });
     [els.freeWordInput, els.locationInput].forEach(input => {
       input.addEventListener('input', () => { textDirty = true; });
@@ -1037,6 +1180,8 @@ FROM b;`.trim();
     });
     els.periodModal.addEventListener('cancel', e => { e.preventDefault(); closePeriodModal(); });
     document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); comparisonMode = tab.dataset.mode; updateComparisonControls(); textDirty = false; clearLog(); refreshAll(); }));
+    updateColumnMenuLabel();
+    renderColumnPopover();
   </script>
 </body>
 </html>
