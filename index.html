@@ -1164,12 +1164,19 @@
     els.folderSelectBtn.addEventListener('click', (e) => {
       e.preventDefault();
       copyDefaultFolderPath();
-      // トーストを描画してから、フォルダ選択画面を開く。
-      // 短い遅延に留め、ブラウザのユーザー操作扱いが切れにくいようにする。
-      window.setTimeout(() => {
+      // ファイル/フォルダ選択ダイアログは、ブラウザによっては
+      // setTimeout 後の click() をユーザー操作として扱わずブロックする。
+      // そのため、クリックイベント内で同期的に開く。
+      try {
         els.folderInput.value = '';
         els.folderInput.click();
-      }, 120);
+      } catch (err) {
+        console.error(err);
+        showToast(`
+          <div class="toast-title">フォルダ選択画面を開けませんでした</div>
+          <div class="toast-note">ブラウザの制限で開けない場合は、フォルダ選択欄を再度クリックしてください。</div>
+        `, 3200);
+      }
     });
     els.folderInput.addEventListener('change', e => handleFiles(e.target.files).catch(err => { console.error(err); log('[ERROR]\n' + (err.stack || err.message)); setStatus('エラー','bad'); }));
     els.refreshBtn.addEventListener('click', () => { textDirty = false; clearLog(); refreshAll(); });
