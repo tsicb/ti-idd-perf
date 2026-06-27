@@ -1338,7 +1338,8 @@
       const rect = card.getBoundingClientRect();
       const bodyRect = body.getBoundingClientRect();
       const visibleVertically = rect.bottom > 90 && rect.top < (window.innerHeight - 24);
-      if (!hasHorizontalOverflow || !visibleVertically) {
+      const nativeScrollbarVisible = bodyRect.bottom <= (window.innerHeight - 2) && bodyRect.bottom >= 24;
+      if (!hasHorizontalOverflow || !visibleVertically || nativeScrollbarVisible) {
         bar.classList.add('hidden');
         return;
       }
