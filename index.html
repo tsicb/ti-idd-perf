@@ -321,30 +321,11 @@
               <button class="tab active" data-mode="job" type="button">職種比較</button>
               <button class="tab" data-mode="prefecture" type="button">都道府県比較</button>
               <button class="tab" data-mode="month" type="button">月別推移</button>
-              <button class="tab" data-mode="period" type="button">期間A/B比較</button>
             </div>
             <div class="column-menu-wrap">
               <button id="columnMenuBtn" class="btn ghost small" type="button">表示列：標準</button>
               <div id="columnPopover" class="column-popover hidden"></div>
             </div>
-          </div>
-        </div>
-        <div id="periodCompareControls" class="filters hidden" style="margin-bottom:14px;padding:14px;background:#fafaf9;border-radius:18px;border:1px solid #e7e5e4;">
-          <div class="field sm">
-            <label class="label" for="compareAFrom">期間A 開始</label>
-            <select id="compareAFrom"></select>
-          </div>
-          <div class="field sm">
-            <label class="label" for="compareATo">期間A 終了</label>
-            <select id="compareATo"></select>
-          </div>
-          <div class="field sm">
-            <label class="label" for="compareBFrom">期間B 開始</label>
-            <select id="compareBFrom"></select>
-          </div>
-          <div class="field sm">
-            <label class="label" for="compareBTo">期間B 終了</label>
-            <select id="compareBTo"></select>
           </div>
         </div>
         <div id="comparisonContent"></div>
@@ -902,12 +883,11 @@
       updateComparisonControls();
       if (comparisonMode === 'job') return renderJobComparison(conn, source);
       if (comparisonMode === 'prefecture') return renderPrefComparison(conn, source);
-      if (comparisonMode === 'period') return renderPeriodABComparison(conn, db);
       return renderMonthComparison(conn, source);
     }
 
     function updateComparisonControls() {
-      els.periodCompareControls.classList.toggle('hidden', comparisonMode !== 'period');
+      if (els.periodCompareControls) els.periodCompareControls.classList.add('hidden');
     }
 
     function updateColumnMenuLabel() {
@@ -977,9 +957,10 @@
       });
     }
 
-    function metricHeaders() {
-      return '<th>検索キーワード</th><th>勤務地</th>' +
-        visibleMetricIds.map(id => `<th>${METRIC_MAP[id].header}</th>`).join('');
+    function tableHeaders() {
+      const base = ['<th>検索キーワード</th>', '<th>勤務地</th>'];
+      if (comparisonMode === 'month') base.push('<th>集計月</th>');
+      return base.join('') + visibleMetricIds.map(id => `<th>${METRIC_MAP[id].header}</th>`).join('');
     }
 
     function metricValueForDisplay(row, id) {
@@ -1028,12 +1009,32 @@
       return v || '（全国）';
     }
 
+    function formatMonthKeyForDisplay(monthKey) {
+      const s = String(monthKey || '');
+      if (!/^\d{6}$/.test(s)) return s || '（不明）';
+      return `${s.slice(2,4)}年${s.slice(4,6)}月`;
+    }
+
+    function formatMonthKeyForCopy(monthKey) {
+      const s = String(monthKey || '');
+      if (!/^\d{6}$/.test(s)) return s || '';
+      return `${s.slice(0,4)}/${s.slice(4,6)}/01`;
+    }
+
     function combinedKeywordText() {
       const parts = [(els.freeWordInput.value || '').trim(), ...selectedJobTitles].filter(Boolean);
       return parts.length ? parts.join(' OR ') : '（指定なし）';
     }
 
     function tableKeyLocation(row) {
+      if (comparisonMode === 'month') {
+        return {
+          keyword: currentKeywordText(),
+          location: currentLocationText(),
+          periodDisplay: row.__summary ? '期間総計' : (row.period_display || formatMonthKeyForDisplay(row.label)),
+          periodCopy: row.__summary ? '期間総計' : (row.period_copy || formatMonthKeyForCopy(row.label))
+        };
+      }
       if (row.__summary) {
         return { keyword: currentKeywordText(), location: currentLocationText() };
       }
@@ -1042,12 +1043,6 @@
       }
       if (comparisonMode === 'prefecture') {
         return { keyword: combinedKeywordText(), location: row.label || '（不明）' };
-      }
-      if (comparisonMode === 'month') {
-        return { keyword: row.label || '（不明）', location: currentLocationText() };
-      }
-      if (comparisonMode === 'period') {
-        return { keyword: row.label || '（不明）', location: currentLocationText() };
       }
       return { keyword: row.label || currentKeywordText(), location: currentLocationText() };
     }
@@ -1068,59 +1063,15 @@
 
     async function renderMonthComparison(conn, source) {
       const sql = `WITH src AS (SELECT * FROM ${source} ${baseWhere()}) SELECT CAST("集計年月キー" AS VARCHAR) AS label, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src GROUP BY label ORDER BY label ASC;`;
-      const rows = await queryRows(conn, sql);
-      renderTable('集計年月', rows);
+      const rows = (await queryRows(conn, sql)).map(row => ({
+        ...row,
+        period_display: formatMonthKeyForDisplay(row.label),
+        period_copy: formatMonthKeyForCopy(row.label)
+      }));
+      renderTable('集計月', rows);
     }
 
-    async function renderPeriodABComparison(conn, db) {
-      const monthsA = monthsBetween(els.compareAFrom.value, els.compareATo.value).filter(m => appState.availableMonths.includes(m));
-      const monthsB = monthsBetween(els.compareBFrom.value, els.compareBTo.value).filter(m => appState.availableMonths.includes(m));
-      if (!monthsA.length || !monthsB.length) {
-        els.comparisonContent.innerHTML = '<div class="empty">期間Aまたは期間Bの対象月がありません。</div>';
-        lastCopyRows = [];
-        els.copyBtn.disabled = true;
-        return;
-      }
-      const pathsA = await registerMonths(db, monthsA);
-      const pathsB = await registerMonths(db, monthsB);
-      const sourceA = readExpr(pathsA);
-      const sourceB = readExpr(pathsB);
-      const where = baseWhere();
-      const sql = `
-WITH a AS (SELECT * FROM ${sourceA} ${where}),
-     b AS (SELECT * FROM ${sourceB} ${where})
-SELECT ${sqlLiteral('期間A：' + monthsA[0] + '〜' + monthsA[monthsA.length - 1])} AS label,
-  COUNT(*) AS count,
-  COALESCE(SUM("消化金額"),0) AS cost,
-  COALESCE(SUM("表示回数"),0) AS impressions,
-  COALESCE(SUM("クリック数"),0) AS clicks,
-  COALESCE(SUM("応募開始数"),0) AS apply_starts,
-  COALESCE(SUM("応募数"),0) AS applies
-FROM a
-UNION ALL
-SELECT ${sqlLiteral('期間B：' + monthsB[0] + '〜' + monthsB[monthsB.length - 1])} AS label,
-  COUNT(*) AS count,
-  COALESCE(SUM("消化金額"),0) AS cost,
-  COALESCE(SUM("表示回数"),0) AS impressions,
-  COALESCE(SUM("クリック数"),0) AS clicks,
-  COALESCE(SUM("応募開始数"),0) AS apply_starts,
-  COALESCE(SUM("応募数"),0) AS applies
-FROM b;`.trim();
-      const rows = await queryRows(conn, sql);
-      if (rows.length >= 2) {
-        const a = rows[0], b = rows[1];
-        rows.push({
-          label: '差分：B − A',
-          count: Number(b.count || 0) - Number(a.count || 0),
-          cost: Number(b.cost || 0) - Number(a.cost || 0),
-          impressions: Number(b.impressions || 0) - Number(a.impressions || 0),
-          clicks: Number(b.clicks || 0) - Number(a.clicks || 0),
-          apply_starts: Number(b.apply_starts || 0) - Number(a.apply_starts || 0),
-          applies: Number(b.applies || 0) - Number(a.applies || 0)
-        });
-      }
-      renderTable('比較期間', rows);
-    }
+
 
     function setCopyRows(displayRows) {
       lastCopyRows = displayRows.map(row => {
@@ -1136,9 +1087,10 @@ FROM b;`.trim();
         els.comparisonContent.innerHTML = '<div class="empty">該当データがありません。</div>';
         return;
       }
-      els.comparisonContent.innerHTML = `<div class="table-wrap"><table><thead><tr>${metricHeaders()}</tr></thead><tbody>${lastDisplayRows.map(row => {
+      els.comparisonContent.innerHTML = `<div class="table-wrap"><table><thead><tr>${tableHeaders()}</tr></thead><tbody>${lastDisplayRows.map(row => {
         const keyLoc = tableKeyLocation(row);
-        return `<tr class="${row.__summary ? 'summary-row' : ''}"><td>${esc(keyLoc.keyword)}</td><td>${esc(keyLoc.location)}</td>${metricCells(row)}</tr>`;
+        const periodCell = comparisonMode === 'month' ? `<td>${esc(keyLoc.periodDisplay || '')}</td>` : '';
+        return `<tr class="${row.__summary ? 'summary-row' : ''}"><td>${esc(keyLoc.keyword)}</td><td>${esc(keyLoc.location)}</td>${periodCell}${metricCells(row)}</tr>`;
       }).join('')}</tbody></table></div>${lastTableHelper}`;
     }
 
@@ -1154,14 +1106,15 @@ FROM b;`.trim();
 
     function copyTable() {
       if (!lastCopyRows.length) return;
-      const headers = ['検索キーワード','勤務地', ...visibleMetricIds.map(id => `${METRIC_MAP[id].label}（${METRIC_MAP[id].unit}）`)];
+      const headers = ['検索キーワード','勤務地'];
+      if (comparisonMode === 'month') headers.push('集計月');
+      headers.push(...visibleMetricIds.map(id => `${METRIC_MAP[id].label}（${METRIC_MAP[id].unit}）`));
       const lines = [headers.join('\t')];
       lastCopyRows.forEach(row => {
-        lines.push([
-          row.keyword,
-          row.location,
-          ...visibleMetricIds.map(id => metricValueForCopy(row, id))
-        ].join('\t'));
+        const values = [row.keyword, row.location];
+        if (comparisonMode === 'month') values.push(row.periodCopy || row.periodDisplay || '');
+        values.push(...visibleMetricIds.map(id => metricValueForCopy(row, id)));
+        lines.push(values.join('\t'));
       });
       navigator.clipboard.writeText(lines.join('\n')).catch(() => {});
     }
@@ -1198,7 +1151,7 @@ FROM b;`.trim();
       input.addEventListener('blur', () => setTimeout(commitTextSearchIfNeeded, 0));
       input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commitTextSearchIfNeeded(); input.blur(); } });
     });
-    [els.searchMode, els.campaignFilter, els.compareAFrom, els.compareATo, els.compareBFrom, els.compareBTo].forEach(el => el.addEventListener('change', () => { clearLog(); refreshAll(); }));
+    [els.searchMode, els.campaignFilter, els.compareAFrom, els.compareATo, els.compareBFrom, els.compareBTo].filter(Boolean).forEach(el => el.addEventListener('change', () => { clearLog(); refreshAll(); }));
     els.periodRangeBtn.addEventListener('click', (e) => { e.stopPropagation(); openPeriodModal(); });
     els.periodModalClose.addEventListener('click', closePeriodModal);
     els.periodModalAll.addEventListener('click', chooseAllPeriod);
