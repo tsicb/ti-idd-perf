@@ -403,6 +403,7 @@
               <button class="tab" data-mode="prefecture" type="button">都道府県比較</button>
               <button class="tab" data-mode="month" type="button">月別推移</button>
             </div>
+            <button id="comparisonCopyBtn" class="btn ghost small" type="button" disabled>表をコピー</button>
             <div class="column-menu-wrap">
               <button id="columnMenuBtn" class="btn ghost small" type="button">表示列：標準</button>
               <div id="columnPopover" class="column-popover hidden"></div>
@@ -424,7 +425,7 @@
     import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm/+esm";
 
     const els = {
-      folderInput: document.getElementById('folderInput'), folderSelectBtn: document.getElementById('folderSelectBtn'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), mainStatus: document.getElementById('mainStatus'), toast: document.getElementById('toast'),
+      folderInput: document.getElementById('folderInput'), folderSelectBtn: document.getElementById('folderSelectBtn'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), comparisonCopyBtn: document.getElementById('comparisonCopyBtn'), mainStatus: document.getElementById('mainStatus'), toast: document.getElementById('toast'),
       datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'),
       searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalAll: document.getElementById('periodModalAll'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
       relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
@@ -644,7 +645,7 @@
 
     async function handleFiles(fileList) {
       const files = Array.from(fileList || []);
-      clearLog(); selectedJobTitles = []; registeredFiles.clear(); lastCopyRows = []; lastDisplayRows = []; lastTableHelper = ''; els.copyBtn.disabled = true;
+      clearLog(); selectedJobTitles = []; registeredFiles.clear(); lastCopyRows = []; lastDisplayRows = []; lastTableHelper = ''; if (els.copyBtn) els.copyBtn.disabled = true; if (els.comparisonCopyBtn) els.comparisonCopyBtn.disabled = true;
       if (!files.length) return;
       setStatus('データ確認中...', 'warn');
       const manifestItem = findManifestFile(files);
@@ -1431,7 +1432,7 @@
         const keyLoc = tableKeyLocation(row);
         return { ...keyLoc, ...row, ...calcRates(row) };
       });
-      els.copyBtn.disabled = displayRows.length === 0;
+      if (els.copyBtn) els.copyBtn.disabled = displayRows.length === 0; if (els.comparisonCopyBtn) els.comparisonCopyBtn.disabled = displayRows.length === 0;
     }
 
     function repaintCurrentTable() {
@@ -1508,7 +1509,8 @@
     });
     els.folderInput.addEventListener('change', e => handleFiles(e.target.files).catch(err => { console.error(err); log('[ERROR]\n' + (err.stack || err.message)); setStatus('エラー','bad'); }));
     els.refreshBtn.addEventListener('click', () => { textDirty = false; clearLog(); refreshAll(); });
-    els.copyBtn.addEventListener('click', copyTable);
+    if (els.copyBtn) els.copyBtn.addEventListener('click', copyTable);
+    if (els.comparisonCopyBtn) els.comparisonCopyBtn.addEventListener('click', copyTable);
     els.columnMenuBtn.addEventListener('click', (e) => { e.stopPropagation(); renderColumnPopover(); els.columnPopover.classList.toggle('hidden'); });
     document.addEventListener('click', (e) => {
       if (!els.columnPopover || !els.columnMenuBtn) return;
