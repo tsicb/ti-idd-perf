@@ -458,6 +458,12 @@
     let lastTableHelper = '';
     let latestTotals = null;
     let comparisonScrollSyncCleanup = null;
+    // searchFilters は backdrop-filter を持つカード内にあるため、
+    // position:fixed がブラウザによってカード基準になり、画面上部に固定されないことがあります。
+    // 固定中だけ body 直下へ一時移動して、確実に viewport 基準で貼りつかせます。
+    const searchFiltersHome = {
+      placeholder: els.searchFiltersPlaceholder
+    };
 
     const METRIC_COLUMNS = [
       { id:'count', label:'該当件数', unit:'件', header:'該当件数<span class="th-unit">（件）</span>' },
@@ -1342,50 +1348,75 @@
 
 
 
+    function restoreSearchFiltersHome() {
+      const row = els.searchFilters;
+      const placeholder = els.searchFiltersPlaceholder;
+      if (!row || !placeholder) return;
+      if (row.parentElement === document.body) {
+        placeholder.insertAdjacentElement('afterend', row);
+      }
+    }
+
+    function fixSearchFiltersToViewport() {
+      const row = els.searchFilters;
+      if (!row) return;
+      if (row.parentElement !== document.body) {
+        document.body.appendChild(row);
+      }
+    }
+
+    function releaseSearchFiltersSticky() {
+      const row = els.searchFilters;
+      const placeholder = els.searchFiltersPlaceholder;
+      if (row) {
+        row.classList.remove('is-fixed');
+        row.style.removeProperty('--search-filter-left');
+        row.style.removeProperty('--search-filter-width');
+      }
+      restoreSearchFiltersHome();
+      if (placeholder) {
+        placeholder.style.display = 'none';
+        placeholder.style.height = '0px';
+      }
+      document.documentElement.style.setProperty('--search-sticky-offset', '0px');
+      return 0;
+    }
+
     function updateSearchFiltersSticky() {
       const row = els.searchFilters;
       const placeholder = els.searchFiltersPlaceholder;
       const comparisonCard = els.comparisonContent ? els.comparisonContent.closest('.comparison-card') : null;
       if (!row || !placeholder || !comparisonCard || els.appArea.classList.contains('hidden') || window.innerWidth <= 900) {
-        if (row) {
-          row.classList.remove('is-fixed');
-          row.style.removeProperty('--search-filter-left');
-          row.style.removeProperty('--search-filter-width');
-        }
-        if (placeholder) {
-          placeholder.style.display = 'none';
-          placeholder.style.height = '0px';
-        }
-        document.documentElement.style.setProperty('--search-sticky-offset', '0px');
-        return 0;
+        return releaseSearchFiltersSticky();
       }
 
       const wasFixed = row.classList.contains('is-fixed');
+      // 固定中は body 直下に移動しているので、元位置判定は placeholder を使う。
       const anchorRect = (wasFixed ? placeholder : row).getBoundingClientRect();
       const cardRect = comparisonCard.getBoundingClientRect();
-      const rowHeight = Math.ceil(row.getBoundingClientRect().height);
-      const shouldFix = anchorRect.top <= 0 && cardRect.bottom > rowHeight + 80;
+      const currentHeight = Math.ceil(row.getBoundingClientRect().height || 0);
+      const shouldFix = anchorRect.top <= 0 && cardRect.bottom > currentHeight + 80;
 
       if (!shouldFix) {
-        row.classList.remove('is-fixed');
-        row.style.removeProperty('--search-filter-left');
-        row.style.removeProperty('--search-filter-width');
-        placeholder.style.display = 'none';
-        placeholder.style.height = '0px';
-        document.documentElement.style.setProperty('--search-sticky-offset', '0px');
-        return 0;
+        return releaseSearchFiltersSticky();
       }
 
       const placeRect = placeholder.getBoundingClientRect();
-      const width = Math.max(240, Math.floor(placeRect.width || row.getBoundingClientRect().width));
+      const sourceRect = row.getBoundingClientRect();
+      const width = Math.max(240, Math.floor(placeRect.width || sourceRect.width || (window.innerWidth - 36)));
       const left = Math.floor(placeRect.left || 18);
+
+      placeholder.style.display = 'block';
+      // body 直下へ移してから is-fixed を付けることで、backdrop-filter を持つカードの影響を受けない。
+      fixSearchFiltersToViewport();
       row.style.setProperty('--search-filter-left', `${left}px`);
       row.style.setProperty('--search-filter-width', `${width}px`);
-      placeholder.style.display = 'block';
-      placeholder.style.height = `${rowHeight}px`;
       row.classList.add('is-fixed');
-      document.documentElement.style.setProperty('--search-sticky-offset', `${rowHeight}px`);
-      return rowHeight;
+
+      const fixedHeight = Math.ceil(row.getBoundingClientRect().height || currentHeight || 64);
+      placeholder.style.height = `${fixedHeight}px`;
+      document.documentElement.style.setProperty('--search-sticky-offset', `${fixedHeight}px`);
+      return fixedHeight;
     }
 
     function updateComparisonStickyOffsets() {
