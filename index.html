@@ -27,6 +27,12 @@
       border-radius:var(--radius); box-shadow:var(--shadow); padding:24px;
     }
     .header { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:18px; }
+    .intro-card { max-width:980px; margin:min(11vh,90px) auto 0; }
+    .intro-card.data-loaded { max-width:1800px; margin:0 auto; }
+    .intro-header { display:block; margin-bottom:0; }
+    .intro-content { max-width:860px; }
+    .folder-cta-area { margin-top:18px; display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+    .top-hidden-toolbar { display:none!important; }
     h1 { margin:0; font-size:clamp(25px,3vw,36px); letter-spacing:.02em; color:#292524; display:flex; align-items:center; gap:12px; }
     h1::before { content:'📊'; font-size:30px; filter:drop-shadow(0 2px 2px rgba(0,0,0,.12)); }
     h2 { margin:0 0 14px; font-size:20px; color:#44403c; }
@@ -114,7 +120,7 @@
     .kv div:nth-child(odd) { display:none; }
     .kv div:nth-child(even) { background:#f5f5f4; color:#57534e; border:2px solid #fff; border-radius:999px; padding:7px 11px; font-size:13px; font-weight:900; }
     .main-subtitle { margin:8px 0 0; color:#78716c; font-weight:800; }
-    .folder-guide { margin-top:14px; display:grid; gap:8px; max-width:760px; }
+    .folder-guide { margin-top:14px; display:grid; gap:8px; max-width:860px; }
     .folder-guide-line { display:flex; gap:8px; align-items:flex-start; color:#57534e; font-size:14px; font-weight:900; line-height:1.75; }
     .folder-guide-line .mark { flex:0 0 auto; color:#f97316; }
     .folder-path-inline { margin-top:4px; display:inline-block; max-width:100%; padding:8px 10px; border-radius:13px; background:#fff7ed; border:2px solid #fed7aa; color:#7c2d12; font-size:12px; line-height:1.5; word-break:break-all; }
@@ -175,21 +181,23 @@
 </head>
 <body>
   <main class="wrap">
-    <section class="card">
-      <div class="header">
-        <div>
+    <section id="introCard" class="card intro-card">
+      <div class="header intro-header">
+        <div class="intro-content">
           <h1>天市×indeedPLUS運用実績</h1>
           <p class="main-subtitle">社内共有フォルダの運用データを読み込んで表示します。</p>
           <div class="folder-guide" aria-label="データフォルダ選択の説明">
             <div class="folder-guide-line"><span class="mark">①</span><span>下のボタンを押すと、必要なフォルダパスをコピーしてから、フォルダ選択画面を開きます。</span></div>
-            <div class="folder-guide-line"><span class="mark">②</span><span>フォルダ選択画面が開いたら、上部のアドレス欄に貼り付けて Enter を押してください。</span></div>
+            <div class="folder-guide-line"><span class="mark">②</span><span>フォルダ選択画面が開いたら、コピーされたパスをそのまま貼り付けて Enter を押してください。</span></div>
             <div class="folder-guide-line"><span class="mark">📁</span><span>選択するフォルダ：<span class="folder-path-inline">K:\天市事業\public\1049\共有情報\tenichiプラス\indeedマージレポート\output_dataset</span></span></div>
             <div class="folder-cta-note">迷ったときは、コピーされたパスをそのまま貼り付ければOKです。</div>
           </div>
+          <div class="folder-cta-area">
+            <button id="folderSelectBtn" class="btn" type="button">📋 フォルダパスをコピーして選択画面を開く</button>
+            <input id="folderInput" type="file" webkitdirectory directory multiple />
+          </div>
         </div>
-        <div class="toolbar">
-          <button id="folderSelectBtn" class="btn" type="button">📋 フォルダパスをコピーして選択画面を開く</button>
-          <input id="folderInput" type="file" webkitdirectory directory multiple />
+        <div class="toolbar top-hidden-toolbar">
           <button id="refreshBtn" class="btn secondary top-only-control" type="button" disabled>表示を更新</button>
           <button id="copyBtn" class="btn ghost top-only-control" type="button" disabled>表をコピー</button>
           <span id="mainStatus" class="status top-only-control">データ未選択</span>
@@ -425,6 +433,7 @@
       els.datasetInfo.classList.remove('hidden');
       renderPeriodOptions();
       els.appArea.classList.remove('hidden');
+      document.getElementById('introCard')?.classList.add('data-loaded');
       els.refreshBtn.disabled = false;
       setStatus('データ読込完了', 'ok');
       await refreshAll();
