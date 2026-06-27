@@ -13,7 +13,7 @@
       --orange:#f97316; --orangeDark:#c2410c; --sky:#0ea5e9; --skyDark:#0369a1;
       --green:#059669; --rose:#e11d48; --amber:#d97706; --violet:#7c3aed; --stone:#a8a29e;
       --shadow:0 12px 24px -8px rgba(0,0,0,.15); --radius:2rem;
-      --comparison-toolbar-offset:0px; --comparison-summary-offset:36px;
+      --search-sticky-offset:0px; --comparison-toolbar-offset:0px; --comparison-summary-offset:36px;
     }
     * { box-sizing:border-box; }
     body {
@@ -79,6 +79,17 @@
     @media (max-width:700px) { .toast { width:calc(100vw - 24px); } }
     .field { display:grid; gap:6px; min-width:180px; flex:1; }
     .field.sm { flex:0 0 150px; min-width:140px; } .field.md { flex:0 0 210px; min-width:180px; }
+    .search-filters-placeholder { display:none; height:0; }
+    .search-filter-row.is-fixed {
+      position:fixed; top:0; left:var(--search-filter-left, 18px); width:var(--search-filter-width, calc(100vw - 36px));
+      z-index:80; padding:12px 14px;
+      background:rgba(255,255,255,.98); border:4px solid #fff; border-top:0; border-radius:0 0 24px 24px;
+      box-shadow:0 10px 24px -18px rgba(0,0,0,.45), 0 0 0 1px rgba(245,245,244,.80);
+      backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    }
+    .search-filter-row.is-fixed .field { min-width:160px; }
+    .search-filter-row.is-fixed input[type="text"], .search-filter-row.is-fixed select, .search-filter-row.is-fixed .range-btn { padding-top:10px; padding-bottom:10px; }
+    @media (max-width:900px) { .search-filter-row.is-fixed { position:static; width:auto; padding:0; border:0; box-shadow:none; background:transparent; } }
     label.label { font-size:13px; font-weight:950; color:#57534e; display:flex; align-items:center; gap:6px; }
     input[type="text"], select {
       width:100%; border:4px solid #fff; background:#fafaf9; border-radius:18px; padding:12px 13px;
@@ -98,7 +109,7 @@
     .unit { color:var(--muted); font-size:13px; margin-left:3px; }
     .comparison-card { overflow:visible; }
     .comparison-toolbar {
-      position:sticky; top:0; z-index:60;
+      position:sticky; top:var(--search-sticky-offset); z-index:60;
       margin:-2px -2px 0; padding:2px 2px 12px;
       background:#fff;
       border-radius:24px 24px 0 0;
@@ -112,7 +123,7 @@
       pointer-events:none;
     }
     .comparison-freeze-pane {
-      position:sticky; top:var(--comparison-toolbar-offset); z-index:55;
+      position:sticky; top:calc(var(--search-sticky-offset) + var(--comparison-toolbar-offset)); z-index:55;
       overflow:hidden;
       scrollbar-width:none;
       -ms-overflow-style:none;
@@ -343,7 +354,8 @@
           <h1>天市×indeedPLUS運用実績</h1>
         </div>
         <h2>検索条件</h2>
-        <div class="filters">
+        <div id="searchFiltersPlaceholder" class="search-filters-placeholder" aria-hidden="true"></div>
+        <div id="searchFilters" class="filters search-filter-row">
           <div class="field">
             <label class="label" for="freeWordInput">🔎 フリーワード</label>
             <input id="freeWordInput" type="text" placeholder="例：接客 販売" />
@@ -426,7 +438,7 @@
 
     const els = {
       folderInput: document.getElementById('folderInput'), folderSelectBtn: document.getElementById('folderSelectBtn'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), comparisonCopyBtn: document.getElementById('comparisonCopyBtn'), mainStatus: document.getElementById('mainStatus'), toast: document.getElementById('toast'),
-      datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'),
+      datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), searchFilters: document.getElementById('searchFilters'), searchFiltersPlaceholder: document.getElementById('searchFiltersPlaceholder'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'),
       searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalAll: document.getElementById('periodModalAll'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
       relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
       comparisonToolbar: document.getElementById('comparisonToolbar'), comparisonContent: document.getElementById('comparisonContent'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), columnMenuBtn: document.getElementById('columnMenuBtn'), columnPopover: document.getElementById('columnPopover'), floatingXScroll: document.getElementById('floatingXScroll'), floatingXScrollInner: document.getElementById('floatingXScrollInner'), log: document.getElementById('log')
@@ -1330,6 +1342,52 @@
 
 
 
+    function updateSearchFiltersSticky() {
+      const row = els.searchFilters;
+      const placeholder = els.searchFiltersPlaceholder;
+      const comparisonCard = els.comparisonContent ? els.comparisonContent.closest('.comparison-card') : null;
+      if (!row || !placeholder || !comparisonCard || els.appArea.classList.contains('hidden') || window.innerWidth <= 900) {
+        if (row) {
+          row.classList.remove('is-fixed');
+          row.style.removeProperty('--search-filter-left');
+          row.style.removeProperty('--search-filter-width');
+        }
+        if (placeholder) {
+          placeholder.style.display = 'none';
+          placeholder.style.height = '0px';
+        }
+        document.documentElement.style.setProperty('--search-sticky-offset', '0px');
+        return 0;
+      }
+
+      const wasFixed = row.classList.contains('is-fixed');
+      const anchorRect = (wasFixed ? placeholder : row).getBoundingClientRect();
+      const cardRect = comparisonCard.getBoundingClientRect();
+      const rowHeight = Math.ceil(row.getBoundingClientRect().height);
+      const shouldFix = anchorRect.top <= 0 && cardRect.bottom > rowHeight + 80;
+
+      if (!shouldFix) {
+        row.classList.remove('is-fixed');
+        row.style.removeProperty('--search-filter-left');
+        row.style.removeProperty('--search-filter-width');
+        placeholder.style.display = 'none';
+        placeholder.style.height = '0px';
+        document.documentElement.style.setProperty('--search-sticky-offset', '0px');
+        return 0;
+      }
+
+      const placeRect = placeholder.getBoundingClientRect();
+      const width = Math.max(240, Math.floor(placeRect.width || row.getBoundingClientRect().width));
+      const left = Math.floor(placeRect.left || 18);
+      row.style.setProperty('--search-filter-left', `${left}px`);
+      row.style.setProperty('--search-filter-width', `${width}px`);
+      placeholder.style.display = 'block';
+      placeholder.style.height = `${rowHeight}px`;
+      row.classList.add('is-fixed');
+      document.documentElement.style.setProperty('--search-sticky-offset', `${rowHeight}px`);
+      return rowHeight;
+    }
+
     function updateComparisonStickyOffsets() {
       const toolbar = els.comparisonToolbar || document.getElementById('comparisonToolbar');
       let toolbarOffset = 0;
@@ -1338,6 +1396,11 @@
       }
       document.documentElement.style.setProperty('--comparison-toolbar-offset', `${toolbarOffset}px`);
       updateFloatingHorizontalScroll();
+    }
+
+    function updateStickyLayout() {
+      updateSearchFiltersSticky();
+      updateComparisonStickyOffsets();
     }
 
     function tableColGroup() {
@@ -1440,7 +1503,7 @@
       if (!lastDisplayRows.length) {
         els.comparisonContent.innerHTML = '<div class="empty">該当データがありません。</div>';
         if (els.floatingXScroll) els.floatingXScroll.classList.add('hidden');
-        requestAnimationFrame(updateComparisonStickyOffsets);
+        requestAnimationFrame(updateStickyLayout);
         return;
       }
       const colGroup = tableColGroup();
@@ -1454,7 +1517,7 @@
         ? bodyRows.map(row => rowHtml(row)).join('')
         : '';
       els.comparisonContent.innerHTML = `${freezeHtml}<div class="table-wrap"><table class="metric-table">${colGroup}<tbody>${bodyHtml}</tbody></table></div>${lastTableHelper}`;
-      requestAnimationFrame(() => { updateComparisonStickyOffsets(); syncComparisonHorizontalScroll(); });
+      requestAnimationFrame(() => { updateStickyLayout(); syncComparisonHorizontalScroll(); });
     }
 
     function renderTable(labelName, rows, options={}) {
@@ -1537,11 +1600,11 @@
     });
     els.periodModal.addEventListener('cancel', e => { e.preventDefault(); closePeriodModal(); });
     document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); comparisonMode = tab.dataset.mode; updateComparisonControls(); textDirty = false; clearLog(); refreshAll(); }));
-    window.addEventListener('resize', () => requestAnimationFrame(updateComparisonStickyOffsets));
-    window.addEventListener('scroll', () => requestAnimationFrame(updateFloatingHorizontalScroll), { passive:true });
+    window.addEventListener('resize', () => requestAnimationFrame(updateStickyLayout));
+    window.addEventListener('scroll', () => requestAnimationFrame(updateStickyLayout), { passive:true });
     updateColumnMenuLabel();
     renderColumnPopover();
-    requestAnimationFrame(updateComparisonStickyOffsets);
+    requestAnimationFrame(updateStickyLayout);
   </script>
 </body>
 </html>
