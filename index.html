@@ -276,11 +276,28 @@
     .pref-highlight-row td { background:#fef9c3; color:#713f12; }
     .pref-highlight-row td:first-child { box-shadow:inset 5px 0 0 #f59e0b; }
     .summary-row.pref-highlight-row td { background:#ecfeff; color:#164e63; box-shadow:none; }
-    .pref-location-cell { display:flex; align-items:center; gap:7px; min-width:0; }
-    .pref-rank-medal { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; flex:0 0 22px; border-radius:999px; font-size:15px; line-height:1; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,.12), inset 0 -1px 0 rgba(0,0,0,.08); }
-    .pref-rank-medal.rank-1 { background:linear-gradient(180deg,#fff7bf,#facc15); }
-    .pref-rank-medal.rank-2 { background:linear-gradient(180deg,#f8fafc,#cbd5e1); }
-    .pref-rank-medal.rank-3 { background:linear-gradient(180deg,#ffedd5,#fb923c); }
+    .pref-location-cell { display:flex; align-items:center; gap:8px; min-width:0; }
+    .pref-rank-badge {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:30px;
+      height:22px;
+      flex:0 0 30px;
+      border-radius:999px;
+      font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.02em;
+      line-height:1;
+      color:#475569;
+      background:linear-gradient(180deg,#ffffff,#f1f5f9);
+      border:1px solid #cbd5e1;
+      box-shadow:0 2px 5px rgba(15,23,42,.10), inset 0 1px 0 rgba(255,255,255,.85);
+    }
+    .pref-rank-badge.rank-1 { color:#713f12; background:linear-gradient(180deg,#fef9c3,#facc15); border-color:#eab308; }
+    .pref-rank-badge.rank-2 { color:#334155; background:linear-gradient(180deg,#ffffff,#cbd5e1); border-color:#94a3b8; }
+    .pref-rank-badge.rank-3 { color:#7c2d12; background:linear-gradient(180deg,#ffedd5,#fb923c); border-color:#f97316; }
     .pref-name-text { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
     .table-wrap tbody tr td { transition:background-color .08s ease, color .08s ease; }
@@ -1282,13 +1299,12 @@
       `;
       const rows = await queryRows(conn, sql);
       const highlightedPrefs = detectLocationPrefectures();
-      const medalByRank = { 1:'🥇', 2:'🥈', 3:'🥉' };
       const sortedRows = sortPrefectureRows(rows).map((row, idx) => {
         const rank = idx + 1;
         return {
           ...row,
           __prefRank: rank,
-          __prefMedal: medalByRank[rank] || '',
+          __prefRankLabel: String(rank).padStart(2, '0'),
           __prefHighlighted: highlightedPrefs.has(row.label)
         };
       });
@@ -1333,8 +1349,8 @@
     }
 
     function locationCellHtml(row, keyLoc) {
-      if (comparisonMode === 'prefecture' && !row.__summary && row.__prefMedal) {
-        return `<td><span class="pref-location-cell"><span class="pref-rank-medal rank-${esc(row.__prefRank)}" title="CPA順 ${esc(row.__prefRank)}位">${esc(row.__prefMedal)}</span><span class="pref-name-text">${esc(keyLoc.location)}</span></span></td>`;
+      if (comparisonMode === 'prefecture' && !row.__summary && row.__prefRank) {
+        return `<td><span class="pref-location-cell"><span class="pref-rank-badge rank-${esc(row.__prefRank)}" title="CPA順 ${esc(row.__prefRank)}位">${esc(row.__prefRankLabel || row.__prefRank)}</span><span class="pref-name-text">${esc(keyLoc.location)}</span></span></td>`;
       }
       return `<td>${esc(keyLoc.location)}</td>`;
     }
