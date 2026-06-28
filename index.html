@@ -1896,7 +1896,7 @@
           animation:false,
           interaction:{ mode:'index', intersect:false },
           plugins:{
-            legend:{ display:true, position:'top', labels:{ boxWidth:14, boxHeight:14, usePointStyle:true, font:{ weight:'bold' } } },
+            legend:{ display:true, position:'top', labels:{ boxWidth:14, boxHeight:14, usePointStyle:true, font:{ weight:'bold' }, sort:(a,b) => a.datasetIndex - b.datasetIndex } },
             tooltip:{
               callbacks:{
                 label(context) {
