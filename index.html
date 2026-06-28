@@ -255,6 +255,9 @@
     .folder-cta-note { margin-top:8px; color:#9a3412; font-size:13px; font-weight:950; }
     .analysis-title-row { margin-bottom:18px; padding-bottom:16px; border-bottom:4px solid #fff7ed; }
     .analysis-title-row h1 { font-size:clamp(24px,2.5vw,34px); }
+    .app-title-card { padding:28px 30px; }
+    .app-title-card .analysis-title-row { margin-bottom:0; }
+    .search-related-card .section-divider:first-child { display:none; }
     #searchRelatedCard > h2 { margin-top:0; }
     @media (max-width:860px) { .header { display:block; } .toolbar { margin-top:18px; } }
     body.modal-open { overflow:hidden; }
@@ -369,11 +372,13 @@
     </section>
 
     <section id="appArea" class="grid hidden" style="margin-top:18px;">
-      <div id="searchFiltersShell" class="span-12 search-filters-shell" aria-label="検索条件入力エリア"></div>
-      <div class="card span-12 search-related-card" id="searchRelatedCard">
+      <div class="card span-12 app-title-card" id="appTitleCard">
         <div class="analysis-title-row">
           <h1>天市×indeedPLUS運用実績</h1>
         </div>
+      </div>
+      <div id="searchFiltersShell" class="span-12 search-filters-shell" aria-label="検索条件入力エリア"></div>
+      <div class="card span-12 search-related-card" id="searchRelatedCard">
         <div id="searchFiltersPlaceholder" class="search-filters-placeholder" aria-hidden="true"></div>
         <div id="searchFilters" class="filters search-filter-row">
           <div class="field">
@@ -414,7 +419,6 @@
           <div id="periodMonthGrid" class="month-grid"></div>
         </dialog>
 
-        <div class="section-divider"></div>
         <div class="related-head">
           <div>
             <h2 style="margin-bottom:4px;">関連する職種</h2>
