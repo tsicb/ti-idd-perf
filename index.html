@@ -422,6 +422,10 @@
     .chart-context-chip .keyword-op-badge { height:16px; min-width:30px; padding:0 7px; font-size:9px; background:#fff; border-color:#fdba74; color:#9a3412; }
     .chart-context-location { border-color:#facc15; background:#fef9c3; color:#854d0e; }
     .chart-context-cap { border-color:#bae6fd; background:#ecfeff; color:#075985; }
+    .month-trend-toggle { display:inline-flex; align-items:center; gap:3px; padding:3px; border-radius:999px; background:#f1f5f9; border:1px solid #e2e8f0; box-shadow:inset 0 1px 2px rgba(15,23,42,.06); }
+    .month-trend-btn { border:0; background:transparent; color:#64748b; border-radius:999px; padding:5px 10px; font-family:inherit; font-size:12px; line-height:1; font-weight:950; cursor:pointer; transition:.12s; }
+    .month-trend-btn:hover { background:rgba(255,255,255,.78); color:#0f172a; }
+    .month-trend-btn.active { background:linear-gradient(180deg,#ffffff,#dbeafe); color:#075985; box-shadow:0 2px 0 #93c5fd, inset 0 1px 0 rgba(255,255,255,.9); }
     .axis-cap-popover { position:fixed; z-index:3000; width:224px; padding:12px; border-radius:18px; border:2px solid #fed7aa; background:#fff; box-shadow:0 18px 50px rgba(67,20,7,.22); color:#44403c; }
     .axis-cap-popover.hidden { display:none; }
     .axis-cap-title { font-size:13px; font-weight:950; color:#7c2d12; margin-bottom:8px; }
@@ -603,6 +607,7 @@
     let selectedJobTitles = [];
     let comparisonMode = 'job';
     let outputView = 'table';
+    let monthGraphType = 'overall';
     let chartLeftMetric = 'cpa';
     let chartRightMetric = 'none';
     let chartLeftType = 'bar';
@@ -2163,13 +2168,21 @@
       return [];
     }
 
+    function monthTrendTypeControlsHtml() {
+      const items = [
+        { id:'overall', label:'全体' },
+        { id:'yoy', label:'昨年比' }
+      ];
+      return `<span class="month-trend-toggle" aria-label="月別推移タイプ">${items.map(item => `<button class="month-trend-btn ${monthGraphType === item.id ? 'active' : ''}" data-month-trend-type="${esc(item.id)}" type="button">${esc(item.label)}</button>`).join('')}</span>`;
+    }
+
     function chartContextHtml() {
       if (comparisonMode !== 'prefecture' && comparisonMode !== 'month') return '';
       const displaySegments = chartContextDisplayKeywordSegments(90);
       const fullText = keywordSegmentsToPlain(chartContextFullKeywordSegments());
       if (comparisonMode === 'month') {
         const locationText = currentLocationText();
-        return `<div class="chart-context"><span class="chart-context-chip chart-context-location">推移タイプ：全体</span><span class="chart-context-label">集計対象：</span><span class="chart-context-chip" title="${esc(fullText)}">${keywordSegmentsToHtml(displaySegments)}</span><span class="chart-context-chip chart-context-location" title="${esc(locationText)}">勤務地：${esc(locationText)}</span></div>`;
+        return `<div class="chart-context">${monthTrendTypeControlsHtml()}<span class="chart-context-label">集計対象：</span><span class="chart-context-chip" title="${esc(fullText)}">${keywordSegmentsToHtml(displaySegments)}</span><span class="chart-context-chip chart-context-location" title="${esc(locationText)}">勤務地：${esc(locationText)}</span></div>`;
       }
       const highlightedPrefs = Array.from(detectLocationPrefectures());
       const locationText = highlightedPrefs.length ? `　勤務地ハイライト：${highlightedPrefs.join('、')}` : '';
@@ -2181,6 +2194,168 @@
         comparisonChart.destroy();
         comparisonChart = null;
       }
+    }
+
+    const MONTH_YOY_LABELS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    const MONTH_YOY_COLORS = [
+      { border:'rgba(249,115,22,.96)', background:'rgba(249,115,22,.50)' },
+      { border:'rgba(14,165,233,.96)', background:'rgba(14,165,233,.32)' },
+      { border:'rgba(34,197,94,.96)', background:'rgba(34,197,94,.30)' },
+      { border:'rgba(168,85,247,.96)', background:'rgba(168,85,247,.28)' },
+      { border:'rgba(236,72,153,.96)', background:'rgba(236,72,153,.28)' },
+      { border:'rgba(100,116,139,.96)', background:'rgba(100,116,139,.26)' }
+    ];
+
+    function monthYearPartsFromRow(row) {
+      const key = String(row && row.label || '');
+      if (!/^\d{6}$/.test(key)) return null;
+      const year = Number(key.slice(0,4));
+      const month = Number(key.slice(4,6));
+      if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) return null;
+      return { year, month };
+    }
+
+    function monthYoYYears(rows) {
+      return Array.from(new Set((rows || []).map(row => {
+        const parts = monthYearPartsFromRow(row);
+        return parts ? parts.year : null;
+      }).filter(v => v !== null))).sort((a,b) => a-b);
+    }
+
+    function monthYoYRowMap(rows) {
+      const map = new Map();
+      (rows || []).forEach(row => {
+        const parts = monthYearPartsFromRow(row);
+        if (parts) map.set(`${parts.year}-${parts.month}`, row);
+      });
+      return map;
+    }
+
+    function monthYoYValues(rows, metricId) {
+      return (rows || []).map(row => chartMetricValue(row, metricId));
+    }
+
+    function monthYoYDatasetConfig(axis, metricId, year, data, type, showLabels, yearIndex, axisCap=null) {
+      const palette = MONTH_YOY_COLORS[yearIndex % MONTH_YOY_COLORS.length];
+      const isLine = type === 'line';
+      const yAxisID = axis === 'right' ? 'yRight' : 'yLeft';
+      return {
+        type: isLine ? 'line' : 'bar',
+        label: `${year}年 ${METRIC_MAP[metricId].label}`,
+        data,
+        yAxisID,
+        axisCap,
+        backgroundColor: isLine ? 'rgba(255,255,255,0)' : palette.background,
+        borderColor: palette.border,
+        borderWidth: isLine ? 3 : 1,
+        borderRadius: isLine ? 0 : 8,
+        pointRadius: isLine ? 4 : 0,
+        pointHoverRadius: isLine ? 6 : 0,
+        pointBackgroundColor: palette.border,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        tension: isLine ? .28 : 0,
+        spanGaps:false,
+        order: isLine ? 1 : 2,
+        borderDash: axis === 'right' ? [6, 4] : undefined,
+        showDataLabels: !!showLabels
+      };
+    }
+
+    function repaintMonthYoYChart(chartRows) {
+      const years = monthYoYYears(chartRows);
+      if (!years.length) {
+        destroyComparisonChart();
+        els.comparisonContent.innerHTML = '<div class="empty">昨年比グラフに表示できる月別データがありません。</div>';
+        requestAnimationFrame(updateStickyLayout);
+        return;
+      }
+      const rowMap = monthYoYRowMap(chartRows);
+      const leftValues = monthYoYValues(chartRows, chartLeftMetric);
+      const useRight = chartRightMetric && chartRightMetric !== 'none' && chartRightMetric !== chartLeftMetric;
+      const rightValues = useRight ? monthYoYValues(chartRows, chartRightMetric) : [];
+      const leftCap = resolveAxisCap('left', leftValues);
+      const rightCap = useRight ? resolveAxisCap('right', rightValues) : null;
+      const capMessages = [chartAxisCapLabel('left', leftCap, chartLeftMetric), useRight ? chartAxisCapLabel('right', rightCap, chartRightMetric) : ''].filter(Boolean);
+      const labels = MONTH_YOY_LABELS;
+      const minWidth = Math.max(860, labels.length * Math.max(78, years.length * 24));
+      const datasets = [];
+      years.forEach((year, yearIndex) => {
+        const data = Array.from({ length:12 }, (_, idx) => {
+          const row = rowMap.get(`${year}-${idx + 1}`);
+          return row ? chartMetricValue(row, chartLeftMetric) : null;
+        });
+        datasets.push(monthYoYDatasetConfig('left', chartLeftMetric, year, data, chartLeftType, chartLeftLabels, yearIndex, leftCap));
+      });
+      if (useRight) {
+        years.forEach((year, yearIndex) => {
+          const data = Array.from({ length:12 }, (_, idx) => {
+            const row = rowMap.get(`${year}-${idx + 1}`);
+            return row ? chartMetricValue(row, chartRightMetric) : null;
+          });
+          datasets.push(monthYoYDatasetConfig('right', chartRightMetric, year, data, chartRightType, chartRightLabels, yearIndex, rightCap));
+        });
+      }
+      destroyComparisonChart();
+      els.comparisonContent.innerHTML = `
+        <div class="chart-panel">
+          ${chartContextHtml()}
+          ${chartCapContextHtml(capMessages)}
+          <div class="chart-canvas-wrap" style="min-width:${minWidth}px;">
+            <canvas id="comparisonChartCanvas"></canvas>
+          </div>
+          <div class="chart-note">※昨年比グラフでは、x軸を1月〜12月にそろえ、年ごとの同月推移を重ねて表示します。選択期間に含まれない月は線・棒を表示しません。右軸を使う場合は、右軸系列を点線で表示します。</div>
+        </div>`;
+      const canvas = document.getElementById('comparisonChartCanvas');
+      if (!canvas || !window.Chart) {
+        els.comparisonContent.innerHTML = '<div class="empty">グラフライブラリを読み込めませんでした。</div>';
+        requestAnimationFrame(updateStickyLayout);
+        return;
+      }
+      comparisonChart = new window.Chart(canvas, {
+        data: { labels, datasets },
+        plugins:[chartDataLabelPlugin],
+        options: {
+          responsive:true,
+          maintainAspectRatio:false,
+          animation:false,
+          interaction:{ mode:'index', intersect:false },
+          plugins:{
+            legend:{ display:true, position:'top', labels:{ boxWidth:14, boxHeight:14, usePointStyle:true, font:{ weight:'bold' }, sort:(a,b) => a.datasetIndex - b.datasetIndex } },
+            tooltip:{
+              callbacks:{
+                label(context) {
+                  const metricId = context.dataset.yAxisID === 'yRight' ? chartRightMetric : chartLeftMetric;
+                  return `${context.dataset.label}: ${chartValueLabel(context.parsed.y, metricId)}`;
+                }
+              }
+            }
+          },
+          scales:{
+            x:{
+              grid:{ display:false },
+              ticks:{ maxRotation:0, minRotation:0, autoSkip:false, color:'#57534e', font:{ weight:'bold' } }
+            },
+            yLeft:{
+              beginAtZero:true,
+              max:leftCap || undefined,
+              position:'left',
+              title:{ display:true, text:METRIC_MAP[chartLeftMetric].label, font:{ weight:'bold' } },
+              ticks:{ callback:(value) => chartAxisTickLabel(value, chartLeftMetric) }
+            },
+            yRight:{
+              beginAtZero:true,
+              max:rightCap || undefined,
+              position:'right',
+              display:!!useRight,
+              title:{ display:!!useRight, text:useRight ? METRIC_MAP[chartRightMetric].label : '', font:{ weight:'bold' } },
+              grid:{ drawOnChartArea:false },
+              ticks:{ callback:(value) => chartAxisTickLabel(value, chartRightMetric) }
+            }
+          }
+        }
+      });
+      requestAnimationFrame(updateStickyLayout);
     }
 
     function repaintCurrentChart() {
@@ -2202,6 +2377,10 @@
         requestAnimationFrame(updateStickyLayout);
         return;
       }
+      if (comparisonMode === 'month' && monthGraphType === 'yoy') {
+        repaintMonthYoYChart(chartRows);
+        return;
+      }
       const labels = chartRows.map(row => chartRowLabel(row));
       const highlightedLabels = comparisonMode === 'prefecture' ? new Set(Array.from(detectLocationPrefectures()).filter(pref => labels.includes(pref))) : new Set();
       const leftData = chartRows.map(row => chartMetricValue(row, chartLeftMetric));
@@ -2214,7 +2393,7 @@
       const noteText = comparisonMode === 'prefecture'
         ? '※都道府県比較グラフでは、全国行は表示対象から外しています。勤務地入力に該当する都道府県は、棒・点・軸ラベルを強調表示します。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。軸上限を超える値は「↑」で示します。'
         : comparisonMode === 'month'
-          ? '※月別推移グラフでは、期間総計行は表示対象から外し、選択期間内の各月を時系列順に表示します。棒・線・123・↕ボタンで各軸の表示を切り替えられます。'
+          ? '※月別推移グラフでは、期間総計行は表示対象から外し、選択期間内の各月を時系列順に表示します。推移タイプは「全体」「昨年比」を切り替えられます。'
           : '※職種比較グラフでは、キーワードなしの全体行は表示対象から外しています。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。棒・線・123・↕ボタンで各軸の表示を切り替えられます。';
       destroyComparisonChart();
       els.comparisonContent.innerHTML = `
@@ -2400,6 +2579,15 @@
       updateViewControls();
       repaintCurrentTable();
     }));
+    document.addEventListener('click', e => {
+      const btn = e.target.closest('[data-month-trend-type]');
+      if (!btn) return;
+      const next = btn.dataset.monthTrendType || 'overall';
+      if (next === monthGraphType) return;
+      monthGraphType = next;
+      hideAxisCapPopover();
+      repaintCurrentTable();
+    });
     if (els.chartLeftMetric) els.chartLeftMetric.addEventListener('change', () => { chartLeftMetric = els.chartLeftMetric.value || 'cpa'; hideAxisCapPopover(); updateChartStyleButtons(); repaintCurrentTable(); });
     if (els.chartRightMetric) els.chartRightMetric.addEventListener('change', () => { chartRightMetric = els.chartRightMetric.value || 'none'; if (chartRightMetric === 'none') hideAxisCapPopover(); updateChartStyleButtons(); repaintCurrentTable(); });
     document.querySelectorAll('.chart-icon-btn[data-axis]').forEach(btn => {
