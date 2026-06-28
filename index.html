@@ -368,6 +368,9 @@
     .pref-highlight-row td:first-child { box-shadow:inset 5px 0 0 #f59e0b; }
     .summary-row.pref-highlight-row td { background:#ecfeff; color:#164e63; box-shadow:none; }
     .pref-location-cell { display:flex; align-items:center; gap:8px; min-width:0; }
+    .keyword-inline { display:inline-flex; align-items:center; flex-wrap:wrap; gap:6px; min-width:0; }
+    .keyword-term { min-width:0; }
+    .keyword-op-badge { display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:18px; padding:0 8px; border-radius:999px; border:1px solid #cbd5e1; background:#f8fafc; color:#64748b; font-size:10px; font-weight:950; letter-spacing:.06em; line-height:1; box-shadow:inset 0 1px 0 rgba(255,255,255,.9); }
     .pref-rank-badge {
       display:inline-flex;
       align-items:center;
@@ -1292,9 +1295,58 @@
       return visibleMetricIds.map(id => `<td>${esc(metricValueForDisplay(row, id))}</td>`).join('');
     }
 
+    function currentSearchModeOperator() {
+      return els.searchMode.value === 'AND' ? 'AND' : 'OR';
+    }
+
+    function keywordSegmentsToPlain(segments) {
+      return segments.map(seg => seg.type === 'op' ? `[${seg.text}]` : seg.text).join(' ') || 'キーワードなし';
+    }
+
+    function keywordSegmentsToHtml(segments) {
+      const html = segments.map(seg => seg.type === 'op'
+        ? `<span class="keyword-op-badge">${esc(seg.text)}</span>`
+        : `<span class="keyword-term">${esc(seg.text)}</span>`).join('');
+      return html ? `<span class="keyword-inline">${html}</span>` : esc('キーワードなし');
+    }
+
+    function freeKeywordSegments() {
+      const words = splitKeywords(els.freeWordInput.value);
+      if (!words.length) return [{ type:'term', text:'キーワードなし' }];
+      const op = currentSearchModeOperator();
+      const segments = [];
+      words.forEach((word, idx) => {
+        if (idx > 0) segments.push({ type:'op', text:op });
+        segments.push({ type:'term', text:word });
+      });
+      return segments;
+    }
+
     function currentKeywordText() {
-      const v = (els.freeWordInput.value || '').trim();
-      return v || 'キーワードなし';
+      return keywordSegmentsToPlain(freeKeywordSegments());
+    }
+
+    function currentKeywordHtml() {
+      return keywordSegmentsToHtml(freeKeywordSegments());
+    }
+
+    function monthTrendKeywordSegments() {
+      const freeWords = splitKeywords(els.freeWordInput.value);
+      const n = selectedJobTitles.length;
+      const freeSegments = [];
+      const freeOp = currentSearchModeOperator();
+      freeWords.forEach((word, idx) => {
+        if (idx > 0) freeSegments.push({ type:'op', text:freeOp });
+        freeSegments.push({ type:'term', text:word });
+      });
+      if (!freeSegments.length && n === 0) return [{ type:'term', text:'キーワードなし' }];
+      const segments = [...freeSegments];
+      if (n > 0) {
+        const selectedLabel = n === 1 ? selectedJobTitles[0] : `選択${n}職種`;
+        if (segments.length) segments.push({ type:'op', text:'OR' });
+        segments.push({ type:'term', text:selectedLabel });
+      }
+      return segments;
     }
 
     function currentLocationText() {
@@ -1381,19 +1433,19 @@
     }
 
     function combinedKeywordText() {
-      const parts = [(els.freeWordInput.value || '').trim(), ...selectedJobTitles].filter(Boolean);
-      return parts.length ? parts.join(' OR ') : 'キーワードなし';
+      return keywordSegmentsToPlain(monthTrendKeywordSegments());
+    }
+
+    function combinedKeywordHtml() {
+      return keywordSegmentsToHtml(monthTrendKeywordSegments());
     }
 
     function monthTrendKeywordText() {
-      const free = (els.freeWordInput.value || '').trim();
-      const n = selectedJobTitles.length;
-      if (free && n === 0) return free;
-      if (!free && n === 0) return 'キーワードなし';
-      if (!free && n === 1) return selectedJobTitles[0];
-      if (!free && n >= 2) return `選択${n}職種`;
-      if (free && n === 1) return `${free}＋${selectedJobTitles[0]}`;
-      return `${free}＋選択${n}職種`;
+      return keywordSegmentsToPlain(monthTrendKeywordSegments());
+    }
+
+    function monthTrendKeywordHtml() {
+      return keywordSegmentsToHtml(monthTrendKeywordSegments());
     }
 
     function monthTrendKeywordTooltip() {
@@ -1425,6 +1477,7 @@
       if (comparisonMode === 'month') {
         return {
           keyword: monthTrendKeywordText(),
+          keywordHtml: monthTrendKeywordHtml(),
           keywordTitle: monthTrendKeywordTooltip(),
           location: currentLocationText(),
           periodDisplay: row.__summary ? '期間総計' : (row.period_display || formatMonthKeyForDisplay(row.label)),
@@ -1434,17 +1487,18 @@
       if (comparisonMode === 'prefecture') {
         return {
           keyword: monthTrendKeywordText(),
+          keywordHtml: monthTrendKeywordHtml(),
           keywordTitle: monthTrendKeywordTooltip(),
           location: row.__summary ? '全国' : (row.label || '（不明）')
         };
       }
       if (row.__summary) {
-        return { keyword: currentKeywordText(), location: currentLocationText() };
+        return { keyword: currentKeywordText(), keywordHtml: currentKeywordHtml(), location: currentLocationText() };
       }
       if (comparisonMode === 'job') {
-        return { keyword: row.label || 'キーワードなし', location: currentLocationText() };
+        return { keyword: row.label || 'キーワードなし', keywordHtml: row.label ? `<span class="keyword-inline"><span class="keyword-term">${esc(row.label)}</span></span>` : currentKeywordHtml(), location: currentLocationText() };
       }
-      return { keyword: row.label || currentKeywordText(), location: currentLocationText() };
+      return { keyword: row.label || currentKeywordText(), keywordHtml: row.label ? `<span class="keyword-inline"><span class="keyword-term">${esc(row.label)}</span></span>` : currentKeywordHtml(), location: currentLocationText() };
     }
 
     async function buildJobComparison(conn, source) {
@@ -1567,7 +1621,7 @@
       const periodCell = comparisonMode === 'month' ? `<td>${esc(keyLoc.periodDisplay || '')}</td>` : '';
       const keywordTitle = keyLoc.keywordTitle ? ` title="${esc(keyLoc.keywordTitle)}"` : '';
       const rowClasses = [row.__summary ? 'summary-row' : '', row.__prefHighlighted ? 'pref-highlight-row' : ''].filter(Boolean).join(' ');
-      return `<tr class="${rowClasses}"><td${keywordTitle}>${esc(keyLoc.keyword)}</td>${locationCellHtml(row, keyLoc)}${periodCell}${metricCells(row)}</tr>`;
+      return `<tr class="${rowClasses}"><td${keywordTitle}>${keyLoc.keywordHtml || esc(keyLoc.keyword)}</td>${locationCellHtml(row, keyLoc)}${periodCell}${metricCells(row)}</tr>`;
     }
 
     function updateFloatingHorizontalScroll() {
