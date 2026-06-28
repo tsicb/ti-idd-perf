@@ -2343,6 +2343,14 @@
       return `<div class="chart-context"><span class="chart-context-label">集計対象：</span><span class="chart-context-chip" title="${esc(fullText)}">${keywordSegmentsToHtml(displaySegments)}</span>${locationText ? `<span class="chart-context-chip chart-context-location" title="${esc(locationText.trim())}">${esc(locationText.trim())}</span>` : ''}</div>`;
     }
 
+    function monthEmptyChartPanelHtml(message) {
+      return `
+        <div class="chart-panel">
+          ${chartContextHtml()}
+          <div class="empty" style="margin-top:14px;">${esc(message)}</div>
+        </div>`;
+    }
+
     function chartLegendColorValue(value) {
       if (Array.isArray(value)) {
         const found = value.find(v => !!v);
@@ -2566,7 +2574,7 @@
       const defs = result && Array.isArray(result.defs) ? result.defs : [];
       if (!defs.length) {
         destroyComparisonChart();
-        els.comparisonContent.innerHTML = '<div class="empty">都道府県別推移に表示できる都道府県がありません。勤務地欄に「東京 大阪」のように比較したい都道府県を入力してください。</div>';
+        els.comparisonContent.innerHTML = monthEmptyChartPanelHtml('都道府県別推移に表示できる都道府県がありません。勤務地欄に「東京 大阪」のように比較したい都道府県を入力してください。');
         renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
       restorePreservedScroll();
@@ -2796,7 +2804,7 @@
       const defs = result && Array.isArray(result.defs) ? result.defs : [];
       if (!defs.length) {
         destroyComparisonChart();
-        els.comparisonContent.innerHTML = '<div class="empty">職種別推移に表示できる系列がありません。フリーワードを入力するか、関連職種を選択してください。</div>';
+        els.comparisonContent.innerHTML = monthEmptyChartPanelHtml('職種別推移に表示できる系列がありません。フリーワードを入力するか、関連職種を選択してください。');
         renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
       restorePreservedScroll();
