@@ -881,7 +881,7 @@
       els.appArea.classList.remove('hidden');
       els.refreshBtn.disabled = false;
       setStatus('データ読込完了', 'ok');
-      await refreshAll();
+      await refreshAll({ preserveScroll:false });
     }
 
     function renderPeriodOptions() {
@@ -1164,10 +1164,11 @@
       renderTable(result.labelName, result.rows || [], { summaryTotals: result.summaryTotals });
     }
 
-    async function refreshAll() {
-      if (!appState) return;
+    async function refreshAll(options={}) {
+      const scrollState = options.preserveScroll === false ? null : startScrollPreservation();
+      if (!appState) { restorePreservedScroll(scrollState); return; }
       const months = selectedMonths();
-      if (!months.length) { setStatus('対象月なし', 'bad'); return; }
+      if (!months.length) { setStatus('対象月なし', 'bad'); restorePreservedScroll(scrollState); return; }
       els.refreshBtn.disabled = true; setStatus('表示を更新中...', 'warn');
       try {
         const db = await getDb();
@@ -1187,7 +1188,7 @@
         setStatus(`表示中：${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length-1])}`, 'ok');
       } catch (error) {
         console.error(error); log('[ERROR]\n' + (error.stack || error.message)); setStatus('表示エラー', 'bad');
-      } finally { els.refreshBtn.disabled = false; }
+      } finally { els.refreshBtn.disabled = false; restorePreservedScroll(scrollState); }
     }
 
     function calcRates(row) {
@@ -1273,14 +1274,16 @@
       renderComparisonResult(result);
     }
 
-    async function refreshComparisonOnly() {
-      if (!appState) return;
+    async function refreshComparisonOnly(options={}) {
+      const scrollState = options.preserveScroll === false ? null : startScrollPreservation();
+      if (!appState) { restorePreservedScroll(scrollState); return; }
       const months = selectedMonths();
-      if (!months.length) { setStatus('対象月なし', 'bad'); return; }
+      if (!months.length) { setStatus('対象月なし', 'bad'); restorePreservedScroll(scrollState); return; }
       const cached = getComparisonCache();
       if (cached) {
         renderComparisonResult(cached);
         setStatus(`表示中：${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length-1])}`, 'ok');
+        restorePreservedScroll(scrollState);
         return;
       }
       els.refreshBtn.disabled = true;
@@ -1298,7 +1301,85 @@
         console.error(error); log('[ERROR]\n' + (error.stack || error.message)); setStatus('表示エラー', 'bad');
       } finally {
         els.refreshBtn.disabled = false;
+        restorePreservedScroll(scrollState);
       }
+    }
+
+    let pendingScrollRestoreState = null;
+    let pendingScrollRestoreUntil = 0;
+
+    function comparisonScrollLeftFallback() {
+      const body = els.comparisonContent ? els.comparisonContent.querySelector('.table-wrap') : null;
+      const freeze = els.comparisonContent ? els.comparisonContent.querySelector('.comparison-freeze-pane') : null;
+      const chart = els.comparisonContent ? els.comparisonContent.querySelector('.chart-scroll') : null;
+      const floating = els.floatingXScroll;
+      return (chart && chart.scrollLeft) || (body && body.scrollLeft) || (freeze && freeze.scrollLeft) || (floating && floating.scrollLeft) || 0;
+    }
+
+    function captureScrollState() {
+      const body = els.comparisonContent ? els.comparisonContent.querySelector('.table-wrap') : null;
+      const freeze = els.comparisonContent ? els.comparisonContent.querySelector('.comparison-freeze-pane') : null;
+      const chart = els.comparisonContent ? els.comparisonContent.querySelector('.chart-scroll') : null;
+      const floating = els.floatingXScroll;
+      const left = comparisonScrollLeftFallback();
+      return {
+        windowX: window.scrollX || window.pageXOffset || 0,
+        windowY: window.scrollY || window.pageYOffset || 0,
+        comparisonLeft: left,
+        tableLeft: body ? body.scrollLeft : left,
+        freezeLeft: freeze ? freeze.scrollLeft : left,
+        chartLeft: chart ? chart.scrollLeft : left,
+        floatingLeft: floating ? floating.scrollLeft : left
+      };
+    }
+
+    function startScrollPreservation() {
+      const state = captureScrollState();
+      pendingScrollRestoreState = state;
+      pendingScrollRestoreUntil = Date.now() + 4000;
+      return state;
+    }
+
+    function clampScrollLeft(el, value) {
+      if (!el) return;
+      const max = Math.max(0, (el.scrollWidth || 0) - (el.clientWidth || 0));
+      el.scrollLeft = Math.max(0, Math.min(Number(value || 0), max));
+    }
+
+    function applyScrollState(state) {
+      if (!state) return;
+      const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      const maxX = Math.max(0, document.documentElement.scrollWidth - window.innerWidth);
+      window.scrollTo({
+        left: Math.max(0, Math.min(Number(state.windowX || 0), maxX)),
+        top: Math.max(0, Math.min(Number(state.windowY || 0), maxY)),
+        behavior: 'auto'
+      });
+      const body = els.comparisonContent ? els.comparisonContent.querySelector('.table-wrap') : null;
+      const freeze = els.comparisonContent ? els.comparisonContent.querySelector('.comparison-freeze-pane') : null;
+      const chart = els.comparisonContent ? els.comparisonContent.querySelector('.chart-scroll') : null;
+      const left = Number(state.comparisonLeft || 0);
+      clampScrollLeft(body, state.tableLeft ?? left);
+      clampScrollLeft(freeze, state.freezeLeft ?? left);
+      clampScrollLeft(chart, state.chartLeft ?? left);
+      clampScrollLeft(els.floatingXScroll, state.floatingLeft ?? left);
+      updateFloatingHorizontalScroll();
+    }
+
+    function restorePreservedScroll(state=null) {
+      const target = state || (Date.now() <= pendingScrollRestoreUntil ? pendingScrollRestoreState : null);
+      if (!target) return;
+      const run = () => applyScrollState(target);
+      requestAnimationFrame(() => requestAnimationFrame(run));
+      window.setTimeout(run, 60);
+      window.setTimeout(run, 180);
+      window.setTimeout(run, 500);
+      window.setTimeout(() => {
+        if (pendingScrollRestoreState === target) {
+          pendingScrollRestoreState = null;
+          pendingScrollRestoreUntil = 0;
+        }
+      }, 4200);
     }
 
     function updateComparisonControls() {
@@ -1325,7 +1406,7 @@
       visibleMetricIds = safeIds.length ? safeIds : [...COLUMN_PRESETS.standard];
       updateColumnMenuLabel();
       renderColumnPopover();
-      repaintCurrentTable();
+      repaintCurrentTable(true);
     }
 
     function applyColumnPreset(presetId) {
@@ -1428,7 +1509,7 @@
           setAxisCapMode(axis, input.value);
           renderAxisCapPopover(axis, anchorBtn);
           updateChartStyleButtons();
-          repaintCurrentTable();
+          repaintCurrentTable(true);
         });
       });
       const manualInput = els.chartAxisPopover.querySelector('#axisCapManualInput');
@@ -1437,7 +1518,7 @@
           setAxisCapManualValue(axis, manualInput.value);
           setAxisCapMode(axis, 'manual');
           updateChartStyleButtons();
-          repaintCurrentTable();
+          repaintCurrentTable(true);
         });
         manualInput.addEventListener('keydown', e => {
           if (e.key === 'Enter') { e.preventDefault(); hideAxisCapPopover(); }
@@ -1503,7 +1584,7 @@
         else chartLeftType = style;
       }
       updateChartStyleButtons();
-      repaintCurrentTable();
+      repaintCurrentTable(true);
     }
 
     function updateViewControls() {
@@ -1517,6 +1598,7 @@
       if (els.floatingXScroll && outputView === 'chart') els.floatingXScroll.classList.add('hidden');
       renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
     }
 
     function tableHeaders() {
@@ -2409,6 +2491,7 @@
         els.comparisonContent.innerHTML = '<div class="empty">都道府県別推移に表示できる都道府県がありません。勤務地欄に「東京 大阪」のように比較したい都道府県を入力してください。</div>';
         renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
         return;
       }
       const months = result.months && result.months.length ? result.months : selectedMonths();
@@ -2464,6 +2547,7 @@
         els.comparisonContent.innerHTML = '<div class="empty">グラフライブラリを読み込めませんでした。</div>';
         renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
         return;
       }
       comparisonChart = new window.Chart(canvas, {
@@ -2517,6 +2601,7 @@
       });
       renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
     }
 
     async function repaintMonthPrefTrendChartAsync(token) {
@@ -2524,6 +2609,7 @@
       els.comparisonContent.innerHTML = `<div class="chart-panel"><div class="empty">都道府県別推移グラフを集計中...</div></div>`;
       renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
       try {
         const data = await fetchMonthPrefTrendData();
         if (token !== monthGraphRenderToken) return;
@@ -2534,6 +2620,7 @@
         els.comparisonContent.innerHTML = '<div class="empty">都道府県別推移グラフの集計中にエラーが発生しました。</div>';
         renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
       }
     }
 
@@ -2631,6 +2718,7 @@
         els.comparisonContent.innerHTML = '<div class="empty">職種別推移に表示できる系列がありません。フリーワードを入力するか、関連職種を選択してください。</div>';
         renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
         return;
       }
       const months = result.months && result.months.length ? result.months : selectedMonths();
@@ -2686,6 +2774,7 @@
         els.comparisonContent.innerHTML = '<div class="empty">グラフライブラリを読み込めませんでした。</div>';
         renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
         return;
       }
       comparisonChart = new window.Chart(canvas, {
@@ -2739,6 +2828,7 @@
       });
       renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
     }
 
     async function repaintMonthJobTrendChartAsync(token) {
@@ -2746,6 +2836,7 @@
       els.comparisonContent.innerHTML = `<div class="chart-panel"><div class="empty">職種別推移グラフを集計中...</div></div>`;
       renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
       try {
         const data = await fetchMonthJobTrendData();
         if (token !== monthGraphRenderToken) return;
@@ -2756,6 +2847,7 @@
         els.comparisonContent.innerHTML = '<div class="empty">職種別推移グラフの集計中にエラーが発生しました。</div>';
         renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
       }
     }
 
@@ -2766,6 +2858,7 @@
         els.comparisonContent.innerHTML = '<div class="empty">昨年比グラフに表示できる月別データがありません。</div>';
         renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
         return;
       }
       const rowMap = monthYoYRowMap(chartRows);
@@ -2812,6 +2905,7 @@
         els.comparisonContent.innerHTML = '<div class="empty">グラフライブラリを読み込めませんでした。</div>';
         renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
         return;
       }
       comparisonChart = new window.Chart(canvas, {
@@ -2865,6 +2959,7 @@
       });
       renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
     }
 
     function repaintCurrentChart() {
@@ -2895,6 +2990,7 @@
             : '<div class="empty">グラフに表示できる比較行がありません。フリーワードを入力するか、上の職種候補をクリックしてください。</div>';
         renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
         return;
       }
       if (comparisonMode === 'month' && monthGraphType === 'yoy') {
@@ -2933,6 +3029,7 @@
         els.comparisonContent.innerHTML = '<div class="empty">グラフライブラリを読み込めませんでした。</div>';
         renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
         return;
       }
       const datasets = [chartDatasetConfig('left', chartLeftMetric, leftData, chartLeftType, chartLeftLabels, labels, highlightedLabels, leftCap)];
@@ -2996,12 +3093,15 @@
       });
       renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
     }
 
-    function repaintCurrentTable() {
+    function repaintCurrentTable(preserveScroll=false) {
+      const scrollState = preserveScroll ? startScrollPreservation() : null;
       updateViewControls();
       if (outputView === 'chart') {
         repaintCurrentChart();
+        restorePreservedScroll(scrollState);
         return;
       }
       destroyComparisonChart();
@@ -3011,6 +3111,7 @@
         if (els.floatingXScroll) els.floatingXScroll.classList.add('hidden');
         renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
         return;
       }
       const colGroup = tableColGroup();
@@ -3024,7 +3125,7 @@
         ? bodyRows.map(row => rowHtml(row)).join('')
         : '';
       els.comparisonContent.innerHTML = `${freezeHtml}<div class="table-wrap"><table class="metric-table">${colGroup}<tbody>${bodyHtml}</tbody></table></div>${lastTableHelper}`;
-      requestAnimationFrame(() => { updateStickyLayout(); syncComparisonHorizontalScroll(); });
+      requestAnimationFrame(() => { updateStickyLayout(); syncComparisonHorizontalScroll(); restorePreservedScroll(scrollState); });
     }
 
     function renderTable(labelName, rows, options={}) {
@@ -3109,7 +3210,7 @@
     document.querySelectorAll('.view-tab').forEach(btn => btn.addEventListener('click', () => {
       outputView = btn.dataset.view === 'chart' ? 'chart' : 'table';
       updateViewControls();
-      repaintCurrentTable();
+      repaintCurrentTable(true);
     }));
     document.addEventListener('click', e => {
       const btn = e.target.closest('[data-month-trend-type]');
@@ -3118,10 +3219,10 @@
       if (next === monthGraphType) return;
       monthGraphType = next;
       hideAxisCapPopover();
-      repaintCurrentTable();
+      repaintCurrentTable(true);
     });
-    if (els.chartLeftMetric) els.chartLeftMetric.addEventListener('change', () => { chartLeftMetric = els.chartLeftMetric.value || 'cpa'; hideAxisCapPopover(); updateChartStyleButtons(); repaintCurrentTable(); });
-    if (els.chartRightMetric) els.chartRightMetric.addEventListener('change', () => { chartRightMetric = els.chartRightMetric.value || 'none'; if (chartRightMetric === 'none') hideAxisCapPopover(); updateChartStyleButtons(); repaintCurrentTable(); });
+    if (els.chartLeftMetric) els.chartLeftMetric.addEventListener('change', () => { chartLeftMetric = els.chartLeftMetric.value || 'cpa'; hideAxisCapPopover(); updateChartStyleButtons(); repaintCurrentTable(true); });
+    if (els.chartRightMetric) els.chartRightMetric.addEventListener('change', () => { chartRightMetric = els.chartRightMetric.value || 'none'; if (chartRightMetric === 'none') hideAxisCapPopover(); updateChartStyleButtons(); repaintCurrentTable(true); });
     document.querySelectorAll('.chart-icon-btn[data-axis]').forEach(btn => {
       btn.addEventListener('click', (e) => { e.stopPropagation(); setChartAxisStyle(btn.dataset.axis, btn.dataset.style, btn); });
     });
