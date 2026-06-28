@@ -414,6 +414,11 @@
     .chart-panel { overflow-x:auto; overflow-y:hidden; padding:8px 4px 4px; }
     .chart-canvas-wrap { min-width:860px; height:460px; background:#fff; border:2px solid #f5f5f4; border-radius:22px; padding:18px 18px 12px; }
     .chart-note { margin:10px 4px 0; font-size:12px; font-weight:800; color:#78716c; }
+    .chart-context { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0 4px 10px; color:#57534e; font-size:12px; font-weight:900; }
+    .chart-context-label { color:#78716c; }
+    .chart-context-chip { display:inline-flex; align-items:center; gap:6px; max-width:100%; padding:5px 10px; border-radius:999px; border:1px solid #fed7aa; background:#fff7ed; color:#7c2d12; box-shadow:inset 0 1px 0 rgba(255,255,255,.9); }
+    .chart-context-chip .keyword-inline { gap:5px; }
+    .chart-context-chip .keyword-op-badge { height:16px; min-width:30px; padding:0 7px; font-size:9px; background:#fff; border-color:#fdba74; color:#9a3412; }
     .comparison-card.chart-view .table-operation-actions { display:none; }
     .comparison-card.table-view .chart-controls { display:none; }
     .table-wrap tbody tr.pref-highlight-row:hover td { background:#fef3c7; }
@@ -1887,6 +1892,13 @@
       }
     };
 
+    function chartRowLabel(row) {
+      const keyLoc = tableKeyLocation(row);
+      if (comparisonMode === 'prefecture') return keyLoc.location || row.label || '（不明）';
+      if (comparisonMode === 'month') return keyLoc.periodDisplay || row.label || '（不明）';
+      return keyLoc.keyword || row.label || 'キーワードなし';
+    }
+
     function chartSortRows(rows, metricId) {
       const lowerBetter = LOWER_IS_BETTER_METRICS.has(metricId);
       return [...rows].sort((a, b) => {
@@ -1900,7 +1912,7 @@
           if (appliesDiff) return appliesDiff;
           const clicksDiff = Number(b.clicks || 0) - Number(a.clicks || 0);
           if (clicksDiff) return clicksDiff;
-          return String(tableKeyLocation(a).keyword || '').localeCompare(String(tableKeyLocation(b).keyword || ''), 'ja');
+          return String(chartRowLabel(a) || '').localeCompare(String(chartRowLabel(b) || ''), 'ja');
         }
         if (aOk) return -1;
         if (bOk) return 1;
@@ -1908,17 +1920,27 @@
         if (clicksDiff) return clicksDiff;
         const impressionsDiff = Number(b.impressions || 0) - Number(a.impressions || 0);
         if (impressionsDiff) return impressionsDiff;
-        return String(tableKeyLocation(a).keyword || '').localeCompare(String(tableKeyLocation(b).keyword || ''), 'ja');
+        return String(chartRowLabel(a) || '').localeCompare(String(chartRowLabel(b) || ''), 'ja');
       });
     }
 
     function rowsForCurrentChart() {
-      if (comparisonMode !== 'job') return [];
-      const hasFreeKeyword = splitKeywords(els.freeWordInput.value).length > 0;
-      return lastDisplayRows.filter(row => {
-        if (!row.__summary) return true;
-        return hasFreeKeyword;
-      });
+      if (comparisonMode === 'job') {
+        const hasFreeKeyword = splitKeywords(els.freeWordInput.value).length > 0;
+        return lastDisplayRows.filter(row => {
+          if (!row.__summary) return true;
+          return hasFreeKeyword;
+        });
+      }
+      if (comparisonMode === 'prefecture') {
+        return lastDisplayRows.filter(row => !row.__summary);
+      }
+      return [];
+    }
+
+    function chartContextHtml() {
+      if (comparisonMode !== 'prefecture') return '';
+      return `<div class="chart-context"><span class="chart-context-label">集計対象：</span><span class="chart-context-chip">${monthTrendKeywordHtml()}</span></div>`;
     }
 
     function destroyComparisonChart() {
@@ -1936,31 +1958,37 @@
         comparisonScrollSyncCleanup();
         comparisonScrollSyncCleanup = null;
       }
-      if (comparisonMode !== 'job') {
+      if (comparisonMode === 'month') {
         destroyComparisonChart();
-        els.comparisonContent.innerHTML = '<div class="empty">グラフ表示は、まず職種比較モードから対応しています。</div>';
+        els.comparisonContent.innerHTML = '<div class="empty">月別推移のグラフ表示は次ステップで対応予定です。</div>';
         requestAnimationFrame(updateStickyLayout);
         return;
       }
       const chartRows = chartSortRows(rowsForCurrentChart(), chartLeftMetric);
       if (!chartRows.length) {
         destroyComparisonChart();
-        els.comparisonContent.innerHTML = '<div class="empty">グラフに表示できる比較行がありません。フリーワードを入力するか、上の職種候補をクリックしてください。</div>';
+        els.comparisonContent.innerHTML = comparisonMode === 'prefecture'
+          ? '<div class="empty">グラフに表示できる都道府県データがありません。</div>'
+          : '<div class="empty">グラフに表示できる比較行がありません。フリーワードを入力するか、上の職種候補をクリックしてください。</div>';
         requestAnimationFrame(updateStickyLayout);
         return;
       }
-      const labels = chartRows.map(row => tableKeyLocation(row).keyword || 'キーワードなし');
+      const labels = chartRows.map(row => chartRowLabel(row));
       const leftData = chartRows.map(row => chartMetricValue(row, chartLeftMetric));
       const useRight = chartRightMetric && chartRightMetric !== 'none' && chartRightMetric !== chartLeftMetric;
       const rightData = useRight ? chartRows.map(row => chartMetricValue(row, chartRightMetric)) : [];
-      const minWidth = Math.max(860, labels.length * 86);
+      const minWidth = Math.max(860, labels.length * (comparisonMode === 'prefecture' ? 58 : 86));
+      const noteText = comparisonMode === 'prefecture'
+        ? '※都道府県比較グラフでは、全国行は表示対象から外しています。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。棒・線・123ボタンで各軸の表示を切り替えられます。'
+        : '※職種比較グラフでは、キーワードなしの全体行は表示対象から外しています。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。棒・線・123ボタンで各軸の表示を切り替えられます。';
       destroyComparisonChart();
       els.comparisonContent.innerHTML = `
         <div class="chart-panel">
+          ${chartContextHtml()}
           <div class="chart-canvas-wrap" style="min-width:${minWidth}px;">
             <canvas id="comparisonChartCanvas"></canvas>
           </div>
-          <div class="chart-note">※職種比較グラフでは、キーワードなしの全体行は表示対象から外しています。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。棒・線・123ボタンで各軸の表示を切り替えられます。</div>
+          <div class="chart-note">${esc(noteText)}</div>
         </div>`;
       const canvas = document.getElementById('comparisonChartCanvas');
       if (!canvas || !window.Chart) {
