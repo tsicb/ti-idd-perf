@@ -401,7 +401,7 @@
     .view-tab { border:0; background:transparent; color:#64748b; font-family:inherit; font-weight:950; font-size:15px; padding:8px 15px; border-radius:999px; cursor:pointer; line-height:1; transition:.12s; }
     .view-tab:hover { color:#0f172a; background:rgba(255,255,255,.72); }
     .view-tab.active { background:linear-gradient(180deg,#38bdf8,#0ea5e9); color:#fff; box-shadow:0 3px 0 #0369a1; }
-    .chart-controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:5px 8px; border-radius:16px; background:#fff7ed; border:1px solid #fed7aa; }
+    .chart-controls { position:relative; display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:5px 8px; border-radius:16px; background:#fff7ed; border:1px solid #fed7aa; }
     .chart-control { display:flex; align-items:center; gap:5px; font-size:12px; font-weight:950; color:#7c2d12; }
     .chart-control select { width:auto; min-width:104px; padding:7px 28px 7px 10px; border-radius:12px; border-width:2px; background-color:#fff; font-size:12px; }
     .chart-style-mini { display:inline-flex; align-items:center; gap:2px; padding:2px; border-radius:10px; background:#ffedd5; border:1px solid #fed7aa; }
@@ -409,6 +409,7 @@
     .chart-icon-btn:hover { background:rgba(255,255,255,.72); color:#7c2d12; }
     .chart-icon-btn.active { background:linear-gradient(180deg,#ffffff,#fed7aa); color:#c2410c; box-shadow:0 2px 0 #fdba74, inset 0 1px 0 rgba(255,255,255,.9); }
     .chart-icon-btn.label-active { background:linear-gradient(180deg,#ecfeff,#bae6fd); color:#0369a1; box-shadow:0 2px 0 #7dd3fc, inset 0 1px 0 rgba(255,255,255,.9); }
+    .chart-icon-btn.cap-active { background:linear-gradient(180deg,#fef9c3,#fde68a); color:#854d0e; box-shadow:0 2px 0 #facc15, inset 0 1px 0 rgba(255,255,255,.9); }
     .chart-style-mini.disabled { opacity:.42; filter:grayscale(.2); }
     .chart-style-mini.disabled .chart-icon-btn { pointer-events:none; cursor:not-allowed; }
     .chart-panel { overflow-x:auto; overflow-y:hidden; padding:8px 4px 4px; }
@@ -420,6 +421,17 @@
     .chart-context-chip .keyword-inline { gap:5px; }
     .chart-context-chip .keyword-op-badge { height:16px; min-width:30px; padding:0 7px; font-size:9px; background:#fff; border-color:#fdba74; color:#9a3412; }
     .chart-context-location { border-color:#facc15; background:#fef9c3; color:#854d0e; }
+    .chart-context-cap { border-color:#bae6fd; background:#ecfeff; color:#075985; }
+    .axis-cap-popover { position:fixed; z-index:3000; width:224px; padding:12px; border-radius:18px; border:2px solid #fed7aa; background:#fff; box-shadow:0 18px 50px rgba(67,20,7,.22); color:#44403c; }
+    .axis-cap-popover.hidden { display:none; }
+    .axis-cap-title { font-size:13px; font-weight:950; color:#7c2d12; margin-bottom:8px; }
+    .axis-cap-option { display:flex; align-items:center; gap:7px; padding:7px 6px; border-radius:12px; font-size:13px; font-weight:850; cursor:pointer; }
+    .axis-cap-option:hover { background:#fff7ed; }
+    .axis-cap-option input { accent-color:#f97316; }
+    .axis-cap-manual { margin:6px 6px 2px 28px; }
+    .axis-cap-manual input { width:100%; padding:8px 10px; border:2px solid #e7e5e4; border-radius:12px; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight:850; }
+    .axis-cap-manual input:focus { outline:none; border-color:#fdba74; box-shadow:0 0 0 4px rgba(253,186,116,.18); }
+    .axis-cap-help { margin:8px 6px 0; color:#78716c; font-size:11px; font-weight:800; line-height:1.45; }
     .comparison-card.chart-view .table-operation-actions { display:none; }
     .comparison-card.table-view .chart-controls { display:none; }
     .table-wrap tbody tr.pref-highlight-row:hover td { background:#fef3c7; }
@@ -528,6 +540,7 @@
                 <button class="chart-icon-btn" data-axis="left" data-style="bar" type="button" title="左軸を棒グラフで表示">▮</button>
                 <button class="chart-icon-btn" data-axis="left" data-style="line" type="button" title="左軸を折れ線グラフで表示">⌁</button>
                 <button class="chart-icon-btn" data-axis="left" data-style="label" type="button" title="左軸のデータラベルを表示/非表示">123</button>
+                <button class="chart-icon-btn" data-axis="left" data-style="cap" type="button" title="左軸の上限を調整">↕</button>
               </span>
               <select id="chartLeftMetric"></select>
             </label>
@@ -536,9 +549,11 @@
                 <button class="chart-icon-btn" data-axis="right" data-style="bar" type="button" title="右軸を棒グラフで表示">▮</button>
                 <button class="chart-icon-btn" data-axis="right" data-style="line" type="button" title="右軸を折れ線グラフで表示">⌁</button>
                 <button class="chart-icon-btn" data-axis="right" data-style="label" type="button" title="右軸のデータラベルを表示/非表示">123</button>
+                <button class="chart-icon-btn" data-axis="right" data-style="cap" type="button" title="右軸の上限を調整">↕</button>
               </span>
               <select id="chartRightMetric"></select>
             </label>
+            <div id="chartAxisPopover" class="axis-cap-popover hidden"></div>
           </div>
           <div class="table-head-actions">
             <div class="tabs">
@@ -575,7 +590,7 @@
       datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), searchFiltersShell: document.getElementById('searchFiltersShell'), searchFilters: document.getElementById('searchFilters'), searchFiltersPlaceholder: document.getElementById('searchFiltersPlaceholder'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'),
       searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalAll: document.getElementById('periodModalAll'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
       relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
-      comparisonToolbar: document.getElementById('comparisonToolbar'), comparisonContent: document.getElementById('comparisonContent'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), columnMenuBtn: document.getElementById('columnMenuBtn'), columnPopover: document.getElementById('columnPopover'), chartControls: document.getElementById('chartControls'), chartLeftMetric: document.getElementById('chartLeftMetric'), chartRightMetric: document.getElementById('chartRightMetric'), floatingXScroll: document.getElementById('floatingXScroll'), floatingXScrollInner: document.getElementById('floatingXScrollInner'), log: document.getElementById('log')
+      comparisonToolbar: document.getElementById('comparisonToolbar'), comparisonContent: document.getElementById('comparisonContent'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), columnMenuBtn: document.getElementById('columnMenuBtn'), columnPopover: document.getElementById('columnPopover'), chartControls: document.getElementById('chartControls'), chartLeftMetric: document.getElementById('chartLeftMetric'), chartRightMetric: document.getElementById('chartRightMetric'), chartAxisPopover: document.getElementById('chartAxisPopover'), floatingXScroll: document.getElementById('floatingXScroll'), floatingXScrollInner: document.getElementById('floatingXScrollInner'), log: document.getElementById('log')
     };
 
     // カード（backdrop-filter）内にモーダルを置くと、下のカードの重なり順に負けることがあるため、body直下へ移動します。
@@ -594,6 +609,11 @@
     let chartRightType = 'line';
     let chartLeftLabels = false;
     let chartRightLabels = false;
+    let chartLeftCapMode = 'auto';
+    let chartRightCapMode = 'auto';
+    let chartLeftCapManual = '';
+    let chartRightCapManual = '';
+    let activeAxisCapPopover = null;
     let comparisonChart = null;
     let lastCopyRows = [];
     let lastDisplayRows = [];
@@ -1325,6 +1345,84 @@
       updateChartStyleButtons();
     }
 
+    function axisCapMode(axis) {
+      return axis === 'right' ? chartRightCapMode : chartLeftCapMode;
+    }
+
+    function axisCapManualValue(axis) {
+      return axis === 'right' ? chartRightCapManual : chartLeftCapManual;
+    }
+
+    function setAxisCapMode(axis, mode) {
+      if (axis === 'right') chartRightCapMode = mode;
+      else chartLeftCapMode = mode;
+    }
+
+    function setAxisCapManualValue(axis, value) {
+      if (axis === 'right') chartRightCapManual = value;
+      else chartLeftCapManual = value;
+    }
+
+    function hideAxisCapPopover() {
+      if (!els.chartAxisPopover) return;
+      els.chartAxisPopover.classList.add('hidden');
+      els.chartAxisPopover.innerHTML = '';
+      activeAxisCapPopover = null;
+    }
+
+    function renderAxisCapPopover(axis, anchorBtn) {
+      if (!els.chartAxisPopover) return;
+      const axisLabel = axis === 'right' ? '右軸' : '左軸';
+      const mode = axisCapMode(axis);
+      const manual = axisCapManualValue(axis);
+      els.chartAxisPopover.innerHTML = `
+        <div class="axis-cap-title">${axisLabel}の上限</div>
+        <label class="axis-cap-option"><input type="radio" name="axisCapMode" value="auto" ${mode === 'auto' ? 'checked' : ''}>自動</label>
+        <label class="axis-cap-option"><input type="radio" name="axisCapMode" value="outlier" ${mode === 'outlier' ? 'checked' : ''}>外れ値を抑える</label>
+        <label class="axis-cap-option"><input type="radio" name="axisCapMode" value="manual" ${mode === 'manual' ? 'checked' : ''}>手入力</label>
+        <div class="axis-cap-manual"><input id="axisCapManualInput" type="text" inputmode="numeric" placeholder="例：50000" value="${esc(manual)}" ${mode === 'manual' ? '' : 'disabled'}></div>
+        <div class="axis-cap-help">上限を超える値は上端に「↑」で表示します。tooltipでは実数値を確認できます。</div>`;
+      els.chartAxisPopover.querySelectorAll('input[name="axisCapMode"]').forEach(input => {
+        input.addEventListener('change', () => {
+          setAxisCapMode(axis, input.value);
+          renderAxisCapPopover(axis, anchorBtn);
+          updateChartStyleButtons();
+          repaintCurrentTable();
+        });
+      });
+      const manualInput = els.chartAxisPopover.querySelector('#axisCapManualInput');
+      if (manualInput) {
+        manualInput.addEventListener('input', () => {
+          setAxisCapManualValue(axis, manualInput.value);
+          setAxisCapMode(axis, 'manual');
+          updateChartStyleButtons();
+          repaintCurrentTable();
+        });
+        manualInput.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { e.preventDefault(); hideAxisCapPopover(); }
+        });
+      }
+      els.chartAxisPopover.classList.remove('hidden');
+      activeAxisCapPopover = axis;
+      const rect = anchorBtn.getBoundingClientRect();
+      const popRect = els.chartAxisPopover.getBoundingClientRect();
+      let left = rect.left;
+      let top = rect.bottom + 8;
+      if (left + popRect.width > window.innerWidth - 12) left = window.innerWidth - popRect.width - 12;
+      if (top + popRect.height > window.innerHeight - 12) top = Math.max(12, rect.top - popRect.height - 8);
+      els.chartAxisPopover.style.left = `${Math.max(12, left)}px`;
+      els.chartAxisPopover.style.top = `${Math.max(12, top)}px`;
+    }
+
+    function toggleAxisCapPopover(axis, anchorBtn) {
+      if (axis === 'right' && (!chartRightMetric || chartRightMetric === 'none')) return;
+      if (activeAxisCapPopover === axis && els.chartAxisPopover && !els.chartAxisPopover.classList.contains('hidden')) {
+        hideAxisCapPopover();
+        return;
+      }
+      renderAxisCapPopover(axis, anchorBtn);
+    }
+
     function updateChartStyleButtons() {
       document.querySelectorAll('[data-axis-controls]').forEach(group => {
         const axis = group.dataset.axisControls;
@@ -1336,14 +1434,22 @@
         const style = btn.dataset.style;
         const type = axis === 'right' ? chartRightType : chartLeftType;
         const labelsOn = axis === 'right' ? chartRightLabels : chartLeftLabels;
-        btn.classList.toggle('active', style !== 'label' && style === type);
+        const capOn = axisCapMode(axis) !== 'auto';
+        btn.classList.toggle('active', style !== 'label' && style !== 'cap' && style === type);
         btn.classList.toggle('label-active', style === 'label' && labelsOn);
-        btn.setAttribute('aria-pressed', style === 'label' ? String(labelsOn) : String(style === type));
+        btn.classList.toggle('cap-active', style === 'cap' && capOn);
+        btn.setAttribute('aria-pressed', style === 'label' ? String(labelsOn) : (style === 'cap' ? String(capOn) : String(style === type)));
       });
     }
 
-    function setChartAxisStyle(axis, style) {
+    function setChartAxisStyle(axis, style, anchorBtn=null) {
       if (axis === 'right' && (!chartRightMetric || chartRightMetric === 'none')) return;
+      if (style === 'cap') {
+        toggleAxisCapPopover(axis, anchorBtn || document.querySelector(`.chart-icon-btn[data-axis="${axis}"][data-style="cap"]`));
+        updateChartStyleButtons();
+        return;
+      }
+      hideAxisCapPopover();
       if (style === 'label') {
         if (axis === 'right') chartRightLabels = !chartRightLabels;
         else chartLeftLabels = !chartLeftLabels;
@@ -1880,6 +1986,53 @@
       return fmtNum(value, 0);
     }
 
+    function parseAxisCapInput(value) {
+      const n = Number(String(value || '').replace(/[¥￥,，\s]/g, ''));
+      return Number.isFinite(n) && n > 0 ? n : null;
+    }
+
+    function niceCeil(value) {
+      const n = Number(value);
+      if (!Number.isFinite(n) || n <= 0) return null;
+      const exponent = Math.floor(Math.log10(n));
+      const base = Math.pow(10, exponent);
+      const ratio = n / base;
+      const niceRatio = ratio <= 1 ? 1 : ratio <= 2 ? 2 : ratio <= 5 ? 5 : 10;
+      return niceRatio * base;
+    }
+
+    function outlierAxisCap(values) {
+      const nums = (values || []).filter(v => v !== null && v !== undefined && Number.isFinite(Number(v))).map(Number).sort((a,b) => a-b);
+      if (nums.length < 6) return null;
+      const max = nums[nums.length - 1];
+      const idx = Math.max(0, Math.min(nums.length - 1, Math.ceil(nums.length * 0.95) - 1));
+      const p95 = nums[idx];
+      if (!Number.isFinite(p95) || p95 <= 0) return null;
+      const cap = niceCeil(p95 * 1.08);
+      if (!cap || cap >= max) return null;
+      return cap;
+    }
+
+    function resolveAxisCap(axis, values) {
+      const mode = axisCapMode(axis);
+      if (mode === 'manual') return parseAxisCapInput(axisCapManualValue(axis));
+      if (mode === 'outlier') return outlierAxisCap(values);
+      return null;
+    }
+
+    function chartAxisCapLabel(axis, capValue, metricId) {
+      if (!capValue) return '';
+      const axisLabel = axis === 'right' ? '右軸' : '左軸';
+      const mode = axisCapMode(axis);
+      const modeText = mode === 'outlier' ? '外れ値抑制中' : '表示上限';
+      return `${axisLabel}：${modeText} ${chartValueLabel(capValue, metricId)}`;
+    }
+
+    function chartCapContextHtml(messages) {
+      if (!messages || !messages.length) return '';
+      return `<div class="chart-context"><span class="chart-context-chip chart-context-cap" title="${esc(messages.join('\\n'))}">${esc(messages.join(' / '))}</span></div>`;
+    }
+
     function chartDatasetColor(axis) {
       if (axis === 'right') {
         return { border:'rgba(14,165,233,.95)', background:'rgba(14,165,233,.16)', fill:'rgba(14,165,233,.08)' };
@@ -1887,7 +2040,7 @@
       return { border:'rgba(194,65,12,.95)', background:'rgba(249,115,22,.72)', fill:'rgba(249,115,22,.10)' };
     }
 
-    function chartDatasetConfig(axis, metricId, data, type, showLabels, labels=[], highlightedLabels=new Set()) {
+    function chartDatasetConfig(axis, metricId, data, type, showLabels, labels=[], highlightedLabels=new Set(), axisCap=null) {
       const colors = chartDatasetColor(axis);
       const isLine = type === 'line';
       const yAxisID = axis === 'right' ? 'yRight' : 'yLeft';
@@ -1901,6 +2054,7 @@
         label: METRIC_MAP[metricId].label,
         data,
         yAxisID,
+        axisCap,
         backgroundColor: isLine
           ? colors.fill
           : (hasHighlights ? highlightFlags.map(flag => flag ? highlightBackground : colors.background) : colors.background),
@@ -1929,20 +2083,23 @@
         const { ctx, chartArea } = chart;
         ctx.save();
         chart.data.datasets.forEach((dataset, datasetIndex) => {
-          if (!dataset.showDataLabels) return;
           const meta = chart.getDatasetMeta(datasetIndex);
           if (!meta || meta.hidden) return;
           const metricId = dataset.yAxisID === 'yRight' ? chartRightMetric : chartLeftMetric;
+          const axisCap = dataset.axisCap;
           meta.data.forEach((element, index) => {
             const rawValue = dataset.data[index];
             if (rawValue === null || rawValue === undefined || !Number.isFinite(Number(rawValue))) return;
+            const isCapped = axisCap && Number(rawValue) > Number(axisCap);
+            if (!dataset.showDataLabels && !isCapped) return;
             const pos = element.tooltipPosition ? element.tooltipPosition() : { x: element.x, y: element.y };
-            const label = chartValueLabel(rawValue, metricId);
+            const label = isCapped ? (dataset.showDataLabels ? `↑ ${chartValueLabel(rawValue, metricId)}` : '↑') : chartValueLabel(rawValue, metricId);
             ctx.font = '700 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
-            ctx.fillStyle = dataset.borderColor || '#334155';
-            const y = Math.max(chartArea.top + 12, pos.y - 7);
+            const borderColor = Array.isArray(dataset.borderColor) ? dataset.borderColor[index] : dataset.borderColor;
+            ctx.fillStyle = borderColor || '#334155';
+            const y = isCapped ? (chartArea.top + 18 + datasetIndex * 14) : Math.max(chartArea.top + 12, pos.y - 7);
             ctx.fillText(label, pos.x, y);
           });
         });
@@ -2040,14 +2197,18 @@
       const leftData = chartRows.map(row => chartMetricValue(row, chartLeftMetric));
       const useRight = chartRightMetric && chartRightMetric !== 'none' && chartRightMetric !== chartLeftMetric;
       const rightData = useRight ? chartRows.map(row => chartMetricValue(row, chartRightMetric)) : [];
+      const leftCap = resolveAxisCap('left', leftData);
+      const rightCap = useRight ? resolveAxisCap('right', rightData) : null;
+      const capMessages = [chartAxisCapLabel('left', leftCap, chartLeftMetric), useRight ? chartAxisCapLabel('right', rightCap, chartRightMetric) : ''].filter(Boolean);
       const minWidth = Math.max(860, labels.length * (comparisonMode === 'prefecture' ? 58 : 86));
       const noteText = comparisonMode === 'prefecture'
-        ? '※都道府県比較グラフでは、全国行は表示対象から外しています。勤務地入力に該当する都道府県は、棒・点・軸ラベルを強調表示します。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。'
-        : '※職種比較グラフでは、キーワードなしの全体行は表示対象から外しています。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。棒・線・123ボタンで各軸の表示を切り替えられます。';
+        ? '※都道府県比較グラフでは、全国行は表示対象から外しています。勤務地入力に該当する都道府県は、棒・点・軸ラベルを強調表示します。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。軸上限を超える値は「↑」で示します。'
+        : '※職種比較グラフでは、キーワードなしの全体行は表示対象から外しています。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。棒・線・123・↕ボタンで各軸の表示を切り替えられます。';
       destroyComparisonChart();
       els.comparisonContent.innerHTML = `
         <div class="chart-panel">
           ${chartContextHtml()}
+          ${chartCapContextHtml(capMessages)}
           <div class="chart-canvas-wrap" style="min-width:${minWidth}px;">
             <canvas id="comparisonChartCanvas"></canvas>
           </div>
@@ -2059,9 +2220,9 @@
         requestAnimationFrame(updateStickyLayout);
         return;
       }
-      const datasets = [chartDatasetConfig('left', chartLeftMetric, leftData, chartLeftType, chartLeftLabels, labels, highlightedLabels)];
+      const datasets = [chartDatasetConfig('left', chartLeftMetric, leftData, chartLeftType, chartLeftLabels, labels, highlightedLabels, leftCap)];
       if (useRight) {
-        datasets.push(chartDatasetConfig('right', chartRightMetric, rightData, chartRightType, chartRightLabels, labels, highlightedLabels));
+        datasets.push(chartDatasetConfig('right', chartRightMetric, rightData, chartRightType, chartRightLabels, labels, highlightedLabels, rightCap));
       }
       comparisonChart = new window.Chart(canvas, {
         data: { labels, datasets },
@@ -2095,12 +2256,14 @@
             },
             yLeft:{
               beginAtZero:true,
+              max:leftCap || undefined,
               position:'left',
               title:{ display:true, text:METRIC_MAP[chartLeftMetric].label, font:{ weight:'bold' } },
               ticks:{ callback:(value) => chartAxisTickLabel(value, chartLeftMetric) }
             },
             yRight:{
               beginAtZero:true,
+              max:rightCap || undefined,
               position:'right',
               display:!!useRight,
               title:{ display:!!useRight, text:useRight ? METRIC_MAP[chartRightMetric].label : '', font:{ weight:'bold' } },
@@ -2225,10 +2388,15 @@
       updateViewControls();
       repaintCurrentTable();
     }));
-    if (els.chartLeftMetric) els.chartLeftMetric.addEventListener('change', () => { chartLeftMetric = els.chartLeftMetric.value || 'cpa'; updateChartStyleButtons(); repaintCurrentTable(); });
-    if (els.chartRightMetric) els.chartRightMetric.addEventListener('change', () => { chartRightMetric = els.chartRightMetric.value || 'none'; updateChartStyleButtons(); repaintCurrentTable(); });
+    if (els.chartLeftMetric) els.chartLeftMetric.addEventListener('change', () => { chartLeftMetric = els.chartLeftMetric.value || 'cpa'; hideAxisCapPopover(); updateChartStyleButtons(); repaintCurrentTable(); });
+    if (els.chartRightMetric) els.chartRightMetric.addEventListener('change', () => { chartRightMetric = els.chartRightMetric.value || 'none'; if (chartRightMetric === 'none') hideAxisCapPopover(); updateChartStyleButtons(); repaintCurrentTable(); });
     document.querySelectorAll('.chart-icon-btn[data-axis]').forEach(btn => {
-      btn.addEventListener('click', () => setChartAxisStyle(btn.dataset.axis, btn.dataset.style));
+      btn.addEventListener('click', (e) => { e.stopPropagation(); setChartAxisStyle(btn.dataset.axis, btn.dataset.style, btn); });
+    });
+    document.addEventListener('click', e => {
+      if (!els.chartAxisPopover || els.chartAxisPopover.classList.contains('hidden')) return;
+      if (els.chartAxisPopover.contains(e.target) || e.target.closest('.chart-icon-btn[data-style="cap"]')) return;
+      hideAxisCapPopover();
     });
     document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); comparisonMode = tab.dataset.mode; updateComparisonControls(); textDirty = false; clearLog(); refreshComparisonOnly(); }));
     window.addEventListener('resize', () => requestAnimationFrame(updateStickyLayout));
