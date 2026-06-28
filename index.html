@@ -404,6 +404,13 @@
     .chart-controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:5px 8px; border-radius:16px; background:#fff7ed; border:1px solid #fed7aa; }
     .chart-control { display:flex; align-items:center; gap:5px; font-size:12px; font-weight:950; color:#7c2d12; }
     .chart-control select { width:auto; min-width:104px; padding:7px 28px 7px 10px; border-radius:12px; border-width:2px; background-color:#fff; font-size:12px; }
+    .chart-style-mini { display:inline-flex; align-items:center; gap:2px; padding:2px; border-radius:10px; background:#ffedd5; border:1px solid #fed7aa; }
+    .chart-icon-btn { width:25px; height:25px; border:0; border-radius:8px; background:transparent; color:#9a3412; font-family:inherit; font-size:11px; font-weight:950; line-height:1; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:.12s; }
+    .chart-icon-btn:hover { background:rgba(255,255,255,.72); color:#7c2d12; }
+    .chart-icon-btn.active { background:linear-gradient(180deg,#ffffff,#fed7aa); color:#c2410c; box-shadow:0 2px 0 #fdba74, inset 0 1px 0 rgba(255,255,255,.9); }
+    .chart-icon-btn.label-active { background:linear-gradient(180deg,#ecfeff,#bae6fd); color:#0369a1; box-shadow:0 2px 0 #7dd3fc, inset 0 1px 0 rgba(255,255,255,.9); }
+    .chart-style-mini.disabled { opacity:.42; filter:grayscale(.2); }
+    .chart-style-mini.disabled .chart-icon-btn { pointer-events:none; cursor:not-allowed; }
     .chart-panel { overflow-x:auto; overflow-y:hidden; padding:8px 4px 4px; }
     .chart-canvas-wrap { min-width:860px; height:460px; background:#fff; border:2px solid #f5f5f4; border-radius:22px; padding:18px 18px 12px; }
     .chart-note { margin:10px 4px 0; font-size:12px; font-weight:800; color:#78716c; }
@@ -511,9 +518,19 @@
           </div>
           <div id="chartControls" class="chart-controls hidden" aria-label="グラフ軸の選択">
             <label class="chart-control">左軸
+              <span class="chart-style-mini" data-axis-controls="left" aria-label="左軸のグラフ形式">
+                <button class="chart-icon-btn" data-axis="left" data-style="bar" type="button" title="左軸を棒グラフで表示">▮</button>
+                <button class="chart-icon-btn" data-axis="left" data-style="line" type="button" title="左軸を折れ線グラフで表示">⌁</button>
+                <button class="chart-icon-btn" data-axis="left" data-style="label" type="button" title="左軸のデータラベルを表示/非表示">123</button>
+              </span>
               <select id="chartLeftMetric"></select>
             </label>
             <label class="chart-control">右軸
+              <span class="chart-style-mini" data-axis-controls="right" aria-label="右軸のグラフ形式">
+                <button class="chart-icon-btn" data-axis="right" data-style="bar" type="button" title="右軸を棒グラフで表示">▮</button>
+                <button class="chart-icon-btn" data-axis="right" data-style="line" type="button" title="右軸を折れ線グラフで表示">⌁</button>
+                <button class="chart-icon-btn" data-axis="right" data-style="label" type="button" title="右軸のデータラベルを表示/非表示">123</button>
+              </span>
               <select id="chartRightMetric"></select>
             </label>
           </div>
@@ -567,6 +584,10 @@
     let outputView = 'table';
     let chartLeftMetric = 'cpa';
     let chartRightMetric = 'none';
+    let chartLeftType = 'bar';
+    let chartRightType = 'line';
+    let chartLeftLabels = false;
+    let chartRightLabels = false;
     let comparisonChart = null;
     let lastCopyRows = [];
     let lastDisplayRows = [];
@@ -1295,6 +1316,37 @@
         els.chartRightMetric.innerHTML = `<option value="none">ー</option>${metricOptions}`;
         els.chartRightMetric.value = chartRightMetric;
       }
+      updateChartStyleButtons();
+    }
+
+    function updateChartStyleButtons() {
+      document.querySelectorAll('[data-axis-controls]').forEach(group => {
+        const axis = group.dataset.axisControls;
+        const disabled = axis === 'right' && (!chartRightMetric || chartRightMetric === 'none');
+        group.classList.toggle('disabled', disabled);
+      });
+      document.querySelectorAll('.chart-icon-btn[data-axis]').forEach(btn => {
+        const axis = btn.dataset.axis;
+        const style = btn.dataset.style;
+        const type = axis === 'right' ? chartRightType : chartLeftType;
+        const labelsOn = axis === 'right' ? chartRightLabels : chartLeftLabels;
+        btn.classList.toggle('active', style !== 'label' && style === type);
+        btn.classList.toggle('label-active', style === 'label' && labelsOn);
+        btn.setAttribute('aria-pressed', style === 'label' ? String(labelsOn) : String(style === type));
+      });
+    }
+
+    function setChartAxisStyle(axis, style) {
+      if (axis === 'right' && (!chartRightMetric || chartRightMetric === 'none')) return;
+      if (style === 'label') {
+        if (axis === 'right') chartRightLabels = !chartRightLabels;
+        else chartLeftLabels = !chartLeftLabels;
+      } else if (style === 'bar' || style === 'line') {
+        if (axis === 'right') chartRightType = style;
+        else chartLeftType = style;
+      }
+      updateChartStyleButtons();
+      repaintCurrentTable();
     }
 
     function updateViewControls() {
@@ -1779,6 +1831,62 @@
       return fmtNum(value, 0);
     }
 
+    function chartDatasetColor(axis) {
+      if (axis === 'right') {
+        return { border:'rgba(14,165,233,.95)', background:'rgba(14,165,233,.16)', fill:'rgba(14,165,233,.08)' };
+      }
+      return { border:'rgba(194,65,12,.95)', background:'rgba(249,115,22,.72)', fill:'rgba(249,115,22,.10)' };
+    }
+
+    function chartDatasetConfig(axis, metricId, data, type, showLabels) {
+      const colors = chartDatasetColor(axis);
+      const isLine = type === 'line';
+      const yAxisID = axis === 'right' ? 'yRight' : 'yLeft';
+      return {
+        type: isLine ? 'line' : 'bar',
+        label: METRIC_MAP[metricId].label,
+        data,
+        yAxisID,
+        backgroundColor: isLine ? colors.fill : colors.background,
+        borderColor: colors.border,
+        borderWidth: isLine ? 3 : 1,
+        borderRadius: isLine ? 0 : 8,
+        pointRadius: isLine ? 4 : 0,
+        pointHoverRadius: isLine ? 6 : 0,
+        tension: isLine ? .28 : 0,
+        spanGaps:false,
+        order: isLine ? 1 : 2,
+        showDataLabels: !!showLabels
+      };
+    }
+
+    const chartDataLabelPlugin = {
+      id:'chartDataLabelPlugin',
+      afterDatasetsDraw(chart) {
+        const { ctx, chartArea } = chart;
+        ctx.save();
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+          if (!dataset.showDataLabels) return;
+          const meta = chart.getDatasetMeta(datasetIndex);
+          if (!meta || meta.hidden) return;
+          const metricId = dataset.yAxisID === 'yRight' ? chartRightMetric : chartLeftMetric;
+          meta.data.forEach((element, index) => {
+            const rawValue = dataset.data[index];
+            if (rawValue === null || rawValue === undefined || !Number.isFinite(Number(rawValue))) return;
+            const pos = element.tooltipPosition ? element.tooltipPosition() : { x: element.x, y: element.y };
+            const label = chartValueLabel(rawValue, metricId);
+            ctx.font = '700 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillStyle = dataset.borderColor || '#334155';
+            const y = Math.max(chartArea.top + 12, pos.y - 7);
+            ctx.fillText(label, pos.x, y);
+          });
+        });
+        ctx.restore();
+      }
+    };
+
     function chartSortRows(rows, metricId) {
       const lowerBetter = LOWER_IS_BETTER_METRICS.has(metricId);
       return [...rows].sort((a, b) => {
@@ -1821,6 +1929,7 @@
     }
 
     function repaintCurrentChart() {
+      updateChartStyleButtons();
       setCopyRows(lastDisplayRows);
       if (els.floatingXScroll) els.floatingXScroll.classList.add('hidden');
       if (comparisonScrollSyncCleanup) {
@@ -1851,7 +1960,7 @@
           <div class="chart-canvas-wrap" style="min-width:${minWidth}px;">
             <canvas id="comparisonChartCanvas"></canvas>
           </div>
-          <div class="chart-note">※職種比較グラフでは、キーワードなしの全体行は表示対象から外しています。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。</div>
+          <div class="chart-note">※職種比較グラフでは、キーワードなしの全体行は表示対象から外しています。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。棒・線・123ボタンで各軸の表示を切り替えられます。</div>
         </div>`;
       const canvas = document.getElementById('comparisonChartCanvas');
       if (!canvas || !window.Chart) {
@@ -1859,37 +1968,13 @@
         requestAnimationFrame(updateStickyLayout);
         return;
       }
-      const datasets = [
-        {
-          type:'bar',
-          label: METRIC_MAP[chartLeftMetric].label,
-          data: leftData,
-          yAxisID:'yLeft',
-          backgroundColor:'rgba(249,115,22,.72)',
-          borderColor:'rgba(194,65,12,.95)',
-          borderWidth:1,
-          borderRadius:8,
-          order:2
-        }
-      ];
+      const datasets = [chartDatasetConfig('left', chartLeftMetric, leftData, chartLeftType, chartLeftLabels)];
       if (useRight) {
-        datasets.push({
-          type:'line',
-          label: METRIC_MAP[chartRightMetric].label,
-          data: rightData,
-          yAxisID:'yRight',
-          borderColor:'rgba(14,165,233,.95)',
-          backgroundColor:'rgba(14,165,233,.12)',
-          borderWidth:3,
-          pointRadius:4,
-          pointHoverRadius:6,
-          tension:.28,
-          spanGaps:false,
-          order:1
-        });
+        datasets.push(chartDatasetConfig('right', chartRightMetric, rightData, chartRightType, chartRightLabels));
       }
       comparisonChart = new window.Chart(canvas, {
         data: { labels, datasets },
+        plugins:[chartDataLabelPlugin],
         options: {
           responsive:true,
           maintainAspectRatio:false,
@@ -2043,8 +2128,11 @@
       updateViewControls();
       repaintCurrentTable();
     }));
-    if (els.chartLeftMetric) els.chartLeftMetric.addEventListener('change', () => { chartLeftMetric = els.chartLeftMetric.value || 'cpa'; repaintCurrentTable(); });
-    if (els.chartRightMetric) els.chartRightMetric.addEventListener('change', () => { chartRightMetric = els.chartRightMetric.value || 'none'; repaintCurrentTable(); });
+    if (els.chartLeftMetric) els.chartLeftMetric.addEventListener('change', () => { chartLeftMetric = els.chartLeftMetric.value || 'cpa'; updateChartStyleButtons(); repaintCurrentTable(); });
+    if (els.chartRightMetric) els.chartRightMetric.addEventListener('change', () => { chartRightMetric = els.chartRightMetric.value || 'none'; updateChartStyleButtons(); repaintCurrentTable(); });
+    document.querySelectorAll('.chart-icon-btn[data-axis]').forEach(btn => {
+      btn.addEventListener('click', () => setChartAxisStyle(btn.dataset.axis, btn.dataset.style));
+    });
     document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); comparisonMode = tab.dataset.mode; updateComparisonControls(); textDirty = false; clearLog(); refreshComparisonOnly(); }));
     window.addEventListener('resize', () => requestAnimationFrame(updateStickyLayout));
     window.addEventListener('scroll', () => requestAnimationFrame(updateStickyLayout), { passive:true });
