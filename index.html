@@ -436,6 +436,8 @@
     .month-trend-btn { border:0; background:transparent; color:#64748b; border-radius:999px; padding:5px 10px; font-family:inherit; font-size:12px; line-height:1; font-weight:950; cursor:pointer; transition:.12s; }
     .month-trend-btn:hover { background:rgba(255,255,255,.78); color:#0f172a; }
     .month-trend-btn.active { background:linear-gradient(180deg,#ffffff,#dbeafe); color:#075985; box-shadow:0 2px 0 #93c5fd, inset 0 1px 0 rgba(255,255,255,.9); }
+    .month-average-control { display:inline-flex; align-items:center; gap:6px; padding:3px 8px; border-radius:999px; background:#fff7ed; border:1px solid #fed7aa; color:#7c2d12; font-size:12px; font-weight:950; box-shadow:inset 0 1px 2px rgba(154,52,18,.05); }
+    .month-average-control select { height:26px; min-width:96px; padding:3px 24px 3px 8px; border-radius:999px; border:1px solid #fdba74; background:#fff; color:#7c2d12; font-family:inherit; font-size:12px; font-weight:900; }
     .axis-cap-popover { position:fixed; z-index:3000; width:224px; padding:12px; border-radius:18px; border:2px solid #fed7aa; background:#fff; box-shadow:0 18px 50px rgba(67,20,7,.22); color:#44403c; }
     .axis-cap-popover.hidden { display:none; }
     .axis-cap-title { font-size:13px; font-weight:950; color:#7c2d12; margin-bottom:8px; }
@@ -618,6 +620,7 @@
     let comparisonMode = 'job';
     let outputView = 'table';
     let monthGraphType = 'overall';
+    let movingAverageWindow = 'none';
     let chartLeftMetric = 'cpa';
     let chartRightMetric = 'none';
     let chartLeftType = 'bar';
@@ -2297,6 +2300,22 @@
       return `<span class="month-trend-toggle" aria-label="月別推移タイプ">${items.map(item => `<button class="month-trend-btn ${monthGraphType === item.id ? 'active' : ''}" data-month-trend-type="${esc(item.id)}" type="button">${esc(item.label)}</button>`).join('')}</span>`;
     }
 
+    function movingAverageWindowSize() {
+      const n = Number(movingAverageWindow);
+      return Number.isFinite(n) && n > 1 ? n : 0;
+    }
+
+    function monthMovingAverageControlHtml() {
+      if (comparisonMode !== 'month' || monthGraphType === 'yoy') return '';
+      const options = [
+        { value:'none', label:'なし' },
+        { value:'3', label:'3ヶ月平均' },
+        { value:'6', label:'6ヶ月平均' },
+        { value:'12', label:'12ヶ月平均' }
+      ];
+      return `<label class="month-average-control" title="左軸の指標に対して移動平均線を追加します">平均線：<select id="monthMovingAverageSelect">${options.map(opt => `<option value="${esc(opt.value)}" ${movingAverageWindow === opt.value ? 'selected' : ''}>${esc(opt.label)}</option>`).join('')}</select></label>`;
+    }
+
     function chartContextHtml() {
       if (comparisonMode !== 'prefecture' && comparisonMode !== 'month') return '';
       const displaySegments = chartContextDisplayKeywordSegments(90);
@@ -2312,7 +2331,7 @@
             : '表示都道府県：未選択';
           prefChip = `<span class="chart-context-chip chart-context-location" title="${esc(prefTitle)}">${esc(prefText)}</span>`;
         }
-        return `<div class="chart-context">${monthTrendTypeControlsHtml()}<span class="chart-context-label">集計対象：</span><span class="chart-context-chip" title="${esc(fullText)}">${keywordSegmentsToHtml(displaySegments)}</span><span class="chart-context-chip chart-context-location" title="${esc(locationText)}">勤務地：${esc(locationText)}</span>${prefChip}</div>`;
+        return `<div class="chart-context">${monthTrendTypeControlsHtml()}${monthMovingAverageControlHtml()}<span class="chart-context-label">集計対象：</span><span class="chart-context-chip" title="${esc(fullText)}">${keywordSegmentsToHtml(displaySegments)}</span><span class="chart-context-chip chart-context-location" title="${esc(locationText)}">勤務地：${esc(locationText)}</span>${prefChip}</div>`;
       }
       const highlightedPrefs = Array.from(detectLocationPrefectures());
       const locationText = highlightedPrefs.length ? `　勤務地ハイライト：${highlightedPrefs.join('、')}` : '';
@@ -2432,6 +2451,60 @@
     }
 
 
+    const MOVING_AVERAGE_SIMPLE_METRICS = new Set(['count','cost','impressions','clicks','apply_starts','applies']);
+
+    function rollingMetricDataFromRows(rowItems, metricId, windowSize) {
+      const n = Number(windowSize);
+      if (!Number.isFinite(n) || n <= 1) return [];
+      return (rowItems || []).map((_, idx) => {
+        if (idx + 1 < n) return null;
+        const slice = rowItems.slice(idx - n + 1, idx + 1);
+        if (slice.length < n || slice.some(row => !row)) return null;
+        const aggregate = sumMetricRows(slice);
+        if (MOVING_AVERAGE_SIMPLE_METRICS.has(metricId)) {
+          const value = chartMetricValue(aggregate, metricId);
+          return value === null || value === undefined || !Number.isFinite(Number(value)) ? null : Number(value) / n;
+        }
+        return chartMetricValue(aggregate, metricId);
+      });
+    }
+
+    function hasMovingAverageData(data) {
+      return (data || []).some(v => v !== null && v !== undefined && Number.isFinite(Number(v)));
+    }
+
+    function movingAverageDatasetConfig(metricId, label, data, seriesIndex=0, axisCap=null) {
+      const palette = MONTH_YOY_COLORS[seriesIndex % MONTH_YOY_COLORS.length];
+      const n = movingAverageWindowSize();
+      return {
+        type:'line',
+        label:`${label} ${n}ヶ月平均`,
+        data,
+        yAxisID:'yLeft',
+        axisCap,
+        backgroundColor:'rgba(255,255,255,0)',
+        borderColor:palette.border,
+        borderWidth:3,
+        borderRadius:0,
+        pointRadius:0,
+        pointHoverRadius:5,
+        pointBackgroundColor:palette.border,
+        pointBorderColor:'#fff',
+        pointBorderWidth:2,
+        tension:.28,
+        spanGaps:false,
+        order:0,
+        borderDash:[9, 5],
+        showDataLabels:false
+      };
+    }
+
+    function movingAverageNoteText() {
+      const n = movingAverageWindowSize();
+      return n ? ` 左軸の${n}ヶ月移動平均線を点線で表示しています。` : '';
+    }
+
+
     function monthPrefTrendDefinitions() {
       const totalLabels = Array.from(detectLocationPrefectures()).sort((a, b) => (PREFECTURE_ORDER[a] ?? 999) - (PREFECTURE_ORDER[b] ?? 999));
       const defs = totalLabels.slice(0, MAX_MONTH_PREF_TREND_SERIES).map((pref, idx) => ({ ord: idx, label: pref }));
@@ -2512,12 +2585,15 @@
       const capMessages = [chartAxisCapLabel('left', leftCap, chartLeftMetric), useRight ? chartAxisCapLabel('right', rightCap, chartRightMetric) : ''].filter(Boolean);
       const minWidth = Math.max(900, labels.length * Math.max(84, defs.length * 24));
       const datasets = [];
+      const maWindow = movingAverageWindowSize();
       defs.forEach((def, idx) => {
-        const leftData = months.map(month => {
-          const row = rowMap.get(`${def.label}::${month}`);
-          return row ? chartMetricValue(row, chartLeftMetric) : null;
-        });
+        const rowItems = months.map(month => rowMap.get(`${def.label}::${month}`) || null);
+        const leftData = rowItems.map(row => row ? chartMetricValue(row, chartLeftMetric) : null);
         datasets.push(monthSeriesDatasetConfig('left', chartLeftMetric, def.label, leftData, chartLeftType, chartLeftLabels, idx, leftCap));
+        if (maWindow) {
+          const maData = rollingMetricDataFromRows(rowItems, chartLeftMetric, maWindow);
+          if (hasMovingAverageData(maData)) datasets.push(movingAverageDatasetConfig(chartLeftMetric, def.label, maData, idx, leftCap));
+        }
       });
       if (useRight) {
         defs.forEach((def, idx) => {
@@ -2540,7 +2616,7 @@
               <canvas id="comparisonChartCanvas"></canvas>
             </div>
           </div>
-          <div class="chart-note">※都道府県別推移では、勤務地欄に入力された都道府県を月別の系列として表示します。表示できる系列は最大${MAX_MONTH_PREF_TREND_SERIES}件です。右軸を使う場合は、右軸系列を点線で表示します。${esc(omittedNote)}</div>
+          <div class="chart-note">※都道府県別推移では、勤務地欄に入力された都道府県を月別の系列として表示します。表示できる系列は最大${MAX_MONTH_PREF_TREND_SERIES}件です。右軸を使う場合は、右軸系列を点線で表示します。${esc(movingAverageNoteText())}${esc(omittedNote)}</div>
         </div>`;
       const canvas = document.getElementById('comparisonChartCanvas');
       if (!canvas || !window.Chart) {
@@ -2739,12 +2815,15 @@
       const capMessages = [chartAxisCapLabel('left', leftCap, chartLeftMetric), useRight ? chartAxisCapLabel('right', rightCap, chartRightMetric) : ''].filter(Boolean);
       const minWidth = Math.max(900, labels.length * Math.max(84, defs.length * 22));
       const datasets = [];
+      const maWindow = movingAverageWindowSize();
       defs.forEach((def, idx) => {
-        const leftData = months.map(month => {
-          const row = rowMap.get(`${def.label}::${month}`);
-          return row ? chartMetricValue(row, chartLeftMetric) : null;
-        });
+        const rowItems = months.map(month => rowMap.get(`${def.label}::${month}`) || null);
+        const leftData = rowItems.map(row => row ? chartMetricValue(row, chartLeftMetric) : null);
         datasets.push(monthSeriesDatasetConfig('left', chartLeftMetric, def.label, leftData, chartLeftType, chartLeftLabels, idx, leftCap));
+        if (maWindow) {
+          const maData = rollingMetricDataFromRows(rowItems, chartLeftMetric, maWindow);
+          if (hasMovingAverageData(maData)) datasets.push(movingAverageDatasetConfig(chartLeftMetric, def.label, maData, idx, leftCap));
+        }
       });
       if (useRight) {
         defs.forEach((def, idx) => {
@@ -2767,7 +2846,7 @@
               <canvas id="comparisonChartCanvas"></canvas>
             </div>
           </div>
-          <div class="chart-note">※職種別推移では、フリーワードと選択職種を月別の系列として表示します。表示できる系列は最大${MAX_MONTH_JOB_TREND_SERIES}件です。右軸を使う場合は、右軸系列を点線で表示します。${esc(omittedNote)}</div>
+          <div class="chart-note">※職種別推移では、フリーワードと選択職種を月別の系列として表示します。表示できる系列は最大${MAX_MONTH_JOB_TREND_SERIES}件です。右軸を使う場合は、右軸系列を点線で表示します。${esc(movingAverageNoteText())}${esc(omittedNote)}</div>
         </div>`;
       const canvas = document.getElementById('comparisonChartCanvas');
       if (!canvas || !window.Chart) {
@@ -3009,7 +3088,7 @@
       const noteText = comparisonMode === 'prefecture'
         ? '※都道府県比較グラフでは、全国行は表示対象から外しています。勤務地入力に該当する都道府県は、棒・点・軸ラベルを強調表示します。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。軸上限を超える値は「↑」で示します。'
         : comparisonMode === 'month'
-          ? '※月別推移グラフでは、期間総計行は表示対象から外し、選択期間内の各月を時系列順に表示します。推移タイプは「全体」「昨年比」「職種別」「都道府県別」を切り替えられます。'
+          ? '※月別推移グラフでは、期間総計行は表示対象から外し、選択期間内の各月を時系列順に表示します。推移タイプは「全体」「昨年比」「職種別」「都道府県別」を切り替えられます。' + movingAverageNoteText()
           : '※職種比較グラフでは、キーワードなしの全体行は表示対象から外しています。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。棒・線・123・↕ボタンで各軸の表示を切り替えられます。';
       destroyComparisonChart();
       els.comparisonContent.innerHTML = `
@@ -3033,6 +3112,13 @@
         return;
       }
       const datasets = [chartDatasetConfig('left', chartLeftMetric, leftData, chartLeftType, chartLeftLabels, labels, highlightedLabels, leftCap)];
+      if (comparisonMode === 'month') {
+        const maWindow = movingAverageWindowSize();
+        if (maWindow) {
+          const maData = rollingMetricDataFromRows(chartRows, chartLeftMetric, maWindow);
+          if (hasMovingAverageData(maData)) datasets.push(movingAverageDatasetConfig(chartLeftMetric, METRIC_MAP[chartLeftMetric].label, maData, 0, leftCap));
+        }
+      }
       if (useRight) {
         datasets.push(chartDatasetConfig('right', chartRightMetric, rightData, chartRightType, chartRightLabels, labels, highlightedLabels, rightCap));
       }
@@ -3218,6 +3304,13 @@
       const next = btn.dataset.monthTrendType || 'overall';
       if (next === monthGraphType) return;
       monthGraphType = next;
+      hideAxisCapPopover();
+      repaintCurrentTable(true);
+    });
+    document.addEventListener('change', e => {
+      const select = e.target.closest('#monthMovingAverageSelect');
+      if (!select) return;
+      movingAverageWindow = select.value || 'none';
       hideAxisCapPopover();
       repaintCurrentTable(true);
     });
