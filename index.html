@@ -82,13 +82,14 @@
     .search-filters-placeholder { display:none; height:0; }
     .search-filter-row.is-fixed {
       position:fixed; top:0; left:var(--search-filter-left, 18px); width:var(--search-filter-width, calc(100vw - 36px));
-      z-index:240; padding:12px 14px;
-      background:rgba(255,255,255,.98); border:4px solid #fff; border-top:0; border-radius:0 0 24px 24px;
-      box-shadow:0 10px 24px -18px rgba(0,0,0,.45), 0 0 0 1px rgba(245,245,244,.80);
-      backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+      z-index:240; padding:10px 14px 12px;
+      background:#fff; border:0; border-bottom:1px solid #e7e5e4; border-radius:0;
+      box-shadow:0 6px 14px -16px rgba(0,0,0,.40);
+      backdrop-filter:none; -webkit-backdrop-filter:none;
     }
     .search-filter-row.is-fixed .field { min-width:160px; }
-    .search-filter-row.is-fixed input[type="text"], .search-filter-row.is-fixed select, .search-filter-row.is-fixed .range-btn { padding-top:10px; padding-bottom:10px; }
+    .search-filter-row.is-fixed label.label { font-size:12px; }
+    .search-filter-row.is-fixed input[type="text"], .search-filter-row.is-fixed select, .search-filter-row.is-fixed .range-btn { padding-top:9px; padding-bottom:9px; border-width:3px; }
     @media (max-width:900px) { .search-filter-row.is-fixed { position:static; width:auto; padding:0; border:0; box-shadow:none; background:transparent; } }
     label.label { font-size:13px; font-weight:950; color:#57534e; display:flex; align-items:center; gap:6px; }
     input[type="text"], select {
@@ -1414,9 +1415,10 @@
       row.classList.add('is-fixed');
 
       const fixedHeight = Math.ceil(row.getBoundingClientRect().height || currentHeight || 64);
+      const stickyGap = 8;
       placeholder.style.height = `${fixedHeight}px`;
-      document.documentElement.style.setProperty('--search-sticky-offset', `${fixedHeight}px`);
-      return fixedHeight;
+      document.documentElement.style.setProperty('--search-sticky-offset', `${fixedHeight + stickyGap}px`);
+      return fixedHeight + stickyGap;
     }
 
     function updateComparisonStickyOffsets() {
