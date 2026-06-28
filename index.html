@@ -397,6 +397,18 @@
 
     .table-wrap tbody tr td { transition:background-color .08s ease, color .08s ease; }
     .table-wrap tbody tr:not(.pref-highlight-row):hover td { background:#fff7ed; }
+    .view-toggle { display:inline-flex; align-items:center; gap:3px; padding:4px; border-radius:999px; background:#f1f5f9; border:1px solid #e2e8f0; box-shadow:inset 0 1px 2px rgba(15,23,42,.06); }
+    .view-tab { border:0; background:transparent; color:#64748b; font-family:inherit; font-weight:950; font-size:15px; padding:8px 15px; border-radius:999px; cursor:pointer; line-height:1; transition:.12s; }
+    .view-tab:hover { color:#0f172a; background:rgba(255,255,255,.72); }
+    .view-tab.active { background:linear-gradient(180deg,#38bdf8,#0ea5e9); color:#fff; box-shadow:0 3px 0 #0369a1; }
+    .chart-controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:5px 8px; border-radius:16px; background:#fff7ed; border:1px solid #fed7aa; }
+    .chart-control { display:flex; align-items:center; gap:5px; font-size:12px; font-weight:950; color:#7c2d12; }
+    .chart-control select { width:auto; min-width:104px; padding:7px 28px 7px 10px; border-radius:12px; border-width:2px; background-color:#fff; font-size:12px; }
+    .chart-panel { overflow-x:auto; overflow-y:hidden; padding:8px 4px 4px; }
+    .chart-canvas-wrap { min-width:860px; height:460px; background:#fff; border:2px solid #f5f5f4; border-radius:22px; padding:18px 18px 12px; }
+    .chart-note { margin:10px 4px 0; font-size:12px; font-weight:800; color:#78716c; }
+    .comparison-card.chart-view .table-operation-actions { display:none; }
+    .comparison-card.table-view .chart-controls { display:none; }
     .table-wrap tbody tr.pref-highlight-row:hover td { background:#fef3c7; }
     @media (max-width:700px) {
       dialog.month-modal { left:50%; top:50%; right:auto; width:calc(100vw - 24px); max-height:calc(100dvh - 24px); padding:14px; }
@@ -491,9 +503,20 @@
         <div id="relatedJobs" class="chips"></div>
       </div>
 
-      <div class="card span-12 comparison-card">
+      <div class="card span-12 comparison-card table-view">
         <div id="comparisonToolbar" class="header comparison-toolbar">
-          <h2>比較表</h2>
+          <div class="view-toggle" aria-label="表示形式">
+            <button class="view-tab active" data-view="table" type="button">比較表</button>
+            <button class="view-tab" data-view="chart" type="button">グラフ</button>
+          </div>
+          <div id="chartControls" class="chart-controls hidden" aria-label="グラフ軸の選択">
+            <label class="chart-control">左軸
+              <select id="chartLeftMetric"></select>
+            </label>
+            <label class="chart-control">右軸
+              <select id="chartRightMetric"></select>
+            </label>
+          </div>
           <div class="table-head-actions">
             <div class="tabs">
               <button class="tab active" data-mode="job" type="button">職種比較</button>
@@ -520,6 +543,7 @@
   <div id="floatingXScroll" class="floating-x-scroll hidden" aria-label="比較表の横スクロール"><div id="floatingXScrollInner" class="floating-x-scroll-inner"></div></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <script type="module">
     import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm/+esm";
 
@@ -528,7 +552,7 @@
       datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), searchFiltersShell: document.getElementById('searchFiltersShell'), searchFilters: document.getElementById('searchFilters'), searchFiltersPlaceholder: document.getElementById('searchFiltersPlaceholder'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'),
       searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalAll: document.getElementById('periodModalAll'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
       relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
-      comparisonToolbar: document.getElementById('comparisonToolbar'), comparisonContent: document.getElementById('comparisonContent'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), columnMenuBtn: document.getElementById('columnMenuBtn'), columnPopover: document.getElementById('columnPopover'), floatingXScroll: document.getElementById('floatingXScroll'), floatingXScrollInner: document.getElementById('floatingXScrollInner'), log: document.getElementById('log')
+      comparisonToolbar: document.getElementById('comparisonToolbar'), comparisonContent: document.getElementById('comparisonContent'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), columnMenuBtn: document.getElementById('columnMenuBtn'), columnPopover: document.getElementById('columnPopover'), chartControls: document.getElementById('chartControls'), chartLeftMetric: document.getElementById('chartLeftMetric'), chartRightMetric: document.getElementById('chartRightMetric'), floatingXScroll: document.getElementById('floatingXScroll'), floatingXScrollInner: document.getElementById('floatingXScrollInner'), log: document.getElementById('log')
     };
 
     // カード（backdrop-filter）内にモーダルを置くと、下のカードの重なり順に負けることがあるため、body直下へ移動します。
@@ -540,6 +564,10 @@
     let appState = null;
     let selectedJobTitles = [];
     let comparisonMode = 'job';
+    let outputView = 'table';
+    let chartLeftMetric = 'cpa';
+    let chartRightMetric = 'none';
+    let comparisonChart = null;
     let lastCopyRows = [];
     let lastDisplayRows = [];
     let lastTableHelper = '';
@@ -581,6 +609,9 @@
       { id:'simple', label:'シンプル', note:'率・単価中心' },
       { id:'detail', label:'詳細', note:'すべて表示' }
     ];
+    const CHART_METRIC_IDS = METRIC_COLUMNS.map(col => col.id);
+    const HIGHER_IS_BETTER_METRICS = new Set(['count','cost','impressions','clicks','apply_starts','applies','ctr','applyStartRate','cvr']);
+    const LOWER_IS_BETTER_METRICS = new Set(['cpc','cpa']);
     let visibleMetricIds = [...COLUMN_PRESETS.standard];
     let activeColumnPreset = 'standard';
     let textDirty = false;
@@ -1253,6 +1284,31 @@
       });
     }
 
+
+    function renderChartMetricSelectors() {
+      const metricOptions = CHART_METRIC_IDS.map(id => `<option value="${esc(id)}">${esc(METRIC_MAP[id].label)}</option>`).join('');
+      if (els.chartLeftMetric) {
+        els.chartLeftMetric.innerHTML = metricOptions;
+        els.chartLeftMetric.value = chartLeftMetric;
+      }
+      if (els.chartRightMetric) {
+        els.chartRightMetric.innerHTML = `<option value="none">ー</option>${metricOptions}`;
+        els.chartRightMetric.value = chartRightMetric;
+      }
+    }
+
+    function updateViewControls() {
+      document.querySelectorAll('.view-tab').forEach(btn => btn.classList.toggle('active', btn.dataset.view === outputView));
+      const card = els.comparisonContent ? els.comparisonContent.closest('.comparison-card') : null;
+      if (card) {
+        card.classList.toggle('chart-view', outputView === 'chart');
+        card.classList.toggle('table-view', outputView !== 'chart');
+      }
+      if (els.chartControls) els.chartControls.classList.toggle('hidden', outputView !== 'chart');
+      if (els.floatingXScroll && outputView === 'chart') els.floatingXScroll.classList.add('hidden');
+      requestAnimationFrame(updateStickyLayout);
+    }
+
     function tableHeaders() {
       const base = ['<th>検索キーワード</th>', '<th>勤務地</th>'];
       if (comparisonMode === 'month') base.push('<th>集計月</th>');
@@ -1693,7 +1749,195 @@
       if (els.copyBtn) els.copyBtn.disabled = displayRows.length === 0; if (els.comparisonCopyBtn) els.comparisonCopyBtn.disabled = displayRows.length === 0;
     }
 
+
+    function chartMetricValue(row, metricId) {
+      const r = calcRates(row);
+      if (metricId === 'count') return Number(row.count || 0);
+      if (metricId === 'cost') return Number(row.cost || 0);
+      if (metricId === 'impressions') return Number(row.impressions || 0);
+      if (metricId === 'clicks') return Number(row.clicks || 0);
+      if (metricId === 'apply_starts') return Number(row.apply_starts || 0);
+      if (metricId === 'applies') return Number(row.applies || 0);
+      if (metricId === 'ctr') return r.ctr;
+      if (metricId === 'applyStartRate') return r.applyStartRate;
+      if (metricId === 'cvr') return r.cvr;
+      if (metricId === 'cpc') return r.cpc;
+      if (metricId === 'cpa') return r.cpa;
+      return null;
+    }
+
+    function chartValueLabel(value, metricId) {
+      if (value === null || value === undefined || !Number.isFinite(Number(value))) return '-';
+      if (['cost','cpc','cpa'].includes(metricId)) return fmtMoney(value);
+      if (['ctr','applyStartRate','cvr'].includes(metricId)) return fmtNum(value, 2) + '%';
+      return fmtNum(value);
+    }
+
+    function chartAxisTickLabel(value, metricId) {
+      if (['cost','cpc','cpa'].includes(metricId)) return '¥' + fmtNum(value, 0);
+      if (['ctr','applyStartRate','cvr'].includes(metricId)) return fmtNum(value, 0) + '%';
+      return fmtNum(value, 0);
+    }
+
+    function chartSortRows(rows, metricId) {
+      const lowerBetter = LOWER_IS_BETTER_METRICS.has(metricId);
+      return [...rows].sort((a, b) => {
+        const av = chartMetricValue(a, metricId);
+        const bv = chartMetricValue(b, metricId);
+        const aOk = av !== null && Number.isFinite(Number(av));
+        const bOk = bv !== null && Number.isFinite(Number(bv));
+        if (aOk && bOk) {
+          if (av !== bv) return lowerBetter ? av - bv : bv - av;
+          const appliesDiff = Number(b.applies || 0) - Number(a.applies || 0);
+          if (appliesDiff) return appliesDiff;
+          const clicksDiff = Number(b.clicks || 0) - Number(a.clicks || 0);
+          if (clicksDiff) return clicksDiff;
+          return String(tableKeyLocation(a).keyword || '').localeCompare(String(tableKeyLocation(b).keyword || ''), 'ja');
+        }
+        if (aOk) return -1;
+        if (bOk) return 1;
+        const clicksDiff = Number(b.clicks || 0) - Number(a.clicks || 0);
+        if (clicksDiff) return clicksDiff;
+        const impressionsDiff = Number(b.impressions || 0) - Number(a.impressions || 0);
+        if (impressionsDiff) return impressionsDiff;
+        return String(tableKeyLocation(a).keyword || '').localeCompare(String(tableKeyLocation(b).keyword || ''), 'ja');
+      });
+    }
+
+    function rowsForCurrentChart() {
+      if (comparisonMode !== 'job') return [];
+      const hasFreeKeyword = splitKeywords(els.freeWordInput.value).length > 0;
+      return lastDisplayRows.filter(row => {
+        if (!row.__summary) return true;
+        return hasFreeKeyword;
+      });
+    }
+
+    function destroyComparisonChart() {
+      if (comparisonChart) {
+        comparisonChart.destroy();
+        comparisonChart = null;
+      }
+    }
+
+    function repaintCurrentChart() {
+      setCopyRows(lastDisplayRows);
+      if (els.floatingXScroll) els.floatingXScroll.classList.add('hidden');
+      if (comparisonScrollSyncCleanup) {
+        comparisonScrollSyncCleanup();
+        comparisonScrollSyncCleanup = null;
+      }
+      if (comparisonMode !== 'job') {
+        destroyComparisonChart();
+        els.comparisonContent.innerHTML = '<div class="empty">グラフ表示は、まず職種比較モードから対応しています。</div>';
+        requestAnimationFrame(updateStickyLayout);
+        return;
+      }
+      const chartRows = chartSortRows(rowsForCurrentChart(), chartLeftMetric);
+      if (!chartRows.length) {
+        destroyComparisonChart();
+        els.comparisonContent.innerHTML = '<div class="empty">グラフに表示できる比較行がありません。フリーワードを入力するか、上の職種候補をクリックしてください。</div>';
+        requestAnimationFrame(updateStickyLayout);
+        return;
+      }
+      const labels = chartRows.map(row => tableKeyLocation(row).keyword || 'キーワードなし');
+      const leftData = chartRows.map(row => chartMetricValue(row, chartLeftMetric));
+      const useRight = chartRightMetric && chartRightMetric !== 'none' && chartRightMetric !== chartLeftMetric;
+      const rightData = useRight ? chartRows.map(row => chartMetricValue(row, chartRightMetric)) : [];
+      const minWidth = Math.max(860, labels.length * 86);
+      destroyComparisonChart();
+      els.comparisonContent.innerHTML = `
+        <div class="chart-panel">
+          <div class="chart-canvas-wrap" style="min-width:${minWidth}px;">
+            <canvas id="comparisonChartCanvas"></canvas>
+          </div>
+          <div class="chart-note">※職種比較グラフでは、キーワードなしの全体行は表示対象から外しています。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。</div>
+        </div>`;
+      const canvas = document.getElementById('comparisonChartCanvas');
+      if (!canvas || !window.Chart) {
+        els.comparisonContent.innerHTML = '<div class="empty">グラフライブラリを読み込めませんでした。</div>';
+        requestAnimationFrame(updateStickyLayout);
+        return;
+      }
+      const datasets = [
+        {
+          type:'bar',
+          label: METRIC_MAP[chartLeftMetric].label,
+          data: leftData,
+          yAxisID:'yLeft',
+          backgroundColor:'rgba(249,115,22,.72)',
+          borderColor:'rgba(194,65,12,.95)',
+          borderWidth:1,
+          borderRadius:8,
+          order:2
+        }
+      ];
+      if (useRight) {
+        datasets.push({
+          type:'line',
+          label: METRIC_MAP[chartRightMetric].label,
+          data: rightData,
+          yAxisID:'yRight',
+          borderColor:'rgba(14,165,233,.95)',
+          backgroundColor:'rgba(14,165,233,.12)',
+          borderWidth:3,
+          pointRadius:4,
+          pointHoverRadius:6,
+          tension:.28,
+          spanGaps:false,
+          order:1
+        });
+      }
+      comparisonChart = new window.Chart(canvas, {
+        data: { labels, datasets },
+        options: {
+          responsive:true,
+          maintainAspectRatio:false,
+          animation:false,
+          interaction:{ mode:'index', intersect:false },
+          plugins:{
+            legend:{ display:true, position:'top', labels:{ boxWidth:14, boxHeight:14, usePointStyle:true, font:{ weight:'bold' } } },
+            tooltip:{
+              callbacks:{
+                label(context) {
+                  const metricId = context.dataset.yAxisID === 'yRight' ? chartRightMetric : chartLeftMetric;
+                  return `${context.dataset.label}: ${chartValueLabel(context.parsed.y, metricId)}`;
+                }
+              }
+            }
+          },
+          scales:{
+            x:{
+              grid:{ display:false },
+              ticks:{ maxRotation:45, minRotation:0, autoSkip:false, font:{ weight:'bold' } }
+            },
+            yLeft:{
+              beginAtZero:true,
+              position:'left',
+              title:{ display:true, text:METRIC_MAP[chartLeftMetric].label, font:{ weight:'bold' } },
+              ticks:{ callback:(value) => chartAxisTickLabel(value, chartLeftMetric) }
+            },
+            yRight:{
+              beginAtZero:true,
+              position:'right',
+              display:!!useRight,
+              title:{ display:!!useRight, text:useRight ? METRIC_MAP[chartRightMetric].label : '', font:{ weight:'bold' } },
+              grid:{ drawOnChartArea:false },
+              ticks:{ callback:(value) => chartAxisTickLabel(value, chartRightMetric) }
+            }
+          }
+        }
+      });
+      requestAnimationFrame(updateStickyLayout);
+    }
+
     function repaintCurrentTable() {
+      updateViewControls();
+      if (outputView === 'chart') {
+        repaintCurrentChart();
+        return;
+      }
+      destroyComparisonChart();
       setCopyRows(lastDisplayRows);
       if (!lastDisplayRows.length) {
         els.comparisonContent.innerHTML = '<div class="empty">該当データがありません。</div>';
@@ -1794,9 +2038,18 @@
       }
     });
     els.periodModal.addEventListener('cancel', e => { e.preventDefault(); closePeriodModal(); });
+    document.querySelectorAll('.view-tab').forEach(btn => btn.addEventListener('click', () => {
+      outputView = btn.dataset.view === 'chart' ? 'chart' : 'table';
+      updateViewControls();
+      repaintCurrentTable();
+    }));
+    if (els.chartLeftMetric) els.chartLeftMetric.addEventListener('change', () => { chartLeftMetric = els.chartLeftMetric.value || 'cpa'; repaintCurrentTable(); });
+    if (els.chartRightMetric) els.chartRightMetric.addEventListener('change', () => { chartRightMetric = els.chartRightMetric.value || 'none'; repaintCurrentTable(); });
     document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); comparisonMode = tab.dataset.mode; updateComparisonControls(); textDirty = false; clearLog(); refreshComparisonOnly(); }));
     window.addEventListener('resize', () => requestAnimationFrame(updateStickyLayout));
     window.addEventListener('scroll', () => requestAnimationFrame(updateStickyLayout), { passive:true });
+    renderChartMetricSelectors();
+    updateViewControls();
     updateColumnMenuLabel();
     renderColumnPopover();
     requestAnimationFrame(updateStickyLayout);
