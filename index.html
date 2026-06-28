@@ -631,6 +631,7 @@
     const MAX_COMPARISON_CACHE = 24;
     const MAX_MONTH_GRAPH_CACHE = 16;
     const MAX_MONTH_JOB_TREND_SERIES = 5;
+    const MAX_MONTH_PREF_TREND_SERIES = 5;
     // 検索条件入力行は最初から独立した sticky シェルへ移動します。
     // スクロール中に DOM を移動しないため、固定へ切り替わる瞬間の揺れを防ぎます。
     if (els.searchFiltersShell && els.searchFilters && els.searchFilters.parentElement !== els.searchFiltersShell) {
@@ -2197,7 +2198,8 @@
       const items = [
         { id:'overall', label:'全体' },
         { id:'yoy', label:'昨年比' },
-        { id:'job', label:'職種別' }
+        { id:'job', label:'職種別' },
+        { id:'prefecture', label:'都道府県別' }
       ];
       return `<span class="month-trend-toggle" aria-label="月別推移タイプ">${items.map(item => `<button class="month-trend-btn ${monthGraphType === item.id ? 'active' : ''}" data-month-trend-type="${esc(item.id)}" type="button">${esc(item.label)}</button>`).join('')}</span>`;
     }
@@ -2208,7 +2210,16 @@
       const fullText = keywordSegmentsToPlain(chartContextFullKeywordSegments());
       if (comparisonMode === 'month') {
         const locationText = currentLocationText();
-        return `<div class="chart-context">${monthTrendTypeControlsHtml()}<span class="chart-context-label">集計対象：</span><span class="chart-context-chip" title="${esc(fullText)}">${keywordSegmentsToHtml(displaySegments)}</span><span class="chart-context-chip chart-context-location" title="${esc(locationText)}">勤務地：${esc(locationText)}</span></div>`;
+        let prefChip = '';
+        if (monthGraphType === 'prefecture') {
+          const prefInfo = monthPrefTrendDefinitions();
+          const prefTitle = prefInfo.totalLabels.length ? prefInfo.totalLabels.join('、') : '未選択';
+          const prefText = prefInfo.defs.length
+            ? `表示都道府県：${prefInfo.defs.map(d => d.label).join('、')}${prefInfo.omitted > 0 ? ` 他${prefInfo.omitted}件` : ''}`
+            : '表示都道府県：未選択';
+          prefChip = `<span class="chart-context-chip chart-context-location" title="${esc(prefTitle)}">${esc(prefText)}</span>`;
+        }
+        return `<div class="chart-context">${monthTrendTypeControlsHtml()}<span class="chart-context-label">集計対象：</span><span class="chart-context-chip" title="${esc(fullText)}">${keywordSegmentsToHtml(displaySegments)}</span><span class="chart-context-chip chart-context-location" title="${esc(locationText)}">勤務地：${esc(locationText)}</span>${prefChip}</div>`;
       }
       const highlightedPrefs = Array.from(detectLocationPrefectures());
       const locationText = highlightedPrefs.length ? `　勤務地ハイライト：${highlightedPrefs.join('、')}` : '';
@@ -2286,6 +2297,180 @@
         borderDash: axis === 'right' ? [6, 4] : undefined,
         showDataLabels: !!showLabels
       };
+    }
+
+
+    function monthPrefTrendDefinitions() {
+      const totalLabels = Array.from(detectLocationPrefectures()).sort((a, b) => (PREFECTURE_ORDER[a] ?? 999) - (PREFECTURE_ORDER[b] ?? 999));
+      const defs = totalLabels.slice(0, MAX_MONTH_PREF_TREND_SERIES).map((pref, idx) => ({ ord: idx, label: pref }));
+      return { defs, omitted: Math.max(0, totalLabels.length - defs.length), total: totalLabels.length, totalLabels };
+    }
+
+    async function fetchMonthPrefTrendData() {
+      const cached = getMonthGraphDataCache('prefecture');
+      if (cached) return cached;
+      const { defs, omitted, total, totalLabels } = monthPrefTrendDefinitions();
+      if (!defs.length) {
+        return { defs, omitted, total, totalLabels, rows:[], months:selectedMonths() };
+      }
+      const months = selectedMonths();
+      const db = await getDb();
+      const conn = await db.connect();
+      try {
+        try { await conn.query('LOAD parquet;'); } catch(e) { /* autoload環境では不要 */ }
+        const paths = await registerMonths(db, months);
+        const source = readExpr(paths);
+        const where = monthTrendWhere();
+        const prefValues = defs.map(d => sqlLiteral(d.label)).join(', ');
+        const sql = `
+          WITH src AS (SELECT * FROM ${source} ${where})
+          SELECT "都道府県" AS series,
+                 CAST("集計年月キー" AS VARCHAR) AS label,
+                 COUNT(*) AS count,
+                 COALESCE(SUM("消化金額"),0) AS cost,
+                 COALESCE(SUM("表示回数"),0) AS impressions,
+                 COALESCE(SUM("クリック数"),0) AS clicks,
+                 COALESCE(SUM("応募開始数"),0) AS apply_starts,
+                 COALESCE(SUM("応募数"),0) AS applies
+          FROM src
+          WHERE "都道府県" IN (${prefValues})
+          GROUP BY series, label
+          ORDER BY series ASC, label ASC;
+        `;
+        const rows = await queryRows(conn, sql);
+        const result = { defs, omitted, total, totalLabels, rows, months };
+        setMonthGraphDataCache('prefecture', result);
+        return result;
+      } finally {
+        await conn.close();
+      }
+    }
+
+    function monthPrefTrendRowMap(rows) {
+      const map = new Map();
+      (rows || []).forEach(row => map.set(`${row.series}::${row.label}`, row));
+      return map;
+    }
+
+    function repaintMonthPrefTrendChartFromData(result) {
+      const defs = result && Array.isArray(result.defs) ? result.defs : [];
+      if (!defs.length) {
+        destroyComparisonChart();
+        els.comparisonContent.innerHTML = '<div class="empty">都道府県別推移に表示できる都道府県がありません。勤務地欄に「東京 大阪」のように比較したい都道府県を入力してください。</div>';
+        requestAnimationFrame(updateStickyLayout);
+        return;
+      }
+      const months = result.months && result.months.length ? result.months : selectedMonths();
+      const labels = months.map(formatMonthKeyForDisplay);
+      const rowMap = monthPrefTrendRowMap(result.rows || []);
+      const leftValues = [];
+      const rightValues = [];
+      const useRight = chartRightMetric && chartRightMetric !== 'none' && chartRightMetric !== chartLeftMetric;
+      defs.forEach(def => {
+        months.forEach(month => {
+          const row = rowMap.get(`${def.label}::${month}`);
+          leftValues.push(row ? chartMetricValue(row, chartLeftMetric) : null);
+          if (useRight) rightValues.push(row ? chartMetricValue(row, chartRightMetric) : null);
+        });
+      });
+      const leftCap = resolveAxisCap('left', leftValues);
+      const rightCap = useRight ? resolveAxisCap('right', rightValues) : null;
+      const capMessages = [chartAxisCapLabel('left', leftCap, chartLeftMetric), useRight ? chartAxisCapLabel('right', rightCap, chartRightMetric) : ''].filter(Boolean);
+      const minWidth = Math.max(900, labels.length * Math.max(84, defs.length * 24));
+      const datasets = [];
+      defs.forEach((def, idx) => {
+        const leftData = months.map(month => {
+          const row = rowMap.get(`${def.label}::${month}`);
+          return row ? chartMetricValue(row, chartLeftMetric) : null;
+        });
+        datasets.push(monthSeriesDatasetConfig('left', chartLeftMetric, def.label, leftData, chartLeftType, chartLeftLabels, idx, leftCap));
+      });
+      if (useRight) {
+        defs.forEach((def, idx) => {
+          const rightData = months.map(month => {
+            const row = rowMap.get(`${def.label}::${month}`);
+            return row ? chartMetricValue(row, chartRightMetric) : null;
+          });
+          datasets.push(monthSeriesDatasetConfig('right', chartRightMetric, def.label, rightData, chartRightType, chartRightLabels, idx, rightCap));
+        });
+      }
+      const omittedNote = result.omitted > 0 ? ` 選択都道府県が多いため、先頭${MAX_MONTH_PREF_TREND_SERIES}件のみ表示しています（他${result.omitted}件）。` : '';
+      destroyComparisonChart();
+      els.comparisonContent.innerHTML = `
+        <div class="chart-panel">
+          ${chartContextHtml()}
+          ${chartCapContextHtml(capMessages)}
+          <div class="chart-canvas-wrap" style="min-width:${minWidth}px;">
+            <canvas id="comparisonChartCanvas"></canvas>
+          </div>
+          <div class="chart-note">※都道府県別推移では、勤務地欄に入力された都道府県を月別の系列として表示します。表示できる系列は最大${MAX_MONTH_PREF_TREND_SERIES}件です。右軸を使う場合は、右軸系列を点線で表示します。${esc(omittedNote)}</div>
+        </div>`;
+      const canvas = document.getElementById('comparisonChartCanvas');
+      if (!canvas || !window.Chart) {
+        els.comparisonContent.innerHTML = '<div class="empty">グラフライブラリを読み込めませんでした。</div>';
+        requestAnimationFrame(updateStickyLayout);
+        return;
+      }
+      comparisonChart = new window.Chart(canvas, {
+        data: { labels, datasets },
+        plugins:[chartDataLabelPlugin],
+        options: {
+          responsive:true,
+          maintainAspectRatio:false,
+          animation:false,
+          interaction:{ mode:'index', intersect:false },
+          plugins:{
+            legend:{ display:true, position:'top', labels:{ boxWidth:14, boxHeight:14, usePointStyle:true, font:{ weight:'bold' }, sort:(a,b) => a.datasetIndex - b.datasetIndex } },
+            tooltip:{
+              callbacks:{
+                label(context) {
+                  const metricId = context.dataset.yAxisID === 'yRight' ? chartRightMetric : chartLeftMetric;
+                  return `${context.dataset.label}: ${chartValueLabel(context.parsed.y, metricId)}`;
+                }
+              }
+            }
+          },
+          scales:{
+            x:{
+              grid:{ display:false },
+              ticks:{ maxRotation:45, minRotation:0, autoSkip:false, color:'#57534e', font:{ weight:'bold' } }
+            },
+            yLeft:{
+              beginAtZero:true,
+              max:leftCap || undefined,
+              position:'left',
+              title:{ display:true, text:METRIC_MAP[chartLeftMetric].label, font:{ weight:'bold' } },
+              ticks:{ callback:(value) => chartAxisTickLabel(value, chartLeftMetric) }
+            },
+            yRight:{
+              beginAtZero:true,
+              max:rightCap || undefined,
+              position:'right',
+              display:!!useRight,
+              title:{ display:!!useRight, text:useRight ? METRIC_MAP[chartRightMetric].label : '', font:{ weight:'bold' } },
+              grid:{ drawOnChartArea:false },
+              ticks:{ callback:(value) => chartAxisTickLabel(value, chartRightMetric) }
+            }
+          }
+        }
+      });
+      requestAnimationFrame(updateStickyLayout);
+    }
+
+    async function repaintMonthPrefTrendChartAsync(token) {
+      destroyComparisonChart();
+      els.comparisonContent.innerHTML = `<div class="chart-panel"><div class="empty">都道府県別推移グラフを集計中...</div></div>`;
+      requestAnimationFrame(updateStickyLayout);
+      try {
+        const data = await fetchMonthPrefTrendData();
+        if (token !== monthGraphRenderToken) return;
+        repaintMonthPrefTrendChartFromData(data);
+      } catch (error) {
+        console.error(error);
+        if (token !== monthGraphRenderToken) return;
+        els.comparisonContent.innerHTML = '<div class="empty">都道府県別推移グラフの集計中にエラーが発生しました。</div>';
+        requestAnimationFrame(updateStickyLayout);
+      }
     }
 
     function monthJobTrendDefinitions() {
@@ -2605,6 +2790,11 @@
         repaintMonthJobTrendChartAsync(token);
         return;
       }
+      if (comparisonMode === 'month' && monthGraphType === 'prefecture') {
+        const token = ++monthGraphRenderToken;
+        repaintMonthPrefTrendChartAsync(token);
+        return;
+      }
       const chartRows = chartSortRows(rowsForCurrentChart(), chartLeftMetric);
       if (!chartRows.length) {
         destroyComparisonChart();
@@ -2632,7 +2822,7 @@
       const noteText = comparisonMode === 'prefecture'
         ? '※都道府県比較グラフでは、全国行は表示対象から外しています。勤務地入力に該当する都道府県は、棒・点・軸ラベルを強調表示します。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。軸上限を超える値は「↑」で示します。'
         : comparisonMode === 'month'
-          ? '※月別推移グラフでは、期間総計行は表示対象から外し、選択期間内の各月を時系列順に表示します。推移タイプは「全体」「昨年比」「職種別」を切り替えられます。'
+          ? '※月別推移グラフでは、期間総計行は表示対象から外し、選択期間内の各月を時系列順に表示します。推移タイプは「全体」「昨年比」「職種別」「都道府県別」を切り替えられます。'
           : '※職種比較グラフでは、キーワードなしの全体行は表示対象から外しています。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。棒・線・123・↕ボタンで各軸の表示を切り替えられます。';
       destroyComparisonChart();
       els.comparisonContent.innerHTML = `
