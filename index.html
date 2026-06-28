@@ -499,6 +499,8 @@
     let lastTableHelper = '';
     let latestTotals = null;
     let comparisonScrollSyncCleanup = null;
+    let comparisonCache = new Map();
+    const MAX_COMPARISON_CACHE = 24;
     // 検索条件入力行は最初から独立した sticky シェルへ移動します。
     // スクロール中に DOM を移動しないため、固定へ切り替わる瞬間の揺れを防ぎます。
     if (els.searchFiltersShell && els.searchFilters && els.searchFilters.parentElement !== els.searchFiltersShell) {
@@ -707,7 +709,7 @@
 
     async function handleFiles(fileList) {
       const files = Array.from(fileList || []);
-      clearLog(); selectedJobTitles = []; registeredFiles.clear(); lastCopyRows = []; lastDisplayRows = []; lastTableHelper = ''; if (els.copyBtn) els.copyBtn.disabled = true; if (els.comparisonCopyBtn) els.comparisonCopyBtn.disabled = true;
+      clearLog(); selectedJobTitles = []; registeredFiles.clear(); comparisonCache.clear(); lastCopyRows = []; lastDisplayRows = []; lastTableHelper = ''; if (els.copyBtn) els.copyBtn.disabled = true; if (els.comparisonCopyBtn) els.comparisonCopyBtn.disabled = true;
       if (!files.length) return;
       setStatus('データ確認中...', 'warn');
       const manifestItem = findManifestFile(files);
@@ -958,6 +960,45 @@
 
     async function queryRows(conn, sql) { const table = await conn.query(sql); return tableToRows(table); }
 
+    function comparisonCacheKey(mode=comparisonMode) {
+      if (!appState) return '';
+      const months = selectedMonths();
+      const payload = {
+        sessionId: appState.sessionId,
+        mode,
+        months,
+        freeWord: String(els.freeWordInput.value || '').trim(),
+        location: String(els.locationInput.value || '').trim(),
+        searchMode: els.searchMode.value,
+        campaign: els.campaignFilter.value,
+        selectedJobs: [...selectedJobTitles].sort(),
+        hasAggRelated: !!appState.hasAggRelated
+      };
+      return JSON.stringify(payload);
+    }
+
+    function getComparisonCache(mode=comparisonMode) {
+      const key = comparisonCacheKey(mode);
+      return key ? comparisonCache.get(key) : null;
+    }
+
+    function setComparisonCache(result, mode=comparisonMode) {
+      const key = comparisonCacheKey(mode);
+      if (!key || !result) return;
+      if (comparisonCache.has(key)) comparisonCache.delete(key);
+      comparisonCache.set(key, result);
+      while (comparisonCache.size > MAX_COMPARISON_CACHE) {
+        const oldestKey = comparisonCache.keys().next().value;
+        comparisonCache.delete(oldestKey);
+      }
+    }
+
+    function renderComparisonResult(result) {
+      if (!result) return;
+      if (Object.prototype.hasOwnProperty.call(result, 'latestTotals')) latestTotals = result.latestTotals;
+      renderTable(result.labelName, result.rows || [], { summaryTotals: result.summaryTotals });
+    }
+
     async function refreshAll() {
       if (!appState) return;
       const months = selectedMonths();
@@ -1052,9 +1093,47 @@
 
     async function renderComparison(conn, source, db) {
       updateComparisonControls();
-      if (comparisonMode === 'job') return renderJobComparison(conn, source);
-      if (comparisonMode === 'prefecture') return renderPrefComparison(conn, source);
-      return renderMonthComparison(conn, source);
+      const cached = getComparisonCache();
+      if (cached) {
+        renderComparisonResult(cached);
+        return;
+      }
+      if (!conn || !source) return;
+      let result;
+      if (comparisonMode === 'job') result = await buildJobComparison(conn, source);
+      else if (comparisonMode === 'prefecture') result = await buildPrefComparison(conn, source);
+      else result = await buildMonthComparison(conn, source);
+      result.latestTotals = latestTotals;
+      setComparisonCache(result);
+      renderComparisonResult(result);
+    }
+
+    async function refreshComparisonOnly() {
+      if (!appState) return;
+      const months = selectedMonths();
+      if (!months.length) { setStatus('対象月なし', 'bad'); return; }
+      const cached = getComparisonCache();
+      if (cached) {
+        renderComparisonResult(cached);
+        setStatus(`表示中：${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length-1])}`, 'ok');
+        return;
+      }
+      els.refreshBtn.disabled = true;
+      setStatus('比較表を更新中...', 'warn');
+      try {
+        const db = await getDb();
+        const conn = await db.connect();
+        try { await conn.query('LOAD parquet;'); } catch(e) { /* autoload環境では不要 */ }
+        const paths = await registerMonths(db, months);
+        const source = readExpr(paths);
+        await renderComparison(conn, source, db);
+        await conn.close();
+        setStatus(`表示中：${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length-1])}`, 'ok');
+      } catch (error) {
+        console.error(error); log('[ERROR]\n' + (error.stack || error.message)); setStatus('表示エラー', 'bad');
+      } finally {
+        els.refreshBtn.disabled = false;
+      }
     }
 
     function updateComparisonControls() {
@@ -1325,15 +1404,15 @@
       return { keyword: row.label || currentKeywordText(), location: currentLocationText() };
     }
 
-    async function renderJobComparison(conn, source) {
-      if (!selectedJobTitles.length) { renderTable('関連職種', []); return; }
+    async function buildJobComparison(conn, source) {
+      if (!selectedJobTitles.length) return { labelName:'関連職種', rows:[], summaryTotals: latestTotals };
       const selects = selectedJobTitles.map(job => `SELECT ${sqlLiteral(job)} AS label, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src WHERE ${relatedJobExactClause(job)}`).join(' UNION ALL ');
       const sql = `WITH src AS (SELECT * FROM ${source} ${baseWhere([], { includeTitle: false })}) ${selects} ORDER BY count DESC;`;
       const rows = await queryRows(conn, sql);
-      renderTable('関連職種', rows);
+      return { labelName:'関連職種', rows, summaryTotals: latestTotals };
     }
 
-    async function renderPrefComparison(conn, source) {
+    async function buildPrefComparison(conn, source) {
       const where = prefectureComparisonWhere();
       const prefValues = PREFECTURES.map((pref, idx) => `(${idx + 1}, ${sqlLiteral(pref)})`).join(', ');
       const sql = `
@@ -1373,10 +1452,10 @@
           __prefHighlighted: highlightedPrefs.has(row.label)
         };
       });
-      renderTable('都道府県', sortedRows, { summaryTotals: sumMetricRows(rows) });
+      return { labelName:'都道府県', rows: sortedRows, summaryTotals: sumMetricRows(rows) };
     }
 
-    async function renderMonthComparison(conn, source) {
+    async function buildMonthComparison(conn, source) {
       const where = monthTrendWhere();
       const summarySql = `WITH src AS (SELECT * FROM ${source} ${where}) SELECT COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src;`;
       const summaryTotals = (await queryRows(conn, summarySql))[0] || {};
@@ -1386,7 +1465,7 @@
         period_display: formatMonthKeyForDisplay(row.label),
         period_copy: formatMonthKeyForCopy(row.label)
       }));
-      renderTable('集計月', rows, { summaryTotals });
+      return { labelName:'集計月', rows, summaryTotals };
     }
 
 
@@ -1618,7 +1697,7 @@
       }
     });
     els.periodModal.addEventListener('cancel', e => { e.preventDefault(); closePeriodModal(); });
-    document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); comparisonMode = tab.dataset.mode; updateComparisonControls(); textDirty = false; clearLog(); refreshAll(); }));
+    document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); comparisonMode = tab.dataset.mode; updateComparisonControls(); textDirty = false; clearLog(); refreshComparisonOnly(); }));
     window.addEventListener('resize', () => requestAnimationFrame(updateStickyLayout));
     window.addEventListener('scroll', () => requestAnimationFrame(updateStickyLayout), { passive:true });
     updateColumnMenuLabel();
