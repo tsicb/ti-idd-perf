@@ -2477,6 +2477,12 @@
           plugins:{
             legend:{ display:false },
             tooltip:{
+              itemSort(a, b) {
+                const axisA = a.dataset.yAxisID === 'yRight' ? 1 : 0;
+                const axisB = b.dataset.yAxisID === 'yRight' ? 1 : 0;
+                if (axisA !== axisB) return axisA - axisB;
+                return a.datasetIndex - b.datasetIndex;
+              },
               callbacks:{
                 label(context) {
                   const metricId = context.dataset.yAxisID === 'yRight' ? chartRightMetric : chartLeftMetric;
@@ -2693,6 +2699,12 @@
           plugins:{
             legend:{ display:false },
             tooltip:{
+              itemSort(a, b) {
+                const axisA = a.dataset.yAxisID === 'yRight' ? 1 : 0;
+                const axisB = b.dataset.yAxisID === 'yRight' ? 1 : 0;
+                if (axisA !== axisB) return axisA - axisB;
+                return a.datasetIndex - b.datasetIndex;
+              },
               callbacks:{
                 label(context) {
                   const metricId = context.dataset.yAxisID === 'yRight' ? chartRightMetric : chartLeftMetric;
@@ -2813,6 +2825,12 @@
           plugins:{
             legend:{ display:false },
             tooltip:{
+              itemSort(a, b) {
+                const axisA = a.dataset.yAxisID === 'yRight' ? 1 : 0;
+                const axisB = b.dataset.yAxisID === 'yRight' ? 1 : 0;
+                if (axisA !== axisB) return axisA - axisB;
+                return a.datasetIndex - b.datasetIndex;
+              },
               callbacks:{
                 label(context) {
                   const metricId = context.dataset.yAxisID === 'yRight' ? chartRightMetric : chartLeftMetric;
@@ -2932,6 +2950,12 @@
           plugins:{
             legend:{ display:false },
             tooltip:{
+              itemSort(a, b) {
+                const axisA = a.dataset.yAxisID === 'yRight' ? 1 : 0;
+                const axisB = b.dataset.yAxisID === 'yRight' ? 1 : 0;
+                if (axisA !== axisB) return axisA - axisB;
+                return a.datasetIndex - b.datasetIndex;
+              },
               callbacks:{
                 label(context) {
                   const metricId = context.dataset.yAxisID === 'yRight' ? chartRightMetric : chartLeftMetric;
