@@ -753,6 +753,321 @@
     .company-breakdown-table-wrap::-webkit-scrollbar-thumb:hover,
     .company-compare-table-wrap::-webkit-scrollbar-thumb:hover { background:linear-gradient(90deg,#22d3ee,#67e8f9); }
 
+
+    /* Company mode theme refresh: Concrete / Cement Analyst Mode */
+    body.company-mode-active {
+      background:
+        radial-gradient(circle at 9% 8%, rgba(255,255,255,.95), transparent 24%),
+        radial-gradient(circle at 88% 12%, rgba(186,230,253,.42), transparent 28%),
+        linear-gradient(135deg,#edf1f4 0%,#dfe5ea 47%,#f4f5f5 100%);
+      background-attachment:fixed;
+    }
+    .company-mode-shell {
+      border-radius:24px;
+      padding:24px;
+      background:
+        linear-gradient(135deg,rgba(248,250,252,.98),rgba(241,245,249,.96)),
+        repeating-linear-gradient(45deg,rgba(100,116,139,.035) 0 1px,transparent 1px 10px);
+      border:1px solid #cbd5e1;
+      color:#334155;
+      box-shadow:0 20px 56px rgba(71,85,105,.22), inset 0 1px 0 rgba(255,255,255,.9);
+    }
+    .company-mode-shell::before {
+      inset:-110px -130px auto auto;
+      width:320px;
+      height:320px;
+      background:radial-gradient(circle,rgba(14,116,144,.13),transparent 66%);
+    }
+    .company-mode-header {
+      padding-bottom:18px;
+      border-bottom:1px solid #cbd5e1;
+    }
+    .company-mode-kicker {
+      background:#e0f2fe;
+      border-color:#7dd3fc;
+      color:#075985;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.85);
+    }
+    .company-mode-title {
+      color:#1e293b;
+      text-shadow:none;
+      letter-spacing:-.02em;
+    }
+    .company-mode-subtitle {
+      color:#475569;
+    }
+    .company-mode-actions {
+      align-items:flex-start;
+    }
+    .company-btn {
+      border:1px solid #cbd5e1;
+      background:linear-gradient(180deg,#ffffff,#f1f5f9);
+      color:#334155;
+      border-radius:12px;
+      box-shadow:0 4px 10px rgba(71,85,105,.10), inset 0 1px 0 rgba(255,255,255,.88);
+      transition:.12s;
+    }
+    .company-btn:hover {
+      border-color:#94a3b8;
+      background:linear-gradient(180deg,#ffffff,#e2e8f0);
+      transform:translateY(-1px);
+    }
+    .company-btn.primary {
+      background:linear-gradient(180deg,#0ea5e9,#0369a1);
+      color:#fff;
+      border-color:#0284c7;
+      box-shadow:0 8px 18px rgba(14,116,144,.20);
+    }
+    .company-btn.export {
+      background:linear-gradient(180deg,#10b981,#047857);
+      color:#fff;
+      border-color:#059669;
+      box-shadow:0 8px 18px rgba(5,150,105,.18);
+    }
+    .company-mask-toggle {
+      border-color:#f59e0b;
+      background:#fff7ed;
+      color:#92400e;
+    }
+    .company-mask-toggle:hover {
+      background:#ffedd5;
+      border-color:#d97706;
+    }
+    .company-mask-toggle.active {
+      background:linear-gradient(180deg,#f59e0b,#b45309);
+      color:#fff7ed;
+      border-color:#d97706;
+      box-shadow:0 8px 18px rgba(180,83,9,.18);
+    }
+    .company-mask-badge {
+      background:#fff7ed;
+      border-color:#fbbf24;
+      color:#92400e;
+    }
+    .company-name-hidden-text {
+      color:#92400e;
+      font-weight:950;
+      letter-spacing:.01em;
+    }
+    .company-panel,
+    .company-summary-panel,
+    .company-compare-block,
+    .company-breakdown-block,
+    .company-chart-block {
+      background:rgba(255,255,255,.86);
+      border-color:#cbd5e1;
+      box-shadow:0 10px 26px rgba(71,85,105,.09), inset 0 1px 0 rgba(255,255,255,.88);
+    }
+    .company-panel {
+      border-radius:20px;
+    }
+    .company-summary-panel {
+      background:rgba(248,250,252,.94);
+      border-color:#bfdbfe;
+    }
+    .company-selected-card {
+      border-color:#67e8f9;
+      background:linear-gradient(180deg,#ecfeff,#f8fafc);
+      box-shadow:0 10px 24px rgba(14,116,144,.10), inset 5px 0 0 #0891b2;
+    }
+    .company-selected-title {
+      color:#0f766e;
+    }
+    .company-selected-main {
+      color:#1e293b;
+    }
+    .company-selected-id {
+      background:#e0f2fe;
+      border-color:#7dd3fc;
+      color:#075985;
+    }
+    .company-search-row label,
+    .company-chart-controls {
+      color:#475569;
+    }
+    .company-search-row input,
+    .company-chart-controls select {
+      background:#ffffff;
+      border-color:#cbd5e1;
+      color:#0f172a;
+      box-shadow:inset 0 2px 5px rgba(15,23,42,.05);
+    }
+    .company-search-row input::placeholder {
+      color:#94a3b8;
+    }
+    .company-search-row input:focus,
+    .company-chart-controls select:focus {
+      background:#ffffff;
+      border-color:#0ea5e9;
+      box-shadow:0 0 0 4px rgba(14,165,233,.16), inset 0 2px 5px rgba(15,23,42,.05);
+    }
+    .company-search-row input:focus::placeholder {
+      color:#94a3b8;
+    }
+    .company-status {
+      color:#475569;
+    }
+    .company-status.warn { color:#b45309; }
+    .company-status.ok { color:#047857; }
+    .company-status.bad { color:#be123c; }
+    .company-result-btn {
+      background:#ffffff;
+      border-color:#cbd5e1;
+      color:#334155;
+      box-shadow:0 4px 12px rgba(71,85,105,.07);
+    }
+    .company-result-btn:hover {
+      background:#f0f9ff;
+      border-color:#38bdf8;
+    }
+    .company-result-id {
+      color:#0369a1;
+    }
+    .company-result-name {
+      color:#1e293b;
+    }
+    .company-result-action {
+      color:#0f766e;
+    }
+    .company-summary-title,
+    .company-compare-title,
+    .company-breakdown-title,
+    .company-chart-title {
+      color:#1e293b;
+    }
+    .company-summary-note,
+    .company-compare-note,
+    .company-breakdown-note,
+    .company-chart-note,
+    .company-breakdown-meta {
+      color:#64748b;
+    }
+    .company-summary-card {
+      background:#ffffff;
+      border-color:#dbe3ea;
+      box-shadow:0 8px 18px rgba(71,85,105,.07), inset 0 1px 0 rgba(255,255,255,.9);
+    }
+    .company-summary-card.primary {
+      background:linear-gradient(180deg,#ecfeff,#ffffff);
+      border-color:#67e8f9;
+      box-shadow:0 10px 22px rgba(14,116,144,.10), inset 0 3px 0 #0891b2;
+    }
+    .company-summary-card .label {
+      color:#64748b;
+    }
+    .company-summary-card .value {
+      color:#0f172a;
+    }
+    .company-summary-card .unit {
+      color:#64748b;
+    }
+    .company-compare-table-wrap,
+    .company-breakdown-table-wrap,
+    .company-chart-canvas-wrap {
+      background:#ffffff;
+      border-color:#cbd5e1;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+    }
+    .company-compare-table th,
+    .company-breakdown-table th {
+      color:#334155;
+      background:#e5e7eb;
+      border-bottom-color:#cbd5e1;
+    }
+    .company-compare-table td,
+    .company-breakdown-table td {
+      color:#334155;
+      border-bottom-color:#e2e8f0;
+    }
+    .company-compare-table .metric-name,
+    .company-breakdown-table .segment-name {
+      color:#0f172a;
+      font-weight:950;
+    }
+    .company-compare-table tbody tr:nth-child(even) td:not(.better):not(.worse):not(.neutral),
+    .company-breakdown-table tbody tr:nth-child(even) td:not(.better):not(.worse):not(.neutral) {
+      background:#f8fafc;
+    }
+    .company-compare-table tbody tr:hover td:not(.better):not(.worse):not(.neutral),
+    .company-breakdown-table tbody tr:hover td:not(.better):not(.worse):not(.neutral) {
+      background:#eef6ff;
+    }
+    .company-breakdown-table th:first-child,
+    .company-breakdown-table td:first-child {
+      background:#f1f5f9;
+      box-shadow:2px 0 0 rgba(203,213,225,.65);
+    }
+    .company-breakdown-table tbody tr:nth-child(even) td:first-child {
+      background:#e8edf3;
+    }
+    .company-compare-table .better,
+    .company-breakdown-table td.better {
+      color:#047857;
+      background:#d1fae5;
+      box-shadow:inset 4px 0 0 #10b981;
+      font-weight:950;
+    }
+    .company-compare-table .worse,
+    .company-breakdown-table td.worse {
+      color:#be123c;
+      background:#ffe4e6;
+      box-shadow:inset 4px 0 0 #f43f5e;
+      font-weight:950;
+    }
+    .company-compare-table .neutral,
+    .company-breakdown-table td.neutral {
+      color:#475569;
+      background:#f1f5f9;
+      box-shadow:inset 4px 0 0 #94a3b8;
+      font-weight:900;
+    }
+    .company-breakdown-tab {
+      border-color:#cbd5e1;
+      background:#ffffff;
+      color:#475569;
+      border-radius:12px;
+      box-shadow:0 3px 8px rgba(71,85,105,.08);
+    }
+    .company-breakdown-tab:hover {
+      background:#f0f9ff;
+      border-color:#38bdf8;
+      color:#075985;
+    }
+    .company-breakdown-tab.active {
+      background:linear-gradient(180deg,#0ea5e9,#0369a1);
+      color:#ffffff;
+      border-color:#0284c7;
+      box-shadow:0 8px 18px rgba(14,116,144,.20);
+    }
+    .company-empty-state {
+      background:#f8fafc;
+      border-color:#cbd5e1;
+      color:#475569;
+    }
+    .company-chart-block {
+      background:#f8fafc;
+    }
+    .company-chart-canvas-wrap {
+      background:#ffffff;
+    }
+    .company-chart-scroll::-webkit-scrollbar-track,
+    .company-breakdown-table-wrap::-webkit-scrollbar-track,
+    .company-compare-table-wrap::-webkit-scrollbar-track {
+      background:#e2e8f0;
+      border-radius:999px;
+    }
+    .company-chart-scroll::-webkit-scrollbar-thumb,
+    .company-breakdown-table-wrap::-webkit-scrollbar-thumb,
+    .company-compare-table-wrap::-webkit-scrollbar-thumb {
+      background:linear-gradient(90deg,#64748b,#0ea5e9);
+      border-color:#e2e8f0;
+    }
+    .company-chart-scroll::-webkit-scrollbar-thumb:hover,
+    .company-breakdown-table-wrap::-webkit-scrollbar-thumb:hover,
+    .company-compare-table-wrap::-webkit-scrollbar-thumb:hover {
+      background:linear-gradient(90deg,#475569,#0284c7);
+    }
+
     @media (max-width:1180px) { .company-summary-grid { grid-template-columns:repeat(3,minmax(130px,1fr)); } }
     @media (max-width:760px) { .company-search-row { grid-template-columns:1fr; } .company-result-btn { grid-template-columns:1fr; } .company-summary-grid { grid-template-columns:1fr 1fr; } }
     .comparison-card.chart-view .table-operation-actions { display:none; }
@@ -1720,8 +2035,8 @@
             {
               label: `対象企業 ${metric.label}`,
               data: targetData,
-              borderColor:'rgba(34,211,238,1)',
-              backgroundColor:isMonth ? 'rgba(34,211,238,.12)' : 'rgba(34,211,238,.62)',
+              borderColor:'rgba(14,116,144,1)',
+              backgroundColor:isMonth ? 'rgba(14,116,144,.10)' : 'rgba(14,116,144,.58)',
               borderWidth:isMonth ? 3 : 1,
               borderRadius:isMonth ? 0 : 8,
               tension:.28,
@@ -1730,8 +2045,8 @@
             {
               label: metric.type === 'volume' ? `同区分1社平均 ${metric.label}` : `同区分 ${metric.label}`,
               data: marketData,
-              borderColor:'rgba(167,139,250,1)',
-              backgroundColor:isMonth ? 'rgba(167,139,250,.12)' : 'rgba(167,139,250,.46)',
+              borderColor:'rgba(124,58,237,1)',
+              backgroundColor:isMonth ? 'rgba(124,58,237,.10)' : 'rgba(124,58,237,.36)',
               borderWidth:isMonth ? 2 : 1,
               borderDash:isMonth ? [6,4] : [],
               borderRadius:isMonth ? 0 : 8,
@@ -1745,7 +2060,7 @@
           maintainAspectRatio:false,
           interaction:{ mode:'index', intersect:false },
           plugins:{
-            legend:{ labels:{ color:'#e2e8f0', font:{ family:'inherit', weight:'bold' }, boxWidth:14, boxHeight:10 } },
+            legend:{ labels:{ color:'#334155', font:{ family:'inherit', weight:'bold' }, boxWidth:14, boxHeight:10 } },
             tooltip:{
               callbacks:{
                 label:(ctx) => `${ctx.dataset.label}: ${companyChartValueLabel(ctx.parsed.y, metricId)}`
@@ -1754,14 +2069,14 @@
           },
           scales:{
             x:{
-              ticks:{ color:'#cbd5e1', font:{ family:'inherit', weight:'bold' }, maxRotation:isMonth ? 0 : 40, minRotation:0 },
-              grid:{ color:'rgba(148,163,184,.13)' }
+              ticks:{ color:'#475569', font:{ family:'inherit', weight:'bold' }, maxRotation:isMonth ? 0 : 40, minRotation:0 },
+              grid:{ color:'rgba(100,116,139,.16)' }
             },
             y:{
               beginAtZero:true,
-              ticks:{ color:'#cbd5e1', callback:(value) => companyChartValueLabel(value, metricId) },
-              grid:{ color:'rgba(148,163,184,.18)' },
-              title:{ display:true, text:metric.label, color:'#cffafe', font:{ family:'inherit', weight:'bold' } }
+              ticks:{ color:'#475569', callback:(value) => companyChartValueLabel(value, metricId) },
+              grid:{ color:'rgba(100,116,139,.20)' },
+              title:{ display:true, text:metric.label, color:'#0f172a', font:{ family:'inherit', weight:'bold' } }
             }
           }
         }
