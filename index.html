@@ -1326,7 +1326,7 @@
           <div class="company-breakdown-head">
             <div>
               <div class="company-breakdown-title">個社内訳分析</div>
-              <div class="company-breakdown-note">対象企業の実績を、月別・職種別・都道府県別に分解して確認します。マーケット列は同じ区分における対象企業除外の加重値です。</div>
+              <div class="company-breakdown-note">対象企業の実績を、月別・職種別・都道府県別に分解して確認します。同区分列は、同じ月・代表職種・都道府県における対象企業除外の加重値です。</div>
             </div>
             <div class="company-breakdown-tabs">${companyBreakdownModeButtons()}</div>
           </div>
@@ -1386,10 +1386,10 @@
       }).join('');
       const shown = rows.length;
       body.innerHTML = `
-        <p class="company-breakdown-meta">表示：${esc(info.title)} / ${esc(fmtNum(shown))}行。CPA差分は「対象企業 − マーケット」です。CPAは低いほど良好、応募率は高いほど良好として色分けしています。</p>
+        <p class="company-breakdown-meta">表示：${esc(info.title)} / ${esc(fmtNum(shown))}行。CPA差分は「対象企業 − 同区分値」です。CPAは低いほど良好、応募率は高いほど良好として色分けしています。</p>
         <div class="company-breakdown-table-wrap">
           <table class="company-breakdown-table">
-            <thead><tr><th>${esc(info.segmentLabel)}</th><th>該当件数</th><th>消化金額</th><th>クリック数</th><th>応募数</th><th>CPA</th><th>市場CPA</th><th>CPA差分</th><th>応募率</th><th>市場応募率</th><th>応募率差分</th></tr></thead>
+            <thead><tr><th>${esc(info.segmentLabel)}</th><th>該当件数</th><th>消化金額</th><th>クリック数</th><th>応募数</th><th>CPA</th><th>同区分CPA</th><th>CPA差分</th><th>応募率</th><th>同区分応募率</th><th>応募率差分</th></tr></thead>
             <tbody>${trs}</tbody>
           </table>
         </div>`;
@@ -1406,7 +1406,7 @@
     }
     function companyBreakdownOrder(mode) {
       if (mode === 'month') return 'ORDER BY t.segment ASC';
-      return 'ORDER BY t.target_cost DESC, t.target_applies DESC, t.target_clicks DESC, t.segment ASC LIMIT 50';
+      return 'ORDER BY t.cost DESC, t.applies DESC, t.clicks DESC, t.segment ASC LIMIT 50';
     }
     async function loadCompanyBreakdown(monthsArg=null) {
       if (!selectedCompany || !appState) return;
