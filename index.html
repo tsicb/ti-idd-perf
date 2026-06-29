@@ -1857,7 +1857,7 @@
         <div class="company-filter-head">
           <div>
             <div class="company-filter-title">個社フィルター</div>
-            <div class="company-filter-note">この会社の基本サマリー・マーケット比較・内訳分析に適用します。通常モード側の検索条件は引き継ぎません。</div>
+            <div class="company-filter-note">この会社のマーケット比較・内訳分析に適用します。通常モード側の検索条件は引き継ぎません。</div>
           </div>
           <button class="company-btn company-filter-clear" type="button" data-company-filter-reset ${activeCount ? '' : 'disabled'}>条件をリセット</button>
         </div>
@@ -1885,9 +1885,9 @@
         </div>`;
     }
 
-    function scheduleCompanyFilteredRefresh() {
+    function scheduleCompanyFilteredRefresh(scrollState=null) {
       clearTimeout(companyFilterRefreshTimer);
-      companyFilterRefreshTimer = setTimeout(() => loadCompanySummary(), 120);
+      companyFilterRefreshTimer = setTimeout(() => loadCompanySummary({ scrollState }), 120);
     }
 
     async function loadCompanyFilterOptions(db, conn, months) {
@@ -1962,21 +1962,23 @@
     }
 
     function toggleCompanyBadgeValue(value) {
+      const scrollState = startScrollPreservation();
       const mode = companyBadgeModalMode === 'pref' ? 'pref' : 'job';
       const key = mode === 'pref' ? 'prefs' : 'jobs';
       const list = companyFilterState[key] || [];
       companyFilterState[key] = list.includes(value) ? list.filter(v => v !== value) : [...list, value];
       renderCompanyBadgeModal();
       renderCompanyFilterPanel();
-      scheduleCompanyFilteredRefresh();
+      scheduleCompanyFilteredRefresh(scrollState);
     }
 
     function clearCompanyBadgeSelection() {
+      const scrollState = startScrollPreservation();
       if (companyBadgeModalMode === 'pref') companyFilterState.prefs = [];
       else companyFilterState.jobs = [];
       renderCompanyBadgeModal();
       renderCompanyFilterPanel();
-      scheduleCompanyFilteredRefresh();
+      scheduleCompanyFilteredRefresh(scrollState);
     }
 
     function openCompanyPeriodModal() {
@@ -2041,11 +2043,12 @@
 
     function chooseCompanyAllPeriod() {
       if (!companyPeriodRange || !companyPeriodRange.months.length) return;
+      const scrollState = startScrollPreservation();
       companyFilterState.periodFrom = companyPeriodRange.from || companyPeriodRange.months[0];
       companyFilterState.periodTo = companyPeriodRange.to || companyPeriodRange.months[companyPeriodRange.months.length - 1];
       closeCompanyPeriodModal();
       renderCompanyFilterPanel();
-      loadCompanySummary();
+      loadCompanySummary({ scrollState });
     }
 
     function chooseCompanyPeriodMonth(month) {
@@ -2061,12 +2064,13 @@
       let from = companyPeriodDraftStart;
       let to = companyPeriodDraftEnd;
       if (from > to) [from, to] = [to, from];
+      const scrollState = startScrollPreservation();
       companyFilterState.periodFrom = from;
       companyFilterState.periodTo = to;
       companyPeriodHoverMonth = '';
       closeCompanyPeriodModal();
       renderCompanyFilterPanel();
-      loadCompanySummary();
+      loadCompanySummary({ scrollState });
     }
 
 
@@ -2235,7 +2239,7 @@
           <div class="company-selected-copy">
             <div class="company-selected-title">分析対象企業</div>
             <div class="company-selected-main"><span class="company-selected-id">ID ${esc(selectedCompany.id)}</span><span>${esc(selectedCompany.name)}</span></div>
-            <p class="company-mode-subtitle" style="margin-top:8px;">この企業について、個社フィルターで条件を絞りながら基本サマリー・マーケット平均比較・個社内訳分析を確認できます。</p>
+            <p class="company-mode-subtitle" style="margin-top:8px;">この企業について、個社フィルターで条件を絞りながらマーケット平均比較・個社内訳分析を確認できます。</p>
           </div>
           <div class="company-selected-actions">
             <button class="company-btn export" type="button" data-company-csv-download>個社全期間CSVを出力</button>
@@ -2334,7 +2338,7 @@
           <div class="company-compare-head">
             <div>
               <div class="company-compare-title">マーケット平均との比較</div>
-              <div class="company-compare-note">マーケット平均は対象企業を除いた ${esc(fmtNum(marketCompanies))} 社で算出しています。件数・金額系は1社平均、率・CPC・CPAは合算値から加重算出しています。</div>
+              <div class="company-compare-note">マーケット平均は、現在の個社フィルターと同じ条件をかけたうえで、対象企業を除いた ${esc(fmtNum(marketCompanies))} 社から算出しています。件数・金額系は1社平均、率・CPC・CPAは合算値から加重算出しています。</div>
             </div>
           </div>
           <div class="company-compare-table-wrap">
@@ -2577,10 +2581,13 @@
       if (mode === 'month') return 'ORDER BY t.segment ASC';
       return 'ORDER BY t.cost DESC, t.applies DESC, t.clicks DESC, t.segment ASC LIMIT 50';
     }
-    async function loadCompanyBreakdown(monthsArg=null) {
+    async function loadCompanyBreakdown(monthsArg=null, options={}) {
       if (!selectedCompany || !appState) return;
       const body = companyBreakdownBodyEl();
       if (!body) return;
+      const scrollState = options && Object.prototype.hasOwnProperty.call(options, 'scrollState')
+        ? options.scrollState
+        : (options && options.preserveScroll === false ? null : startScrollPreservation());
       const token = ++companyBreakdownToken;
       const mode = companyBreakdownMode;
       const months = monthsArg || companySelectedMonths();
@@ -2640,38 +2647,41 @@
         if (token !== companyBreakdownToken) return;
         const body2 = companyBreakdownBodyEl();
         if (body2) body2.innerHTML = `<div class="company-empty-state">個社内訳分析の集計でエラーが発生しました。<br>${esc(err && err.message ? err.message : err)}</div>`;
+      } finally {
+        restorePreservedScroll(scrollState);
       }
     }
 
     function renderCompanySummaryLoading() {
       if (!els.companySummaryPanel) return;
       els.companySummaryPanel.classList.remove('hidden');
-      els.companySummaryPanel.innerHTML = '<div class="company-empty-state">対象企業の基本サマリーを集計しています...</div>';
+      els.companySummaryPanel.innerHTML = '<div class="company-empty-state">個社分析結果を集計しています...</div>';
     }
     function renderCompanySummary(targetRow, marketRow, months) {
       if (!els.companySummaryPanel) return;
       const safeRow = targetRow || { count:0, company_count:0, cost:0, impressions:0, clicks:0, apply_starts:0, applies:0 };
       const safeMarketRow = marketRow || { count:0, company_count:0, cost:0, impressions:0, clicks:0, apply_starts:0, applies:0 };
       const periodText = months && months.length ? `${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length - 1])}` : '-';
-      const cards = companyMetricItems(safeRow).map(([label, value, unit, primary]) => `<div class="company-summary-card ${primary ? 'primary' : ''}"><div class="label">${esc(label)}</div><div class="value">${esc(value)}<span class="unit">${esc(unit)}</span></div></div>`).join('');
       const hasTargetData = Number(safeRow.count || 0) > 0;
       els.companySummaryPanel.classList.remove('hidden');
       els.companySummaryPanel.innerHTML = `
         <div class="company-summary-head">
           <div>
-            <div class="company-summary-title">基本サマリー</div>
-            <div class="company-summary-note">個社フィルターで絞り込んだ対象企業実績とマーケット参考値を比較しています。集計期間：${esc(periodText)}</div>
+            <div class="company-summary-title">個社分析結果</div>
+            <div class="company-summary-note">個社フィルターで絞り込んだ対象企業実績と、同じ条件で対象企業を除外したマーケット参考値を比較しています。集計期間：${esc(periodText)}</div>
           </div>
           <div class="company-summary-actions">
             <button class="company-btn export" type="button" data-company-summary-csv-download>個社集計CSVを出力</button>
-            <button class="company-btn" type="button" data-company-summary-refresh>再集計</button>
           </div>
         </div>
-        ${!hasTargetData ? '<div class="company-empty-state">この企業の実績データが見つかりませんでした。企業IDや企業名を確認してください。</div>' : `<div class="company-summary-grid">${cards}</div>${renderCompanyComparisonTable(safeRow, safeMarketRow)}${renderCompanyBreakdownShell()}`}
+        ${!hasTargetData ? '<div class="company-empty-state">この条件に一致する対象企業の実績データが見つかりませんでした。個社フィルター条件を確認してください。</div>' : `${renderCompanyComparisonTable(safeRow, safeMarketRow)}${renderCompanyBreakdownShell()}`}
       `;
     }
-    async function loadCompanySummary() {
+    async function loadCompanySummary(options={}) {
       if (!selectedCompany || !appState) return;
+      const scrollState = options && Object.prototype.hasOwnProperty.call(options, 'scrollState')
+        ? options.scrollState
+        : (options && options.preserveScroll === false ? null : startScrollPreservation());
       const token = ++companySummaryToken;
       try {
         renderCompanySummaryLoading();
@@ -2709,13 +2719,15 @@
           if (token !== companySummaryToken) return;
           renderCompanySummary(targetRow, marketRow, months);
           setCompanyStatus(`個社フィルター条件のサマリーを表示しました。集計期間：${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length - 1])}`, 'ok');
-          if (Number(targetRow.count || 0) > 0) loadCompanyBreakdown(months);
+          if (Number(targetRow.count || 0) > 0) loadCompanyBreakdown(months, { scrollState });
         } finally { await conn.close(); }
       } catch (err) {
         console.error(err);
         if (token !== companySummaryToken) return;
-        if (els.companySummaryPanel) { els.companySummaryPanel.classList.remove('hidden'); els.companySummaryPanel.innerHTML = `<div class="company-empty-state">基本サマリーの集計でエラーが発生しました。<br>${esc(err && err.message ? err.message : err)}</div>`; }
-        setCompanyStatus('基本サマリー集計でエラーが発生しました。', 'bad');
+        if (els.companySummaryPanel) { els.companySummaryPanel.classList.remove('hidden'); els.companySummaryPanel.innerHTML = `<div class="company-empty-state">個社分析結果の集計でエラーが発生しました。<br>${esc(err && err.message ? err.message : err)}</div>`; }
+        setCompanyStatus('個社分析結果の集計でエラーが発生しました。', 'bad');
+      } finally {
+        restorePreservedScroll(scrollState);
       }
     }
 
@@ -5270,20 +5282,22 @@
       }
       const resetBtn = e.target.closest('[data-company-filter-reset]');
       if (resetBtn) {
+        const scrollState = startScrollPreservation();
         companyFilterState.jobs = [];
         companyFilterState.prefs = [];
         companyFilterState.campaign = 'all';
         if (companyPeriodRange) { companyFilterState.periodFrom = companyPeriodRange.from || ''; companyFilterState.periodTo = companyPeriodRange.to || ''; }
         renderCompanyFilterPanel();
-        loadCompanySummary();
+        loadCompanySummary({ scrollState });
       }
     });
     if (els.companyFilterPanel) els.companyFilterPanel.addEventListener('change', e => {
       const select = e.target.closest('#companyCampaignFilter');
       if (!select) return;
+      const scrollState = startScrollPreservation();
       companyFilterState.campaign = select.value || 'all';
       renderCompanyFilterPanel();
-      loadCompanySummary();
+      loadCompanySummary({ scrollState });
     });
     if (els.companyPeriodModalClose) els.companyPeriodModalClose.addEventListener('click', closeCompanyPeriodModal);
     if (els.companyPeriodModalAll) els.companyPeriodModalAll.addEventListener('click', chooseCompanyAllPeriod);
@@ -5301,13 +5315,11 @@
     if (els.companySummaryPanel) els.companySummaryPanel.addEventListener('click', e => {
       const summaryDownloadBtn = e.target.closest('[data-company-summary-csv-download]');
       if (summaryDownloadBtn) { downloadCompanyAggregateCsv(); return; }
-      const refreshBtn = e.target.closest('[data-company-summary-refresh]');
-      if (refreshBtn) { loadCompanySummary(); return; }
       const breakdownBtn = e.target.closest('[data-company-breakdown-mode]');
       if (breakdownBtn) {
         companyBreakdownMode = breakdownBtn.dataset.companyBreakdownMode || 'month';
         els.companySummaryPanel.querySelectorAll('[data-company-breakdown-mode]').forEach(btn => btn.classList.toggle('active', btn === breakdownBtn));
-        loadCompanyBreakdown();
+        loadCompanyBreakdown(null, { scrollState:startScrollPreservation() });
         return;
       }
     });
