@@ -1543,6 +1543,7 @@
             <div class="company-summary-note">対象企業とマーケット平均を、対象企業のデータ存在期間で比較しています。対象企業期間：${esc(periodText)}</div>
           </div>
           <div class="company-summary-actions">
+            <button class="company-btn export" type="button" data-company-summary-csv-download>個社集計CSVを出力</button>
             <button class="company-btn export" type="button" data-company-csv-download>個社明細CSVを出力</button>
             <button class="company-btn" type="button" data-company-summary-refresh>再集計</button>
           </div>
@@ -1594,6 +1595,160 @@
         setCompanyStatus('基本サマリー集計でエラーが発生しました。', 'bad');
       }
     }
+
+    function companyExportNumber(value, digits=null) {
+      if (value === null || value === undefined || value === '' || !Number.isFinite(Number(value))) return '';
+      const n = Number(value);
+      return digits === null ? n : Number(n.toFixed(digits));
+    }
+    function companyAggregateExportRow(section, segment, targetRaw, marketRaw, months) {
+      const target = targetRaw || { count:0, company_count:0, cost:0, impressions:0, clicks:0, apply_starts:0, applies:0 };
+      const market = marketRaw || { count:0, company_count:0, cost:0, impressions:0, clicks:0, apply_starts:0, applies:0 };
+      const marketCompanies = Math.max(0, Math.floor(toNum(market.company_count)));
+      const volumeDivisor = marketCompanies || 1;
+      const tr = calcRates(target);
+      const mr = calcRates(market);
+      const cpaDiff = tr.cpa === null || mr.cpa === null ? null : tr.cpa - mr.cpa;
+      const cvrDiff = tr.cvr === null || mr.cvr === null ? null : tr.cvr - mr.cvr;
+      return {
+        '企業ID': selectedCompany ? selectedCompany.id : '',
+        '企業名': selectedCompany ? selectedCompany.name : '',
+        '対象期間開始': months && months.length ? String(months[0]) : '',
+        '対象期間終了': months && months.length ? String(months[months.length - 1]) : '',
+        '集計種別': section,
+        '区分': segment,
+        '対象_該当件数': companyExportNumber(target.count, 0),
+        '対象_消化金額': companyExportNumber(target.cost, 0),
+        '対象_表示回数': companyExportNumber(target.impressions, 0),
+        '対象_クリック数': companyExportNumber(target.clicks, 0),
+        '対象_応募開始数': companyExportNumber(target.apply_starts, 0),
+        '対象_応募数': companyExportNumber(target.applies, 0),
+        '対象_クリック率': companyExportNumber(tr.ctr, 4),
+        '対象_応募開始率': companyExportNumber(tr.applyStartRate, 4),
+        '対象_応募率': companyExportNumber(tr.cvr, 4),
+        '対象_CPC': companyExportNumber(tr.cpc, 2),
+        '対象_CPA': companyExportNumber(tr.cpa, 2),
+        '比較_企業数': companyExportNumber(marketCompanies, 0),
+        '比較_該当件数_1社平均': companyExportNumber(marketCompanies ? toNum(market.count) / volumeDivisor : null, 4),
+        '比較_消化金額_1社平均': companyExportNumber(marketCompanies ? toNum(market.cost) / volumeDivisor : null, 4),
+        '比較_表示回数_1社平均': companyExportNumber(marketCompanies ? toNum(market.impressions) / volumeDivisor : null, 4),
+        '比較_クリック数_1社平均': companyExportNumber(marketCompanies ? toNum(market.clicks) / volumeDivisor : null, 4),
+        '比較_応募開始数_1社平均': companyExportNumber(marketCompanies ? toNum(market.apply_starts) / volumeDivisor : null, 4),
+        '比較_応募数_1社平均': companyExportNumber(marketCompanies ? toNum(market.applies) / volumeDivisor : null, 4),
+        '比較_クリック率': companyExportNumber(mr.ctr, 4),
+        '比較_応募開始率': companyExportNumber(mr.applyStartRate, 4),
+        '比較_応募率': companyExportNumber(mr.cvr, 4),
+        '比較_CPC': companyExportNumber(mr.cpc, 2),
+        '比較_CPA': companyExportNumber(mr.cpa, 2),
+        'CPA差分': companyExportNumber(cpaDiff, 2),
+        '応募率差分pt': companyExportNumber(cvrDiff, 4)
+      };
+    }
+    function companyBreakdownOrderForExport(mode) {
+      if (mode === 'month') return 'ORDER BY t.segment ASC';
+      return 'ORDER BY t.cost DESC, t.applies DESC, t.clicks DESC, t.segment ASC';
+    }
+    async function queryCompanyBreakdownRowsForExport(conn, source, mode, targetWhere, marketWhere) {
+      const segmentExpr = companyBreakdownSegmentExpr(mode);
+      const agg = `COUNT(*) AS count, COUNT(DISTINCT "企業ID") AS company_count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies`;
+      const sql = `
+        WITH src AS (SELECT * FROM ${source}),
+        target AS (
+          SELECT ${segmentExpr} AS segment, ${agg}
+          FROM src
+          WHERE ${targetWhere}
+          GROUP BY 1
+        ),
+        market AS (
+          SELECT ${segmentExpr} AS segment, ${agg}
+          FROM src
+          WHERE ${marketWhere}
+          GROUP BY 1
+        )
+        SELECT
+          t.segment,
+          t.count AS target_count,
+          t.company_count AS target_company_count,
+          t.cost AS target_cost,
+          t.impressions AS target_impressions,
+          t.clicks AS target_clicks,
+          t.apply_starts AS target_apply_starts,
+          t.applies AS target_applies,
+          COALESCE(m.count,0) AS market_count,
+          COALESCE(m.company_count,0) AS market_company_count,
+          COALESCE(m.cost,0) AS market_cost,
+          COALESCE(m.impressions,0) AS market_impressions,
+          COALESCE(m.clicks,0) AS market_clicks,
+          COALESCE(m.apply_starts,0) AS market_apply_starts,
+          COALESCE(m.applies,0) AS market_applies
+        FROM target t
+        LEFT JOIN market m USING (segment)
+        ${companyBreakdownOrderForExport(mode)}
+      `;
+      return await queryRows(conn, sql);
+    }
+    async function downloadCompanyAggregateCsv() {
+      if (!selectedCompany || !appState) { setCompanyStatus('先に対象企業を選択してください。', 'warn'); return; }
+      const months = companySelectedMonths();
+      if (!months.length) { setCompanyStatus('出力対象の対象企業データ期間がありません。', 'warn'); return; }
+      const btn = els.companySummaryPanel ? els.companySummaryPanel.querySelector('[data-company-summary-csv-download]') : null;
+      if (btn) { btn.disabled = true; btn.textContent = '集計CSV作成中...'; }
+      try {
+        setCompanyStatus('個社集計CSVを作成中...', 'warn');
+        const db = await getDb();
+        const conn = await db.connect();
+        try {
+          try { await conn.query('LOAD parquet;'); } catch(e) { /* autoload環境では不要 */ }
+          const paths = await registerMonths(db, months);
+          if (!paths.length) throw new Error('対象企業期間のfactファイルが見つかりません。');
+          const source = readExpr(paths);
+          const targetWhere = `CAST("企業ID" AS VARCHAR) = ${sqlLiteral(selectedCompany.id)}`;
+          const marketWhere = `CAST("企業ID" AS VARCHAR) <> ${sqlLiteral(selectedCompany.id)}`;
+          const selectAgg = `COUNT(*) AS count, COUNT(DISTINCT "企業ID") AS company_count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies`;
+          const summarySql = `
+            SELECT 'target' AS segment, ${selectAgg} FROM ${source} WHERE ${targetWhere}
+            UNION ALL
+            SELECT 'market' AS segment, ${selectAgg} FROM ${source} WHERE ${marketWhere}
+          `;
+          const summaryRows = await queryRows(conn, summarySql);
+          const targetRow = summaryRows.find(row => row.segment === 'target') || { count:0, company_count:0, cost:0, impressions:0, clicks:0, apply_starts:0, applies:0 };
+          const marketRow = summaryRows.find(row => row.segment === 'market') || { count:0, company_count:0, cost:0, impressions:0, clicks:0, apply_starts:0, applies:0 };
+          const exportRows = [companyAggregateExportRow('全体', '対象企業期間', targetRow, marketRow, months)];
+          for (const [mode, info] of Object.entries(COMPANY_BREAKDOWN_MODES)) {
+            const rows = await queryCompanyBreakdownRowsForExport(conn, source, mode, targetWhere, marketWhere);
+            rows.forEach(row => {
+              exportRows.push(companyAggregateExportRow(
+                info.label,
+                companySegmentLabel(mode, row.segment),
+                companyBreakdownMetricPair(row, 'target'),
+                companyBreakdownMetricPair(row, 'market'),
+                months
+              ));
+            });
+          }
+          if (!exportRows.length || Number(targetRow.count || 0) <= 0) { setCompanyStatus('集計CSVの出力対象がありません。', 'warn'); return; }
+          const columns = [
+            '企業ID','企業名','対象期間開始','対象期間終了','集計種別','区分',
+            '対象_該当件数','対象_消化金額','対象_表示回数','対象_クリック数','対象_応募開始数','対象_応募数','対象_クリック率','対象_応募開始率','対象_応募率','対象_CPC','対象_CPA',
+            '比較_企業数','比較_該当件数_1社平均','比較_消化金額_1社平均','比較_表示回数_1社平均','比較_クリック数_1社平均','比較_応募開始数_1社平均','比較_応募数_1社平均','比較_クリック率','比較_応募開始率','比較_応募率','比較_CPC','比較_CPA','CPA差分','応募率差分pt'
+          ].map(key => ({ key, label:key }));
+          const csv = rowsToCsv(exportRows, columns);
+          const from = String(months[0] || '');
+          const to = String(months[months.length - 1] || '');
+          const fileName = `company_summary_${safeFileName(selectedCompany.id, 'id')}_${safeFileName(selectedCompany.name, 'name')}_${from}-${to}.csv`;
+          downloadTextFile(fileName, csv);
+          setCompanyStatus(`${exportRows.length.toLocaleString('ja-JP')}行の個社集計CSVを出力しました。`, 'ok');
+          showToast(`<div class="toast-title">個社集計CSVを出力しました</div><div class="toast-note">${esc(exportRows.length.toLocaleString('ja-JP'))}行 / UTF-8 BOM付きCSV</div>`, 3600);
+        } finally { await conn.close(); }
+      } catch (err) {
+        console.error(err);
+        setCompanyStatus(err && err.message ? err.message : '集計CSV出力でエラーが発生しました。', 'bad');
+      } finally {
+        const currentBtn = els.companySummaryPanel ? els.companySummaryPanel.querySelector('[data-company-summary-csv-download]') : null;
+        if (currentBtn) { currentBtn.disabled = false; currentBtn.textContent = '個社集計CSVを出力'; }
+      }
+    }
+
     async function downloadCompanyDetailCsv() {
       if (!selectedCompany || !appState) { setCompanyStatus('先に対象企業を選択してください。', 'warn'); return; }
       const months = companySelectedMonths();
@@ -3985,6 +4140,8 @@
     if (els.companySearchInput) els.companySearchInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchCompanies(); });
     if (els.companyResults) els.companyResults.addEventListener('click', e => { const btn = e.target.closest('[data-company-id]'); if (!btn) return; selectCompany(btn.dataset.companyId, btn.dataset.companyName); });
     if (els.companySummaryPanel) els.companySummaryPanel.addEventListener('click', e => {
+      const summaryDownloadBtn = e.target.closest('[data-company-summary-csv-download]');
+      if (summaryDownloadBtn) { downloadCompanyAggregateCsv(); return; }
       const downloadBtn = e.target.closest('[data-company-csv-download]');
       if (downloadBtn) { downloadCompanyDetailCsv(); return; }
       const refreshBtn = e.target.closest('[data-company-summary-refresh]');
