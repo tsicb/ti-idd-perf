@@ -7,6 +7,7 @@
   <title>天市×indeedPLUS運用実績</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap');
     :root {
       --bg1:#fef3c7; --bg2:#ffedd5; --bg3:#fef9c3;
       --card:rgba(255,255,255,.92); --text:#44403c; --muted:#78716c; --line:#f5f5f4;
@@ -14,6 +15,7 @@
       --green:#059669; --rose:#e11d48; --amber:#d97706; --violet:#7c3aed; --stone:#a8a29e;
       --shadow:0 12px 24px -8px rgba(0,0,0,.15); --radius:2rem;
       --search-sticky-offset:0px; --comparison-toolbar-offset:0px; --comparison-summary-offset:36px;
+      --company-font:'Noto Sans JP','Yu Gothic',YuGothic,'Hiragino Sans','Meiryo',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     }
     * { box-sizing:border-box; }
     body {
@@ -772,6 +774,22 @@
       color:#334155;
       box-shadow:0 20px 56px rgba(71,85,105,.22), inset 0 1px 0 rgba(255,255,255,.9);
     }
+    body.company-mode-active,
+    body.company-mode-active .company-mode-shell,
+    body.company-mode-active .company-mode-shell button,
+    body.company-mode-active .company-mode-shell input,
+    body.company-mode-active .company-mode-shell select,
+    body.company-mode-active .company-mode-shell table {
+      font-family:var(--company-font);
+      letter-spacing:.01em;
+      font-feature-settings:'palt' 1;
+    }
+    body.company-mode-active .company-result-id,
+    body.company-mode-active .company-selected-id {
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;
+      letter-spacing:0;
+      font-feature-settings:normal;
+    }
     .company-mode-shell::before {
       inset:-110px -130px auto auto;
       width:320px;
@@ -903,6 +921,32 @@
     }
     .company-search-row input:focus::placeholder {
       color:#94a3b8;
+    }
+    #companySearchInput,
+    body.company-mode-active #companySearchInput,
+    body.company-mode-active #companySearchInput:focus {
+      background:#ffffff!important;
+      color:#0f172a!important;
+      -webkit-text-fill-color:#0f172a!important;
+      caret-color:#0369a1;
+      text-shadow:none!important;
+    }
+    body.company-mode-active #companySearchInput::placeholder {
+      color:#94a3b8!important;
+      -webkit-text-fill-color:#94a3b8!important;
+      opacity:1;
+    }
+    body.company-mode-active #companySearchInput::selection {
+      background:#bae6fd;
+      color:#0f172a;
+      -webkit-text-fill-color:#0f172a;
+    }
+    body.company-mode-active #companySearchInput:-webkit-autofill,
+    body.company-mode-active #companySearchInput:-webkit-autofill:hover,
+    body.company-mode-active #companySearchInput:-webkit-autofill:focus {
+      -webkit-text-fill-color:#0f172a!important;
+      box-shadow:0 0 0 1000px #ffffff inset, 0 0 0 4px rgba(14,165,233,.16)!important;
+      transition:background-color 9999s ease-out 0s;
     }
     .company-status {
       color:#475569;
@@ -2060,7 +2104,7 @@
           maintainAspectRatio:false,
           interaction:{ mode:'index', intersect:false },
           plugins:{
-            legend:{ labels:{ color:'#334155', font:{ family:'inherit', weight:'bold' }, boxWidth:14, boxHeight:10 } },
+            legend:{ labels:{ color:'#334155', font:{ family:'Noto Sans JP, Yu Gothic, YuGothic, Hiragino Sans, Meiryo, system-ui, sans-serif', weight:'bold' }, boxWidth:14, boxHeight:10 } },
             tooltip:{
               callbacks:{
                 label:(ctx) => `${ctx.dataset.label}: ${companyChartValueLabel(ctx.parsed.y, metricId)}`
@@ -2069,14 +2113,14 @@
           },
           scales:{
             x:{
-              ticks:{ color:'#475569', font:{ family:'inherit', weight:'bold' }, maxRotation:isMonth ? 0 : 40, minRotation:0 },
+              ticks:{ color:'#475569', font:{ family:'Noto Sans JP, Yu Gothic, YuGothic, Hiragino Sans, Meiryo, system-ui, sans-serif', weight:'bold' }, maxRotation:isMonth ? 0 : 40, minRotation:0 },
               grid:{ color:'rgba(100,116,139,.16)' }
             },
             y:{
               beginAtZero:true,
               ticks:{ color:'#475569', callback:(value) => companyChartValueLabel(value, metricId) },
               grid:{ color:'rgba(100,116,139,.20)' },
-              title:{ display:true, text:metric.label, color:'#0f172a', font:{ family:'inherit', weight:'bold' } }
+              title:{ display:true, text:metric.label, color:'#0f172a', font:{ family:'Noto Sans JP, Yu Gothic, YuGothic, Hiragino Sans, Meiryo, system-ui, sans-serif', weight:'bold' } }
             }
           }
         }
