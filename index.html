@@ -608,32 +608,6 @@
       color:#042014;
       border-color:rgba(110,231,183,.72);
     }
-    .company-mask-toggle {
-      border-color:rgba(251,191,36,.34);
-      color:#fde68a;
-    }
-    .company-mask-toggle.active {
-      background:linear-gradient(180deg,#fbbf24,#d97706);
-      color:#1f1300;
-      border-color:#fde68a;
-      box-shadow:0 10px 24px rgba(251,191,36,.18);
-    }
-    .company-mask-badge {
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:4px 8px;
-      border-radius:999px;
-      background:rgba(251,191,36,.14);
-      border:1px solid rgba(253,230,138,.36);
-      color:#fde68a;
-      font-size:12px;
-      font-weight:950;
-    }
-    .company-name-hidden-text {
-      color:#fde68a;
-      letter-spacing:.02em;
-    }
     .company-panel,
     .company-summary-panel,
     .company-compare-block,
@@ -841,31 +815,6 @@
       color:#fff;
       border-color:#059669;
       box-shadow:0 8px 18px rgba(5,150,105,.18);
-    }
-    .company-mask-toggle {
-      border-color:#f59e0b;
-      background:#fff7ed;
-      color:#92400e;
-    }
-    .company-mask-toggle:hover {
-      background:#ffedd5;
-      border-color:#d97706;
-    }
-    .company-mask-toggle.active {
-      background:linear-gradient(180deg,#f59e0b,#b45309);
-      color:#fff7ed;
-      border-color:#d97706;
-      box-shadow:0 8px 18px rgba(180,83,9,.18);
-    }
-    .company-mask-badge {
-      background:#fff7ed;
-      border-color:#fbbf24;
-      color:#92400e;
-    }
-    .company-name-hidden-text {
-      color:#92400e;
-      font-weight:950;
-      letter-spacing:.01em;
     }
     .company-panel,
     .company-summary-panel,
@@ -1112,6 +1061,97 @@
       background:linear-gradient(90deg,#475569,#0284c7);
     }
 
+
+
+    /* Company mode filters */
+    .company-selected-head {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+    }
+    .company-selected-copy { min-width:0; }
+    .company-selected-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; }
+    .company-filter-panel {
+      background:rgba(255,255,255,.92);
+      border-color:#cbd5e1;
+    }
+    .company-filter-head {
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .company-filter-title { color:#1e293b; font-size:16px; font-weight:950; }
+    .company-filter-note { margin-top:4px; color:#64748b; font-size:12px; font-weight:850; line-height:1.7; }
+    .company-filter-grid { display:grid; grid-template-columns:repeat(4,minmax(160px,1fr)); gap:12px; }
+    .company-filter-field { display:grid; gap:7px; min-width:0; }
+    .company-filter-label { color:#475569; font-size:12px; font-weight:950; }
+    .company-filter-trigger,
+    .company-filter-select {
+      width:100%;
+      min-height:46px;
+      border:1px solid #cbd5e1;
+      border-radius:13px;
+      background:#fff;
+      color:#1e293b;
+      font-family:var(--company-font);
+      font-size:13px;
+      font-weight:900;
+      text-align:left;
+      padding:10px 12px;
+      box-shadow:inset 0 1px 2px rgba(15,23,42,.04);
+    }
+    .company-filter-trigger { cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .company-filter-trigger::after { content:'›'; color:#64748b; font-size:18px; line-height:1; transform:rotate(90deg); }
+    .company-filter-trigger:hover { border-color:#38bdf8; background:#f0f9ff; }
+    .company-filter-select { cursor:pointer; }
+    .company-filter-summary { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .company-filter-active { color:#0369a1; }
+    .company-filter-clear { border-color:#cbd5e1; background:#f8fafc; color:#475569; }
+    .company-filter-dialog {
+      width:min(760px, calc(100vw - 32px));
+      max-height:calc(100dvh - 40px);
+      padding:0;
+      border:0;
+      border-radius:24px;
+      background:#f8fafc;
+      color:#1e293b;
+      box-shadow:0 28px 88px rgba(15,23,42,.28);
+    }
+    .company-filter-dialog:not([open]) { display:none; }
+    .company-filter-dialog::backdrop { background:rgba(15,23,42,.35); backdrop-filter:blur(3px); }
+    .company-filter-dialog-box { padding:18px; border:1px solid #cbd5e1; border-radius:24px; background:linear-gradient(180deg,#ffffff,#f8fafc); }
+    .company-filter-dialog-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:14px; }
+    .company-filter-dialog-title { font-size:18px; font-weight:950; color:#1e293b; }
+    .company-filter-dialog-note { margin-top:5px; font-size:12px; line-height:1.7; color:#64748b; font-weight:850; }
+    .company-filter-dialog-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .company-filter-badge-grid { display:flex; flex-wrap:wrap; gap:9px; max-height:calc(100dvh - 190px); overflow:auto; padding:3px 2px 8px; }
+    .company-filter-badge {
+      border:1px solid #cbd5e1;
+      border-radius:999px;
+      background:#fff;
+      color:#334155;
+      padding:8px 12px;
+      font-family:var(--company-font);
+      font-size:13px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 3px 8px rgba(71,85,105,.07);
+    }
+    .company-filter-badge:hover { background:#f0f9ff; border-color:#38bdf8; }
+    .company-filter-badge.active { background:#0ea5e9; border-color:#0284c7; color:#fff; box-shadow:0 6px 14px rgba(14,116,144,.18); }
+    .company-period-modal { border-color:#cbd5e1; }
+    .company-period-modal .month-btn.start,
+    .company-period-modal .month-btn.end { background:#0ea5e9; border-color:#0284c7; box-shadow:0 3px 0 #0369a1; }
+    .company-period-modal .month-btn.range { background:#e0f2fe; border-color:#7dd3fc; color:#075985; }
+    .company-period-modal .month-btn.preview { background:#dbeafe; border-color:#93c5fd; color:#1d4ed8; }
+    .company-period-modal .month-btn.preview-end { background:#7dd3fc; border-color:#0ea5e9; color:#075985; box-shadow:0 3px 0 #0284c7; }
+    @media (max-width:980px) { .company-filter-grid { grid-template-columns:repeat(2,minmax(160px,1fr)); } }
+    @media (max-width:640px) { .company-selected-head { display:grid; } .company-selected-actions { justify-content:flex-start; } .company-filter-grid { grid-template-columns:1fr; } .company-filter-dialog-head { display:grid; } }
+
     @media (max-width:1180px) { .company-summary-grid { grid-template-columns:repeat(3,minmax(130px,1fr)); } }
     @media (max-width:760px) { .company-search-row { grid-template-columns:1fr; } .company-result-btn { grid-template-columns:1fr; } .company-summary-grid { grid-template-columns:1fr 1fr; } }
     .comparison-card.chart-view .table-operation-actions { display:none; }
@@ -1264,7 +1304,7 @@
               <h1 class="company-mode-title">企業分析モード</h1>
               <p class="company-mode-subtitle">企業IDまたは企業名で対象企業を検索し、個社実績の分析へ進むためのモードです。通常の市場分析とは切り分けて表示します。</p>
             </div>
-            <div class="company-mode-actions"><button id="companyMaskToggleBtn" class="company-btn company-mask-toggle" type="button" aria-pressed="false">👁 企業名を伏せる</button><button id="backToMarketModeBtn" class="company-btn" type="button">通常分析へ戻る</button></div>
+            <div class="company-mode-actions"><button id="backToMarketModeBtn" class="company-btn" type="button">通常分析へ戻る</button></div>
           </div>
           <div class="company-panel">
             <div class="company-search-row">
@@ -1274,6 +1314,7 @@
             <div id="companySearchStatus" class="company-status">企業IDは完全一致・前方一致、企業名は部分一致で候補を表示します。</div>
             <div id="companyResults" class="company-results"></div>
             <div id="companySelectedPanel" class="company-panel company-selected-card hidden"></div>
+            <div id="companyFilterPanel" class="company-panel company-filter-panel hidden"></div>
             <div id="companySummaryPanel" class="company-panel company-summary-panel hidden"></div>
           </div>
         </div>
@@ -1300,6 +1341,37 @@
     </div>
   </dialog>
 
+
+  <dialog id="companyPeriodModal" class="month-modal company-period-modal" aria-label="個社モードの集計期間を選択">
+    <div class="month-modal-head">
+      <div>
+        <div class="month-modal-title">個社モードの集計期間を選択</div>
+        <div id="companyPeriodModalNote" class="month-modal-note">開始月を選択してください。</div>
+      </div>
+      <div class="month-modal-actions">
+        <button id="companyPeriodModalAll" class="btn ghost small" type="button">全期間</button>
+        <button id="companyPeriodModalClose" class="btn ghost small" type="button">閉じる</button>
+      </div>
+    </div>
+    <div id="companyPeriodMonthGrid" class="month-grid"></div>
+  </dialog>
+
+  <dialog id="companyBadgeModal" class="company-filter-dialog" aria-label="個社フィルターを選択">
+    <div class="company-filter-dialog-box">
+      <div class="company-filter-dialog-head">
+        <div>
+          <div id="companyBadgeModalTitle" class="company-filter-dialog-title">個社フィルターを選択</div>
+          <div id="companyBadgeModalNote" class="company-filter-dialog-note">表示する項目を選択してください。</div>
+        </div>
+        <div class="company-filter-dialog-actions">
+          <button id="companyBadgeModalClear" class="company-btn" type="button">選択を解除</button>
+          <button id="companyBadgeModalClose" class="company-btn" type="button">閉じる</button>
+        </div>
+      </div>
+      <div id="companyBadgeGrid" class="company-filter-badge-grid"></div>
+    </div>
+  </dialog>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <script type="module">
     import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm/+esm";
@@ -1310,7 +1382,7 @@
       searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalAll: document.getElementById('periodModalAll'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
       relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
       comparisonToolbar: document.getElementById('comparisonToolbar'), comparisonContent: document.getElementById('comparisonContent'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), columnMenuBtn: document.getElementById('columnMenuBtn'), columnPopover: document.getElementById('columnPopover'), chartControls: document.getElementById('chartControls'), chartLeftMetric: document.getElementById('chartLeftMetric'), chartRightMetric: document.getElementById('chartRightMetric'), chartAxisPopover: document.getElementById('chartAxisPopover'), floatingXScroll: document.getElementById('floatingXScroll'), floatingXScrollInner: document.getElementById('floatingXScrollInner'), log: document.getElementById('log'),
-      modeSettingsBtn: document.getElementById('modeSettingsBtn'), modeSwitchDialog: document.getElementById('modeSwitchDialog'), modeSwitchCloseBtn: document.getElementById('modeSwitchCloseBtn'), openCompanyModeBtn: document.getElementById('openCompanyModeBtn'), companyModeArea: document.getElementById('companyModeArea'), companyMaskToggleBtn: document.getElementById('companyMaskToggleBtn'), backToMarketModeBtn: document.getElementById('backToMarketModeBtn'), companySearchInput: document.getElementById('companySearchInput'), companySearchBtn: document.getElementById('companySearchBtn'), companySearchStatus: document.getElementById('companySearchStatus'), companyResults: document.getElementById('companyResults'), companySelectedPanel: document.getElementById('companySelectedPanel'), companySummaryPanel: document.getElementById('companySummaryPanel')
+      modeSettingsBtn: document.getElementById('modeSettingsBtn'), modeSwitchDialog: document.getElementById('modeSwitchDialog'), modeSwitchCloseBtn: document.getElementById('modeSwitchCloseBtn'), openCompanyModeBtn: document.getElementById('openCompanyModeBtn'), companyModeArea: document.getElementById('companyModeArea'), backToMarketModeBtn: document.getElementById('backToMarketModeBtn'), companySearchInput: document.getElementById('companySearchInput'), companySearchBtn: document.getElementById('companySearchBtn'), companySearchStatus: document.getElementById('companySearchStatus'), companyResults: document.getElementById('companyResults'), companySelectedPanel: document.getElementById('companySelectedPanel'), companyFilterPanel: document.getElementById('companyFilterPanel'), companySummaryPanel: document.getElementById('companySummaryPanel'), companyPeriodModal: document.getElementById('companyPeriodModal'), companyPeriodModalClose: document.getElementById('companyPeriodModalClose'), companyPeriodModalAll: document.getElementById('companyPeriodModalAll'), companyPeriodModalNote: document.getElementById('companyPeriodModalNote'), companyPeriodMonthGrid: document.getElementById('companyPeriodMonthGrid'), companyBadgeModal: document.getElementById('companyBadgeModal'), companyBadgeModalTitle: document.getElementById('companyBadgeModalTitle'), companyBadgeModalNote: document.getElementById('companyBadgeModalNote'), companyBadgeModalClose: document.getElementById('companyBadgeModalClose'), companyBadgeModalClear: document.getElementById('companyBadgeModalClear'), companyBadgeGrid: document.getElementById('companyBadgeGrid')
     };
 
     // カード（backdrop-filter）内にモーダルを置くと、下のカードの重なり順に負けることがあるため、body直下へ移動します。
@@ -1319,6 +1391,12 @@
     }
     if (els.modeSwitchDialog && els.modeSwitchDialog.parentElement !== document.body) {
       document.body.appendChild(els.modeSwitchDialog);
+    }
+    if (els.companyPeriodModal && els.companyPeriodModal.parentElement !== document.body) {
+      document.body.appendChild(els.companyPeriodModal);
+    }
+    if (els.companyBadgeModal && els.companyBadgeModal.parentElement !== document.body) {
+      document.body.appendChild(els.companyBadgeModal);
     }
 
     let dbPromise = null;
@@ -1400,8 +1478,15 @@
     let companyMasterVirtualPath = null;
     let selectedCompany = null;
     let companyPeriodRange = null;
+    let companyFilterState = { jobs:[], prefs:[], campaign:'all', periodFrom:'', periodTo:'' };
+    let companyFilterOptions = { jobs:[], prefs:[] };
+    let companyPeriodDraftStart = '';
+    let companyPeriodDraftEnd = '';
+    let companyPeriodSelecting = 'start';
+    let companyPeriodHoverMonth = '';
+    let companyBadgeModalMode = 'job';
+    let companyFilterRefreshTimer = null;
     let companySummaryToken = 0;
-    let companyNameMasked = false;
     let lastCompanySearchRows = [];
     let companyBreakdownMode = 'month';
     let companyBreakdownToken = 0;
@@ -1600,7 +1685,7 @@
 
     async function handleFiles(fileList) {
       const files = Array.from(fileList || []);
-      clearLog(); selectedJobTitles = []; companyMasterVirtualPath = null; selectedCompany = null; companyPeriodRange = null; companySummaryToken++; if (els.companySelectedPanel) els.companySelectedPanel.classList.add('hidden'); if (els.companySummaryPanel) els.companySummaryPanel.classList.add('hidden'); registeredFiles.clear(); comparisonCache.clear(); monthGraphDataCache.clear(); lastCopyRows = []; lastDisplayRows = []; lastTableHelper = ''; if (els.copyBtn) els.copyBtn.disabled = true; if (els.comparisonCopyBtn) els.comparisonCopyBtn.disabled = true;
+      clearLog(); selectedJobTitles = []; companyMasterVirtualPath = null; selectedCompany = null; companyPeriodRange = null; resetCompanyFilters(); companySummaryToken++; if (els.companySelectedPanel) els.companySelectedPanel.classList.add('hidden'); if (els.companyFilterPanel) els.companyFilterPanel.classList.add('hidden'); if (els.companySummaryPanel) els.companySummaryPanel.classList.add('hidden'); registeredFiles.clear(); comparisonCache.clear(); monthGraphDataCache.clear(); lastCopyRows = []; lastDisplayRows = []; lastTableHelper = ''; if (els.copyBtn) els.copyBtn.disabled = true; if (els.comparisonCopyBtn) els.comparisonCopyBtn.disabled = true;
       if (!files.length) return;
       setStatus('データ確認中...', 'warn');
       const manifestItem = findManifestFile(files);
@@ -1647,8 +1732,11 @@
     function selectedMonths() { return monthsBetween(els.periodFrom.value, els.periodTo.value).filter(m => appState.availableMonths.includes(m)); }
 
     function companySelectedMonths() {
-      if (selectedCompany && companyPeriodRange && companyPeriodRange.companyId === selectedCompany.id && Array.isArray(companyPeriodRange.months)) return companyPeriodRange.months;
-      return selectedMonths();
+      if (!selectedCompany || !companyPeriodRange || companyPeriodRange.companyId !== selectedCompany.id || !Array.isArray(companyPeriodRange.months)) return [];
+      const from = companyFilterState.periodFrom || companyPeriodRange.from;
+      const to = companyFilterState.periodTo || companyPeriodRange.to;
+      if (!from || !to) return companyPeriodRange.months;
+      return monthsBetween(from, to).filter(m => companyPeriodRange.months.includes(m));
     }
 
     async function ensureCompanyPeriodRange(db, conn) {
@@ -1686,6 +1774,299 @@
       const months = monthsBetween(from, to).filter(m => allMonths.includes(m));
       companyPeriodRange = { companyId:selectedCompany.id, from, to, months, count };
       return companyPeriodRange;
+    }
+
+
+
+    function resetCompanyFilters() {
+      companyFilterState = { jobs:[], prefs:[], campaign:'all', periodFrom:'', periodTo:'' };
+      companyFilterOptions = { jobs:[], prefs:[] };
+      companyPeriodDraftStart = '';
+      companyPeriodDraftEnd = '';
+      companyPeriodSelecting = 'start';
+      companyPeriodHoverMonth = '';
+      companyBadgeModalMode = 'job';
+      clearTimeout(companyFilterRefreshTimer);
+    }
+
+    function ensureCompanyFilterDefaults(periodRange) {
+      if (!periodRange || !periodRange.companyId) return;
+      if (!companyFilterState.periodFrom) companyFilterState.periodFrom = periodRange.from || '';
+      if (!companyFilterState.periodTo) companyFilterState.periodTo = periodRange.to || '';
+      companyFilterState.jobs = Array.isArray(companyFilterState.jobs) ? companyFilterState.jobs : [];
+      companyFilterState.prefs = Array.isArray(companyFilterState.prefs) ? companyFilterState.prefs : [];
+      companyFilterState.campaign = companyFilterState.campaign || 'all';
+    }
+
+    function sqlInList(columnName, values) {
+      const safe = (values || []).map(v => String(v || '').trim()).filter(Boolean);
+      if (!safe.length) return '';
+      return `COALESCE(NULLIF("${columnName}", ''), '未設定') IN (${safe.map(sqlLiteral).join(', ')})`;
+    }
+
+    function companyCampaignClause() {
+      if (companyFilterState.campaign === 'sa-only') return `coalesce("キャンペーン", '') LIKE '%SA-%'`;
+      if (companyFilterState.campaign === 'non-sa-only') return `coalesce("キャンペーン", '') NOT LIKE '%SA-%'`;
+      return '';
+    }
+
+    function companyFilterClauses() {
+      const clauses = [];
+      const jobClause = sqlInList('代表職種', companyFilterState.jobs);
+      const prefClause = sqlInList('都道府県', companyFilterState.prefs);
+      const campaignClause = companyCampaignClause();
+      if (jobClause) clauses.push(jobClause);
+      if (prefClause) clauses.push(prefClause);
+      if (campaignClause) clauses.push(campaignClause);
+      return clauses;
+    }
+
+    function companyWhere(baseClause) {
+      return [baseClause, ...companyFilterClauses()].filter(Boolean).join(' AND ');
+    }
+
+    function companyFilterCount() {
+      let n = 0;
+      if (companyFilterState.jobs.length) n += 1;
+      if (companyFilterState.prefs.length) n += 1;
+      if (companyFilterState.campaign !== 'all') n += 1;
+      if (companyPeriodRange && (companyFilterState.periodFrom !== companyPeriodRange.from || companyFilterState.periodTo !== companyPeriodRange.to)) n += 1;
+      return n;
+    }
+
+    function companyFilterLabel(type) {
+      if (type === 'job') return companyFilterState.jobs.length ? `${companyFilterState.jobs.length}職種を選択中` : 'すべての代表職種';
+      if (type === 'pref') return companyFilterState.prefs.length ? `${companyFilterState.prefs.length}都道府県を選択中` : 'すべての勤務地';
+      if (type === 'period') {
+        const from = companyFilterState.periodFrom || (companyPeriodRange && companyPeriodRange.from) || '';
+        const to = companyFilterState.periodTo || (companyPeriodRange && companyPeriodRange.to) || '';
+        return from && to ? `${formatMonthLabel(from)} 〜 ${formatMonthLabel(to)}` : '対象企業の全期間';
+      }
+      return '';
+    }
+
+    function renderCompanyFilterPanel() {
+      if (!els.companyFilterPanel || !selectedCompany) return;
+      if (!companyPeriodRange || companyPeriodRange.companyId !== selectedCompany.id || !companyPeriodRange.months.length) {
+        els.companyFilterPanel.classList.add('hidden');
+        return;
+      }
+      const activeCount = companyFilterCount();
+      els.companyFilterPanel.classList.remove('hidden');
+      els.companyFilterPanel.innerHTML = `
+        <div class="company-filter-head">
+          <div>
+            <div class="company-filter-title">個社フィルター</div>
+            <div class="company-filter-note">この会社の基本サマリー・マーケット比較・内訳分析に適用します。通常モード側の検索条件は引き継ぎません。</div>
+          </div>
+          <button class="company-btn company-filter-clear" type="button" data-company-filter-reset ${activeCount ? '' : 'disabled'}>条件をリセット</button>
+        </div>
+        <div class="company-filter-grid">
+          <div class="company-filter-field">
+            <div class="company-filter-label">代表職種</div>
+            <button class="company-filter-trigger ${companyFilterState.jobs.length ? 'company-filter-active' : ''}" type="button" data-company-filter-open="job"><span class="company-filter-summary">${esc(companyFilterLabel('job'))}</span></button>
+          </div>
+          <div class="company-filter-field">
+            <div class="company-filter-label">勤務地</div>
+            <button class="company-filter-trigger ${companyFilterState.prefs.length ? 'company-filter-active' : ''}" type="button" data-company-filter-open="pref"><span class="company-filter-summary">${esc(companyFilterLabel('pref'))}</span></button>
+          </div>
+          <div class="company-filter-field">
+            <label class="company-filter-label" for="companyCampaignFilter">SA-条件</label>
+            <select id="companyCampaignFilter" class="company-filter-select">
+              <option value="all" ${companyFilterState.campaign === 'all' ? 'selected' : ''}>すべて</option>
+              <option value="sa-only" ${companyFilterState.campaign === 'sa-only' ? 'selected' : ''}>SA-のみ</option>
+              <option value="non-sa-only" ${companyFilterState.campaign === 'non-sa-only' ? 'selected' : ''}>SA-以外</option>
+            </select>
+          </div>
+          <div class="company-filter-field">
+            <div class="company-filter-label">集計期間</div>
+            <button class="company-filter-trigger ${companyFilterState.periodFrom !== companyPeriodRange.from || companyFilterState.periodTo !== companyPeriodRange.to ? 'company-filter-active' : ''}" type="button" data-company-filter-open="period"><span class="company-filter-summary">${esc(companyFilterLabel('period'))}</span></button>
+          </div>
+        </div>`;
+    }
+
+    function scheduleCompanyFilteredRefresh() {
+      clearTimeout(companyFilterRefreshTimer);
+      companyFilterRefreshTimer = setTimeout(() => loadCompanySummary(), 120);
+    }
+
+    async function loadCompanyFilterOptions(db, conn, months) {
+      companyFilterOptions = { jobs:[], prefs:[] };
+      if (!selectedCompany || !months || !months.length) return;
+      const paths = await registerMonths(db, months);
+      if (!paths.length) return;
+      const source = readExpr(paths);
+      const targetWhere = `CAST("企業ID" AS VARCHAR) = ${sqlLiteral(selectedCompany.id)}`;
+      const commonAgg = `COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("応募数"),0) AS applies`;
+      const jobRows = await queryRows(conn, `
+        SELECT COALESCE(NULLIF("代表職種", ''), '未設定') AS value, ${commonAgg}
+        FROM ${source}
+        WHERE ${targetWhere}
+        GROUP BY 1
+        ORDER BY cost DESC, applies DESC, count DESC, value ASC
+        LIMIT 200
+      `);
+      const prefRows = await queryRows(conn, `
+        SELECT COALESCE(NULLIF("都道府県", ''), '未設定') AS value, ${commonAgg}
+        FROM ${source}
+        WHERE ${targetWhere}
+        GROUP BY 1
+        ORDER BY cost DESC, applies DESC, count DESC, value ASC
+        LIMIT 200
+      `);
+      companyFilterOptions = { jobs:jobRows, prefs:prefRows };
+      const jobSet = new Set(jobRows.map(r => String(r.value)));
+      const prefSet = new Set(prefRows.map(r => String(r.value)));
+      companyFilterState.jobs = companyFilterState.jobs.filter(v => jobSet.has(String(v)));
+      companyFilterState.prefs = companyFilterState.prefs.filter(v => prefSet.has(String(v)));
+    }
+
+    function openCompanyBadgeModal(mode) {
+      if (!els.companyBadgeModal) return;
+      companyBadgeModalMode = mode === 'pref' ? 'pref' : 'job';
+      renderCompanyBadgeModal();
+      document.body.classList.add('modal-open');
+      if (typeof els.companyBadgeModal.showModal === 'function') {
+        if (!els.companyBadgeModal.open) els.companyBadgeModal.showModal();
+      } else {
+        els.companyBadgeModal.setAttribute('open', '');
+      }
+    }
+
+    function closeCompanyBadgeModal() {
+      if (!els.companyBadgeModal) return;
+      if (typeof els.companyBadgeModal.close === 'function' && els.companyBadgeModal.open) els.companyBadgeModal.close();
+      else els.companyBadgeModal.removeAttribute('open');
+      document.body.classList.remove('modal-open');
+    }
+
+    function renderCompanyBadgeModal() {
+      const mode = companyBadgeModalMode === 'pref' ? 'pref' : 'job';
+      const title = mode === 'pref' ? '勤務地を選択' : '代表職種を選択';
+      const note = mode === 'pref' ? 'この会社に存在する都道府県を選択できます。複数選択可。' : 'この会社に存在する代表職種を選択できます。複数選択可。';
+      const options = mode === 'pref' ? companyFilterOptions.prefs : companyFilterOptions.jobs;
+      const selected = new Set(mode === 'pref' ? companyFilterState.prefs : companyFilterState.jobs);
+      if (els.companyBadgeModalTitle) els.companyBadgeModalTitle.textContent = title;
+      if (els.companyBadgeModalNote) els.companyBadgeModalNote.textContent = note;
+      if (!els.companyBadgeGrid) return;
+      if (!options.length) {
+        els.companyBadgeGrid.innerHTML = '<div class="company-empty-state">選択できる項目がありません。</div>';
+        return;
+      }
+      els.companyBadgeGrid.innerHTML = options.map(row => {
+        const value = String(row.value || '未設定');
+        const active = selected.has(value);
+        const meta = `（${fmtNum(row.count)}件）`;
+        return `<button class="company-filter-badge ${active ? 'active' : ''}" type="button" data-company-badge-value="${esc(value)}">${esc(value)}<span style="opacity:.72;margin-left:4px;">${esc(meta)}</span></button>`;
+      }).join('');
+    }
+
+    function toggleCompanyBadgeValue(value) {
+      const mode = companyBadgeModalMode === 'pref' ? 'pref' : 'job';
+      const key = mode === 'pref' ? 'prefs' : 'jobs';
+      const list = companyFilterState[key] || [];
+      companyFilterState[key] = list.includes(value) ? list.filter(v => v !== value) : [...list, value];
+      renderCompanyBadgeModal();
+      renderCompanyFilterPanel();
+      scheduleCompanyFilteredRefresh();
+    }
+
+    function clearCompanyBadgeSelection() {
+      if (companyBadgeModalMode === 'pref') companyFilterState.prefs = [];
+      else companyFilterState.jobs = [];
+      renderCompanyBadgeModal();
+      renderCompanyFilterPanel();
+      scheduleCompanyFilteredRefresh();
+    }
+
+    function openCompanyPeriodModal() {
+      if (!companyPeriodRange || !companyPeriodRange.months.length || !els.companyPeriodModal) return;
+      companyPeriodDraftStart = companyFilterState.periodFrom || companyPeriodRange.from || '';
+      companyPeriodDraftEnd = companyFilterState.periodTo || companyPeriodRange.to || '';
+      companyPeriodSelecting = 'start';
+      companyPeriodHoverMonth = '';
+      renderCompanyPeriodModal();
+      document.body.classList.add('modal-open');
+      if (typeof els.companyPeriodModal.showModal === 'function') {
+        if (!els.companyPeriodModal.open) els.companyPeriodModal.showModal();
+      } else {
+        els.companyPeriodModal.setAttribute('open', '');
+      }
+    }
+
+    function closeCompanyPeriodModal() {
+      if (!els.companyPeriodModal) return;
+      if (typeof els.companyPeriodModal.close === 'function' && els.companyPeriodModal.open) els.companyPeriodModal.close();
+      else els.companyPeriodModal.removeAttribute('open');
+      document.body.classList.remove('modal-open');
+    }
+
+    function renderCompanyPeriodModal() {
+      if (!companyPeriodRange || !els.companyPeriodMonthGrid) return;
+      const months = companyPeriodRange.months || [];
+      const start = companyPeriodDraftStart;
+      const end = companyPeriodDraftEnd;
+      const hover = companyPeriodHoverMonth;
+      const isPreviewing = companyPeriodSelecting === 'end' && start && !end && hover;
+      const previewFrom = isPreviewing ? String(Math.min(Number(start), Number(hover))) : '';
+      const previewTo = isPreviewing ? String(Math.max(Number(start), Number(hover))) : '';
+      if (els.companyPeriodModalNote) els.companyPeriodModalNote.textContent = companyPeriodSelecting === 'start'
+        ? '開始月を選択してください。'
+        : `${formatMonthLabel(start)} からの終了月を選択してください。`;
+      els.companyPeriodMonthGrid.innerHTML = months.map(m => {
+        const isStart = start === m;
+        const isEnd = end === m;
+        const inRange = start && end && Number(m) >= Math.min(Number(start), Number(end)) && Number(m) <= Math.max(Number(start), Number(end));
+        const inPreview = isPreviewing && Number(m) >= Number(previewFrom) && Number(m) <= Number(previewTo);
+        const isPreviewEnd = isPreviewing && hover === m && !isStart;
+        const cls = ['month-btn', inPreview ? 'preview' : '', isPreviewEnd ? 'preview-end' : '', isStart ? 'start' : '', isEnd ? 'end' : '', inRange ? 'range' : ''].filter(Boolean).join(' ');
+        return `<button type="button" class="${cls}" data-company-period-month="${esc(m)}">${esc(formatMonthLabel(m))}</button>`;
+      }).join('');
+      els.companyPeriodMonthGrid.querySelectorAll('[data-company-period-month]').forEach(btn => {
+        btn.addEventListener('click', () => chooseCompanyPeriodMonth(btn.dataset.companyPeriodMonth));
+        btn.addEventListener('mouseenter', () => {
+          if (companyPeriodSelecting === 'end' && companyPeriodDraftStart && !companyPeriodDraftEnd && companyPeriodHoverMonth !== btn.dataset.companyPeriodMonth) {
+            companyPeriodHoverMonth = btn.dataset.companyPeriodMonth;
+            renderCompanyPeriodModal();
+          }
+        });
+      });
+      els.companyPeriodMonthGrid.onmouseleave = () => {
+        if (companyPeriodSelecting === 'end' && companyPeriodDraftStart && !companyPeriodDraftEnd && companyPeriodHoverMonth) {
+          companyPeriodHoverMonth = '';
+          renderCompanyPeriodModal();
+        }
+      };
+    }
+
+    function chooseCompanyAllPeriod() {
+      if (!companyPeriodRange || !companyPeriodRange.months.length) return;
+      companyFilterState.periodFrom = companyPeriodRange.from || companyPeriodRange.months[0];
+      companyFilterState.periodTo = companyPeriodRange.to || companyPeriodRange.months[companyPeriodRange.months.length - 1];
+      closeCompanyPeriodModal();
+      renderCompanyFilterPanel();
+      loadCompanySummary();
+    }
+
+    function chooseCompanyPeriodMonth(month) {
+      if (companyPeriodSelecting === 'start' || !companyPeriodDraftStart || (companyPeriodDraftStart && companyPeriodDraftEnd)) {
+        companyPeriodDraftStart = month;
+        companyPeriodDraftEnd = '';
+        companyPeriodSelecting = 'end';
+        companyPeriodHoverMonth = '';
+        renderCompanyPeriodModal();
+        return;
+      }
+      companyPeriodDraftEnd = month;
+      let from = companyPeriodDraftStart;
+      let to = companyPeriodDraftEnd;
+      if (from > to) [from, to] = [to, from];
+      companyFilterState.periodFrom = from;
+      companyFilterState.periodTo = to;
+      companyPeriodHoverMonth = '';
+      closeCompanyPeriodModal();
+      renderCompanyFilterPanel();
+      loadCompanySummary();
     }
 
 
@@ -1833,47 +2214,33 @@
       return virtualPath;
     }
     function setCompanyStatus(message, type='') { if (!els.companySearchStatus) return; els.companySearchStatus.textContent = message || ''; els.companySearchStatus.className = `company-status ${type}`.trim(); }
-    function companyDisplayName(name, id='') {
-      if (!companyNameMasked) return String(name || '');
-      const suffix = id ? `（ID ${id}）` : '';
-      return `企業名非表示${suffix}`;
-    }
-    function companyDisplayNameHtml(name, id='') {
-      if (!companyNameMasked) return esc(name || '');
-      return `<span class="company-name-hidden-text">${esc(companyDisplayName(name, id))}</span>`;
-    }
-    function updateCompanyMaskToggle() {
-      if (!els.companyMaskToggleBtn) return;
-      els.companyMaskToggleBtn.classList.toggle('active', companyNameMasked);
-      els.companyMaskToggleBtn.setAttribute('aria-pressed', String(companyNameMasked));
-      els.companyMaskToggleBtn.textContent = companyNameMasked ? '🙈 企業名マスク中' : '👁 企業名を伏せる';
-      document.body.classList.toggle('company-name-masked', companyNameMasked);
-    }
     function renderCompanyResults(rows) {
       if (!els.companyResults) return;
       lastCompanySearchRows = Array.isArray(rows) ? rows : [];
       if (!lastCompanySearchRows.length) {
-        els.companyResults.innerHTML = '<div class="empty" style="background:rgba(255,255,255,.06);border-color:rgba(148,163,184,.28);color:#cbd5e1;">該当する企業候補がありません。</div>';
+        els.companyResults.innerHTML = '<div class="empty" style="background:#f8fafc;border-color:#cbd5e1;color:#64748b;">該当する企業候補がありません。</div>';
         return;
       }
       els.companyResults.innerHTML = lastCompanySearchRows.map(row => {
         const id = row['企業ID'];
         const name = row['企業名'] || '';
-        return `<button class="company-result-btn" type="button" data-company-id="${esc(id)}"><span class="company-result-id">ID ${esc(id)}</span><span class="company-result-name">${companyDisplayNameHtml(name, id)}</span><span class="company-result-action">選択</span></button>`;
+        return `<button class="company-result-btn" type="button" data-company-id="${esc(id)}"><span class="company-result-id">ID ${esc(id)}</span><span class="company-result-name">${esc(name)}</span><span class="company-result-action">選択</span></button>`;
       }).join('');
     }
     function renderCompanySelectedPanel() {
       if (!els.companySelectedPanel || !selectedCompany) return;
       els.companySelectedPanel.classList.remove('hidden');
-      const maskBadge = companyNameMasked ? '<span class="company-mask-badge">画面共有用マスクON</span>' : '';
-      els.companySelectedPanel.innerHTML = `<div class="company-selected-title">分析対象企業 ${maskBadge}</div><div class="company-selected-main"><span class="company-selected-id">ID ${esc(selectedCompany.id)}</span><span>${companyDisplayNameHtml(selectedCompany.name, selectedCompany.id)}</span></div><p class="company-mode-subtitle" style="margin-top:8px;">この企業について、データが存在する最初の月から最後の月までを自動検出し、基本サマリー・マーケット平均比較・個社内訳分析・個社明細CSV出力を表示します。</p>`;
-    }
-    function toggleCompanyNameMask() {
-      companyNameMasked = !companyNameMasked;
-      updateCompanyMaskToggle();
-      renderCompanyResults(lastCompanySearchRows);
-      renderCompanySelectedPanel();
-      setCompanyStatus(companyNameMasked ? '画面共有用に企業名を伏せています。CSV出力の中身は通常どおりです。' : '企業名の表示を元に戻しました。', companyNameMasked ? 'warn' : 'ok');
+      els.companySelectedPanel.innerHTML = `
+        <div class="company-selected-head">
+          <div class="company-selected-copy">
+            <div class="company-selected-title">分析対象企業</div>
+            <div class="company-selected-main"><span class="company-selected-id">ID ${esc(selectedCompany.id)}</span><span>${esc(selectedCompany.name)}</span></div>
+            <p class="company-mode-subtitle" style="margin-top:8px;">この企業について、個社フィルターで条件を絞りながら基本サマリー・マーケット平均比較・個社内訳分析を確認できます。</p>
+          </div>
+          <div class="company-selected-actions">
+            <button class="company-btn export" type="button" data-company-csv-download>個社全期間CSVを出力</button>
+          </div>
+        </div>`;
     }
     function companyMetricItems(row) {
       const r = calcRates(row || {});
@@ -2227,8 +2594,8 @@
           const paths = await registerMonths(db, months);
           const source = readExpr(paths);
           const segmentExpr = companyBreakdownSegmentExpr(mode);
-          const targetWhere = `CAST("企業ID" AS VARCHAR) = ${sqlLiteral(selectedCompany.id)}`;
-          const marketWhere = `CAST("企業ID" AS VARCHAR) <> ${sqlLiteral(selectedCompany.id)}`;
+          const targetWhere = companyWhere(`CAST("企業ID" AS VARCHAR) = ${sqlLiteral(selectedCompany.id)}`);
+          const marketWhere = companyWhere(`CAST("企業ID" AS VARCHAR) <> ${sqlLiteral(selectedCompany.id)}`);
           const agg = `COUNT(*) AS count, COUNT(DISTINCT "企業ID") AS company_count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies`;
           const sql = `
             WITH src AS (SELECT * FROM ${source}),
@@ -2293,11 +2660,10 @@
         <div class="company-summary-head">
           <div>
             <div class="company-summary-title">基本サマリー</div>
-            <div class="company-summary-note">対象企業とマーケット平均を、対象企業のデータ存在期間で比較しています。対象企業期間：${esc(periodText)}</div>
+            <div class="company-summary-note">個社フィルターで絞り込んだ対象企業実績とマーケット参考値を比較しています。集計期間：${esc(periodText)}</div>
           </div>
           <div class="company-summary-actions">
             <button class="company-btn export" type="button" data-company-summary-csv-download>個社集計CSVを出力</button>
-            <button class="company-btn export" type="button" data-company-csv-download>個社明細CSVを出力</button>
             <button class="company-btn" type="button" data-company-summary-refresh>再集計</button>
           </div>
         </div>
@@ -2315,18 +2681,22 @@
         try {
           try { await conn.query('LOAD parquet;'); } catch(e) { /* autoload環境では不要 */ }
           const periodRange = await ensureCompanyPeriodRange(db, conn);
-          const months = periodRange.months || [];
+          ensureCompanyFilterDefaults(periodRange);
+          renderCompanySelectedPanel();
+          await loadCompanyFilterOptions(db, conn, periodRange.months || []);
+          renderCompanyFilterPanel();
+          const months = companySelectedMonths();
           if (!months.length) {
             if (token !== companySummaryToken) return;
             renderCompanySummary({ count:0, company_count:0, cost:0, impressions:0, clicks:0, apply_starts:0, applies:0 }, { count:0, company_count:0, cost:0, impressions:0, clicks:0, apply_starts:0, applies:0 }, []);
             setCompanyStatus('この企業の実績データが見つかりませんでした。', 'warn');
             return;
           }
-          setCompanyStatus(`対象企業期間 ${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length - 1])} で集計中...`, 'warn');
+          setCompanyStatus(`個社フィルター条件で ${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length - 1])} を集計中...`, 'warn');
           const paths = await registerMonths(db, months);
           const source = readExpr(paths);
-          const targetWhere = `CAST("企業ID" AS VARCHAR) = ${sqlLiteral(selectedCompany.id)}`;
-          const marketWhere = `CAST("企業ID" AS VARCHAR) <> ${sqlLiteral(selectedCompany.id)}`;
+          const targetWhere = companyWhere(`CAST("企業ID" AS VARCHAR) = ${sqlLiteral(selectedCompany.id)}`);
+          const marketWhere = companyWhere(`CAST("企業ID" AS VARCHAR) <> ${sqlLiteral(selectedCompany.id)}`);
           const selectAgg = `COUNT(*) AS count, COUNT(DISTINCT "企業ID") AS company_count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies`;
           const sql = `
             SELECT 'target' AS segment, ${selectAgg} FROM ${source} WHERE ${targetWhere}
@@ -2338,7 +2708,7 @@
           const marketRow = rows.find(row => row.segment === 'market') || { count:0, company_count:0, cost:0, impressions:0, clicks:0, apply_starts:0, applies:0 };
           if (token !== companySummaryToken) return;
           renderCompanySummary(targetRow, marketRow, months);
-          setCompanyStatus(`対象企業期間 ${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length - 1])} のサマリーを表示しました。`, 'ok');
+          setCompanyStatus(`個社フィルター条件のサマリーを表示しました。集計期間：${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length - 1])}`, 'ok');
           if (Number(targetRow.count || 0) > 0) loadCompanyBreakdown(months);
         } finally { await conn.close(); }
       } catch (err) {
@@ -2455,8 +2825,8 @@
           const paths = await registerMonths(db, months);
           if (!paths.length) throw new Error('対象企業期間のfactファイルが見つかりません。');
           const source = readExpr(paths);
-          const targetWhere = `CAST("企業ID" AS VARCHAR) = ${sqlLiteral(selectedCompany.id)}`;
-          const marketWhere = `CAST("企業ID" AS VARCHAR) <> ${sqlLiteral(selectedCompany.id)}`;
+          const targetWhere = companyWhere(`CAST("企業ID" AS VARCHAR) = ${sqlLiteral(selectedCompany.id)}`);
+          const marketWhere = companyWhere(`CAST("企業ID" AS VARCHAR) <> ${sqlLiteral(selectedCompany.id)}`);
           const selectAgg = `COUNT(*) AS count, COUNT(DISTINCT "企業ID") AS company_count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies`;
           const summarySql = `
             SELECT 'target' AS segment, ${selectAgg} FROM ${source} WHERE ${targetWhere}
@@ -2504,19 +2874,19 @@
 
     async function downloadCompanyDetailCsv() {
       if (!selectedCompany || !appState) { setCompanyStatus('先に対象企業を選択してください。', 'warn'); return; }
-      const months = companySelectedMonths();
-      if (!months.length) { setCompanyStatus('出力対象の対象企業データ期間がありません。', 'warn'); return; }
-      const btn = els.companySummaryPanel ? els.companySummaryPanel.querySelector('[data-company-csv-download]') : null;
+      const btn = els.companySelectedPanel ? els.companySelectedPanel.querySelector('[data-company-csv-download]') : null;
       if (btn) { btn.disabled = true; btn.textContent = 'CSV作成中...'; }
-      const token = ++companySummaryToken;
       try {
-        setCompanyStatus('個社明細CSVを作成中...', 'warn');
+        setCompanyStatus('個社全期間CSVを作成中...', 'warn');
         const db = await getDb();
         const conn = await db.connect();
         try {
           try { await conn.query('LOAD parquet;'); } catch(e) { /* autoload環境では不要 */ }
+          const periodRange = await ensureCompanyPeriodRange(db, conn);
+          const months = periodRange.months || [];
+          if (!months.length) throw new Error('出力対象の対象企業データ期間がありません。');
           const paths = await registerMonths(db, months);
-          if (!paths.length) throw new Error('選択期間のfactファイルが見つかりません。');
+          if (!paths.length) throw new Error('対象企業期間のfactファイルが見つかりません。');
           const source = readExpr(paths);
           const targetWhere = `CAST("企業ID" AS VARCHAR) = ${sqlLiteral(selectedCompany.id)}`;
           const companyNameLiteral = sqlLiteral(selectedCompany.name || '');
@@ -2549,33 +2919,31 @@
             ORDER BY "集計年月キー", "管理番号", "タイトル", "都道府県", "市区町村", "キャンペーン"
           `;
           const rows = await queryRows(conn, sql);
-          if (token !== companySummaryToken) return;
-          if (!rows.length) { setCompanyStatus('対象企業のデータ存在期間内に明細データがありません。', 'warn'); showToast('<div class="toast-title">CSV出力対象がありません</div><div class="toast-note">企業IDや企業名を確認してから再度お試しください。</div>', 3600); return; }
+          if (!rows.length) { setCompanyStatus('対象企業の全期間内に明細データがありません。', 'warn'); showToast('<div class="toast-title">CSV出力対象がありません</div><div class="toast-note">企業IDや企業名を確認してから再度お試しください。</div>', 3600); return; }
           const columns = [
             '企業ID','企業名','集計年月キー','管理番号','タイトル','代表職種','関連職種','関連職種_集計用','関連職種数','キャンペーン','都道府県','市区町村','消化金額','表示回数','クリック数','応募開始数','応募数','クリック率','応募開始率','応募率','CPC','CPA'
           ].map(key => ({ key, label:key }));
           const csv = rowsToCsv(rows, columns);
           const from = String(months[0] || '');
           const to = String(months[months.length - 1] || '');
-          const fileName = `company_${safeFileName(selectedCompany.id, 'id')}_${safeFileName(selectedCompany.name, 'name')}_${from}-${to}.csv`;
+          const fileName = `company_all_period_${safeFileName(selectedCompany.id, 'id')}_${safeFileName(selectedCompany.name, 'name')}_${from}-${to}.csv`;
           downloadTextFile(fileName, csv);
-          setCompanyStatus(`${rows.length.toLocaleString('ja-JP')}行の個社明細CSVを出力しました。`, 'ok');
-          showToast(`<div class="toast-title">CSVを出力しました</div><div class="toast-note">${esc(rows.length.toLocaleString('ja-JP'))}行 / UTF-8 BOM付きCSV</div>`, 3600);
+          setCompanyStatus(`${rows.length.toLocaleString('ja-JP')}行の個社全期間CSVを出力しました。`, 'ok');
+          showToast(`<div class="toast-title">個社全期間CSVを出力しました</div><div class="toast-note">${esc(rows.length.toLocaleString('ja-JP'))}行 / UTF-8 BOM付きCSV</div>`, 3600);
         } finally { await conn.close(); }
       } catch (err) {
         console.error(err);
-        if (token !== companySummaryToken) return;
         setCompanyStatus(err && err.message ? err.message : 'CSV出力でエラーが発生しました。', 'bad');
       } finally {
-        const currentBtn = els.companySummaryPanel ? els.companySummaryPanel.querySelector('[data-company-csv-download]') : null;
-        if (currentBtn) { currentBtn.disabled = false; currentBtn.textContent = '個社明細CSVを出力'; }
+        const currentBtn = els.companySelectedPanel ? els.companySelectedPanel.querySelector('[data-company-csv-download]') : null;
+        if (currentBtn) { currentBtn.disabled = false; currentBtn.textContent = '個社全期間CSVを出力'; }
       }
     }
-    function selectCompany(companyId, companyName) { selectedCompany = { id:String(companyId || '').trim(), name:String(companyName || '').trim() }; companyPeriodRange = null; companyBreakdownToken++; if (!els.companySelectedPanel) return; renderCompanySelectedPanel(); setCompanyStatus('企業を選択しました。対象企業のデータ存在期間を確認します。', 'ok'); loadCompanySummary(); }
+    function selectCompany(companyId, companyName) { selectedCompany = { id:String(companyId || '').trim(), name:String(companyName || '').trim() }; companyPeriodRange = null; resetCompanyFilters(); companyBreakdownToken++; if (!els.companySelectedPanel) return; renderCompanySelectedPanel(); if (els.companyFilterPanel) els.companyFilterPanel.classList.add('hidden'); setCompanyStatus('企業を選択しました。対象企業のデータ存在期間を確認します。', 'ok'); loadCompanySummary(); }
     async function searchCompanies() { if (!appState) { setCompanyStatus('先にデータフォルダを読み込んでください。','bad'); return; } const keyword = String(els.companySearchInput?.value || '').trim(); if (!keyword) { setCompanyStatus('企業IDまたは企業名を入力してください。','warn'); return; } try { setCompanyStatus('企業マスタを検索中...','warn'); const db = await getDb(); const conn = await db.connect(); try { const companyPath = await ensureCompanyMasterRegistered(db); const isNumeric = /^\d+$/.test(keyword); const whereParts = []; if (isNumeric) { whereParts.push(`CAST("企業ID" AS VARCHAR) = ${sqlLiteral(keyword)}`); whereParts.push(`CAST("企業ID" AS VARCHAR) LIKE ${sqlLiteral(keyword + '%')}`); } whereParts.push(`"企業名" LIKE ${sqlLiteral('%' + keyword + '%')}`); const sql = `SELECT "企業ID", "企業名" FROM read_parquet(${sqlLiteral(companyPath)}) WHERE ${whereParts.map(p => '(' + p + ')').join(' OR ')} ORDER BY CASE WHEN CAST("企業ID" AS VARCHAR) = ${sqlLiteral(keyword)} THEN 0 WHEN CAST("企業ID" AS VARCHAR) LIKE ${sqlLiteral(keyword + '%')} THEN 1 WHEN "企業名" = ${sqlLiteral(keyword)} THEN 2 WHEN "企業名" LIKE ${sqlLiteral(keyword + '%')} THEN 3 ELSE 4 END, "企業ID" LIMIT 30`; const rows = await queryRows(conn, sql); renderCompanyResults(rows); setCompanyStatus(rows.length ? `${rows.length}件の候補を表示しています。対象企業を選択してください。` : '候補が見つかりませんでした。別の表記で検索してください。', rows.length ? 'ok' : 'warn'); } finally { await conn.close(); } } catch (err) { console.error(err); setCompanyStatus(err && err.message ? err.message : '企業検索でエラーが発生しました。','bad'); } }
     function openModeSwitchDialog() { if (!els.modeSwitchDialog) return; if (typeof els.modeSwitchDialog.showModal === 'function') els.modeSwitchDialog.showModal(); else els.modeSwitchDialog.setAttribute('open',''); }
     function closeModeSwitchDialog() { if (!els.modeSwitchDialog) return; if (typeof els.modeSwitchDialog.close === 'function') els.modeSwitchDialog.close(); else els.modeSwitchDialog.removeAttribute('open'); }
-    function enterCompanyMode() { closeModeSwitchDialog(); document.body.classList.add('company-mode-active'); updateCompanyMaskToggle(); if (els.companyModeArea) els.companyModeArea.classList.remove('hidden'); if (els.floatingXScroll) els.floatingXScroll.classList.add('hidden'); setCompanyStatus('企業IDは完全一致・前方一致、企業名は部分一致で候補を表示します。'); if (selectedCompany) { renderCompanySelectedPanel(); loadCompanySummary(); } requestAnimationFrame(() => els.companySearchInput && els.companySearchInput.focus()); }
+    function enterCompanyMode() { closeModeSwitchDialog(); document.body.classList.add('company-mode-active'); if (els.companyModeArea) els.companyModeArea.classList.remove('hidden'); if (els.floatingXScroll) els.floatingXScroll.classList.add('hidden'); setCompanyStatus('企業IDは完全一致・前方一致、企業名は部分一致で候補を表示します。'); if (selectedCompany) { renderCompanySelectedPanel(); renderCompanyFilterPanel(); loadCompanySummary(); } requestAnimationFrame(() => els.companySearchInput && els.companySearchInput.focus()); }
     function exitCompanyMode() { destroyCompanyBreakdownChart(); document.body.classList.remove('company-mode-active'); if (els.companyModeArea) els.companyModeArea.classList.add('hidden'); scheduleFloatingScrollbarUpdate(); }
 
     function relatedJobColumn(preferAgg=true) {
@@ -4888,10 +5256,40 @@
     if (els.modeSettingsBtn) els.modeSettingsBtn.addEventListener('click', openModeSwitchDialog);
     if (els.modeSwitchCloseBtn) els.modeSwitchCloseBtn.addEventListener('click', closeModeSwitchDialog);
     if (els.openCompanyModeBtn) els.openCompanyModeBtn.addEventListener('click', enterCompanyMode);
-    if (els.companyMaskToggleBtn) els.companyMaskToggleBtn.addEventListener('click', toggleCompanyNameMask);
     if (els.backToMarketModeBtn) els.backToMarketModeBtn.addEventListener('click', exitCompanyMode);
     if (els.companySearchBtn) els.companySearchBtn.addEventListener('click', searchCompanies);
     if (els.companySearchInput) els.companySearchInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchCompanies(); });
+    if (els.companySelectedPanel) els.companySelectedPanel.addEventListener('click', e => { const downloadBtn = e.target.closest('[data-company-csv-download]'); if (downloadBtn) downloadCompanyDetailCsv(); });
+    if (els.companyFilterPanel) els.companyFilterPanel.addEventListener('click', e => {
+      const openBtn = e.target.closest('[data-company-filter-open]');
+      if (openBtn) {
+        const type = openBtn.dataset.companyFilterOpen;
+        if (type === 'period') openCompanyPeriodModal();
+        else openCompanyBadgeModal(type);
+        return;
+      }
+      const resetBtn = e.target.closest('[data-company-filter-reset]');
+      if (resetBtn) {
+        companyFilterState.jobs = [];
+        companyFilterState.prefs = [];
+        companyFilterState.campaign = 'all';
+        if (companyPeriodRange) { companyFilterState.periodFrom = companyPeriodRange.from || ''; companyFilterState.periodTo = companyPeriodRange.to || ''; }
+        renderCompanyFilterPanel();
+        loadCompanySummary();
+      }
+    });
+    if (els.companyFilterPanel) els.companyFilterPanel.addEventListener('change', e => {
+      const select = e.target.closest('#companyCampaignFilter');
+      if (!select) return;
+      companyFilterState.campaign = select.value || 'all';
+      renderCompanyFilterPanel();
+      loadCompanySummary();
+    });
+    if (els.companyPeriodModalClose) els.companyPeriodModalClose.addEventListener('click', closeCompanyPeriodModal);
+    if (els.companyPeriodModalAll) els.companyPeriodModalAll.addEventListener('click', chooseCompanyAllPeriod);
+    if (els.companyBadgeModalClose) els.companyBadgeModalClose.addEventListener('click', closeCompanyBadgeModal);
+    if (els.companyBadgeModalClear) els.companyBadgeModalClear.addEventListener('click', clearCompanyBadgeSelection);
+    if (els.companyBadgeGrid) els.companyBadgeGrid.addEventListener('click', e => { const btn = e.target.closest('[data-company-badge-value]'); if (btn) toggleCompanyBadgeValue(btn.dataset.companyBadgeValue); });
     if (els.companyResults) els.companyResults.addEventListener('click', e => { const btn = e.target.closest('[data-company-id]'); if (!btn) return; const row = lastCompanySearchRows.find(item => String(item['企業ID']) === String(btn.dataset.companyId)); selectCompany(btn.dataset.companyId, row ? row['企業名'] : ''); });
     if (els.companySummaryPanel) els.companySummaryPanel.addEventListener('change', e => {
       const chartMetricSelect = e.target.closest('#companyBreakdownChartMetric');
@@ -4903,8 +5301,6 @@
     if (els.companySummaryPanel) els.companySummaryPanel.addEventListener('click', e => {
       const summaryDownloadBtn = e.target.closest('[data-company-summary-csv-download]');
       if (summaryDownloadBtn) { downloadCompanyAggregateCsv(); return; }
-      const downloadBtn = e.target.closest('[data-company-csv-download]');
-      if (downloadBtn) { downloadCompanyDetailCsv(); return; }
       const refreshBtn = e.target.closest('[data-company-summary-refresh]');
       if (refreshBtn) { loadCompanySummary(); return; }
       const breakdownBtn = e.target.closest('[data-company-breakdown-mode]');
@@ -4915,7 +5311,6 @@
         return;
       }
     });
-    updateCompanyMaskToggle();
     renderChartMetricSelectors();
     updateViewControls();
     updateColumnMenuLabel();
