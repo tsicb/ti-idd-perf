@@ -518,6 +518,23 @@
     .company-compare-table .better { color:#86efac; }
     .company-compare-table .worse { color:#fecaca; }
     .company-compare-table .neutral { color:#cbd5e1; }
+    .company-breakdown-block { margin-top:14px; padding:15px; border-radius:20px; background:rgba(2,6,23,.34); border:1px solid rgba(125,211,252,.22); }
+    .company-breakdown-head { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .company-breakdown-title { color:#f8fafc; font-size:16px; font-weight:950; }
+    .company-breakdown-note { color:#94a3b8; font-size:12px; font-weight:850; line-height:1.7; }
+    .company-breakdown-tabs { display:flex; flex-wrap:wrap; gap:8px; }
+    .company-breakdown-tab { border:1px solid rgba(125,211,252,.30); border-radius:999px; padding:8px 12px; background:rgba(15,23,42,.78); color:#bae6fd; font-family:inherit; font-size:12px; font-weight:950; cursor:pointer; }
+    .company-breakdown-tab.active { background:linear-gradient(180deg,#22d3ee,#0284c7); color:#05202c; border-color:#67e8f9; box-shadow:0 8px 22px rgba(14,165,233,.22); }
+    .company-breakdown-body { min-height:72px; }
+    .company-breakdown-meta { margin:0 0 10px; color:#cbd5e1; font-size:12px; font-weight:850; line-height:1.7; }
+    .company-breakdown-table-wrap { overflow:auto; border-radius:16px; border:1px solid rgba(148,163,184,.22); background:rgba(2,6,23,.42); }
+    .company-breakdown-table { width:100%; min-width:980px; border-collapse:separate; border-spacing:0; font-size:12.5px; }
+    .company-breakdown-table th, .company-breakdown-table td { padding:10px 11px; border-bottom:1px solid rgba(148,163,184,.16); white-space:nowrap; }
+    .company-breakdown-table th { text-align:right; color:#bae6fd; font-size:12px; font-weight:950; background:rgba(14,165,233,.10); }
+    .company-breakdown-table th:first-child, .company-breakdown-table td:first-child { text-align:left; position:sticky; left:0; z-index:1; background:rgba(15,23,42,.96); }
+    .company-breakdown-table td { text-align:right; color:#e5e7eb; font-weight:850; }
+    .company-breakdown-table tbody tr:last-child td { border-bottom:none; }
+    .company-breakdown-table .segment-name { color:#f8fafc; font-weight:950; }
     @media (max-width:1180px) { .company-summary-grid { grid-template-columns:repeat(3,minmax(130px,1fr)); } }
     @media (max-width:760px) { .company-search-row { grid-template-columns:1fr; } .company-result-btn { grid-template-columns:1fr; } .company-summary-grid { grid-template-columns:1fr 1fr; } }
     .comparison-card.chart-view .table-operation-actions { display:none; }
@@ -806,6 +823,8 @@
     let companyMasterVirtualPath = null;
     let selectedCompany = null;
     let companySummaryToken = 0;
+    let companyBreakdownMode = 'month';
+    let companyBreakdownToken = 0;
     const registeredFiles = new Set();
     const DEFAULT_FOLDER_PATH = String.raw`K:\天市事業\public\1049\共有情報\tenichiプラス\indeedマージレポート\output_dataset`;
     const PREFECTURES = [
@@ -1292,6 +1311,169 @@
           </div>
         </div>`;
     }
+    const COMPANY_BREAKDOWN_MODES = {
+      month: { label:'月別', title:'月別推移', segmentLabel:'集計月', empty:'対象期間内に月別表示できるデータがありません。' },
+      job: { label:'職種別', title:'職種別内訳', segmentLabel:'代表職種', empty:'代表職種別に表示できるデータがありません。' },
+      pref: { label:'都道府県別', title:'都道府県別内訳', segmentLabel:'都道府県', empty:'都道府県別に表示できるデータがありません。' }
+    };
+    function companyBreakdownModeButtons() {
+      return Object.entries(COMPANY_BREAKDOWN_MODES).map(([key, info]) => `<button class="company-breakdown-tab ${companyBreakdownMode === key ? 'active' : ''}" type="button" data-company-breakdown-mode="${esc(key)}">${esc(info.label)}</button>`).join('');
+    }
+    function renderCompanyBreakdownShell() {
+      const info = COMPANY_BREAKDOWN_MODES[companyBreakdownMode] || COMPANY_BREAKDOWN_MODES.month;
+      return `
+        <div class="company-breakdown-block">
+          <div class="company-breakdown-head">
+            <div>
+              <div class="company-breakdown-title">個社内訳分析</div>
+              <div class="company-breakdown-note">対象企業の実績を、月別・職種別・都道府県別に分解して確認します。マーケット列は同じ区分における対象企業除外の加重値です。</div>
+            </div>
+            <div class="company-breakdown-tabs">${companyBreakdownModeButtons()}</div>
+          </div>
+          <div id="companyBreakdownBody" class="company-breakdown-body"><div class="company-empty-state">${esc(info.title)}を集計しています...</div></div>
+        </div>`;
+    }
+    function companyBreakdownBodyEl() { return document.getElementById('companyBreakdownBody'); }
+    function companySegmentLabel(mode, value) {
+      const raw = String(value ?? '').trim();
+      if (mode === 'month') {
+        const n = Number(raw);
+        return Number.isFinite(n) && raw.length >= 6 ? formatMonthLabel(n) : raw || '未設定';
+      }
+      return raw || '未設定';
+    }
+    function companyBreakdownMetricPair(row, prefix) {
+      return {
+        count: toNum(row && row[`${prefix}_count`]),
+        company_count: toNum(row && row[`${prefix}_company_count`]),
+        cost: toNum(row && row[`${prefix}_cost`]),
+        impressions: toNum(row && row[`${prefix}_impressions`]),
+        clicks: toNum(row && row[`${prefix}_clicks`]),
+        apply_starts: toNum(row && row[`${prefix}_apply_starts`]),
+        applies: toNum(row && row[`${prefix}_applies`])
+      };
+    }
+    function renderCompanyBreakdownRows(rows, mode) {
+      const body = companyBreakdownBodyEl();
+      if (!body) return;
+      const info = COMPANY_BREAKDOWN_MODES[mode] || COMPANY_BREAKDOWN_MODES.month;
+      if (!rows || !rows.length) {
+        body.innerHTML = `<div class="company-empty-state">${esc(info.empty)}</div>`;
+        return;
+      }
+      const trs = rows.map(row => {
+        const target = companyBreakdownMetricPair(row, 'target');
+        const market = companyBreakdownMetricPair(row, 'market');
+        const tRates = calcRates(target);
+        const mRates = calcRates(market);
+        const cpaDiff = tRates.cpa === null || mRates.cpa === null ? null : tRates.cpa - mRates.cpa;
+        const cvrDiff = tRates.cvr === null || mRates.cvr === null ? null : tRates.cvr - mRates.cvr;
+        const cpaCls = companyCompareClass({ better:'lower' }, cpaDiff);
+        const cvrCls = companyCompareClass({ better:'higher' }, cvrDiff);
+        return `<tr>
+          <td class="segment-name">${esc(companySegmentLabel(mode, row.segment))}</td>
+          <td>${esc(fmtNum(target.count))}</td>
+          <td>¥${esc(fmtNum(target.cost))}</td>
+          <td>${esc(fmtNum(target.clicks))}</td>
+          <td>${esc(fmtNum(target.applies))}</td>
+          <td>${esc(companyMetricDisplay({ unit:'円', digits:0 }, tRates.cpa))}</td>
+          <td>${esc(companyMetricDisplay({ unit:'円', digits:0 }, mRates.cpa))}</td>
+          <td class="${esc(cpaCls)}">${esc(companyDiffDisplay({ unit:'円', digits:0 }, cpaDiff))}</td>
+          <td>${tRates.cvr === null ? '-' : esc(fmtNum(tRates.cvr, 2) + '%')}</td>
+          <td>${mRates.cvr === null ? '-' : esc(fmtNum(mRates.cvr, 2) + '%')}</td>
+          <td class="${esc(cvrCls)}">${esc(companyDiffDisplay({ unit:'%', digits:2 }, cvrDiff))}</td>
+        </tr>`;
+      }).join('');
+      const shown = rows.length;
+      body.innerHTML = `
+        <p class="company-breakdown-meta">表示：${esc(info.title)} / ${esc(fmtNum(shown))}行。CPA差分は「対象企業 − マーケット」です。CPAは低いほど良好、応募率は高いほど良好として色分けしています。</p>
+        <div class="company-breakdown-table-wrap">
+          <table class="company-breakdown-table">
+            <thead><tr><th>${esc(info.segmentLabel)}</th><th>該当件数</th><th>消化金額</th><th>クリック数</th><th>応募数</th><th>CPA</th><th>市場CPA</th><th>CPA差分</th><th>応募率</th><th>市場応募率</th><th>応募率差分</th></tr></thead>
+            <tbody>${trs}</tbody>
+          </table>
+        </div>`;
+    }
+    function renderCompanyBreakdownLoading() {
+      const body = companyBreakdownBodyEl();
+      const info = COMPANY_BREAKDOWN_MODES[companyBreakdownMode] || COMPANY_BREAKDOWN_MODES.month;
+      if (body) body.innerHTML = `<div class="company-empty-state">${esc(info.title)}を集計しています...</div>`;
+    }
+    function companyBreakdownSegmentExpr(mode) {
+      if (mode === 'job') return `COALESCE(NULLIF("代表職種", ''), '未設定')`;
+      if (mode === 'pref') return `COALESCE(NULLIF("都道府県", ''), '未設定')`;
+      return `CAST("集計年月キー" AS VARCHAR)`;
+    }
+    function companyBreakdownOrder(mode) {
+      if (mode === 'month') return 'ORDER BY t.segment ASC';
+      return 'ORDER BY t.target_cost DESC, t.target_applies DESC, t.target_clicks DESC, t.segment ASC LIMIT 50';
+    }
+    async function loadCompanyBreakdown(monthsArg=null) {
+      if (!selectedCompany || !appState) return;
+      const body = companyBreakdownBodyEl();
+      if (!body) return;
+      const token = ++companyBreakdownToken;
+      const mode = companyBreakdownMode;
+      const months = monthsArg || selectedMonths();
+      if (!months.length) { renderCompanyBreakdownRows([], mode); return; }
+      try {
+        renderCompanyBreakdownLoading();
+        const db = await getDb();
+        const conn = await db.connect();
+        try {
+          try { await conn.query('LOAD parquet;'); } catch(e) { /* autoload環境では不要 */ }
+          const paths = await registerMonths(db, months);
+          const source = readExpr(paths);
+          const segmentExpr = companyBreakdownSegmentExpr(mode);
+          const targetWhere = `CAST("企業ID" AS VARCHAR) = ${sqlLiteral(selectedCompany.id)}`;
+          const marketWhere = `CAST("企業ID" AS VARCHAR) <> ${sqlLiteral(selectedCompany.id)}`;
+          const agg = `COUNT(*) AS count, COUNT(DISTINCT "企業ID") AS company_count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies`;
+          const sql = `
+            WITH src AS (SELECT * FROM ${source}),
+            target AS (
+              SELECT ${segmentExpr} AS segment, ${agg}
+              FROM src
+              WHERE ${targetWhere}
+              GROUP BY 1
+            ),
+            market AS (
+              SELECT ${segmentExpr} AS segment, ${agg}
+              FROM src
+              WHERE ${marketWhere}
+              GROUP BY 1
+            )
+            SELECT
+              t.segment,
+              t.count AS target_count,
+              t.company_count AS target_company_count,
+              t.cost AS target_cost,
+              t.impressions AS target_impressions,
+              t.clicks AS target_clicks,
+              t.apply_starts AS target_apply_starts,
+              t.applies AS target_applies,
+              COALESCE(m.count,0) AS market_count,
+              COALESCE(m.company_count,0) AS market_company_count,
+              COALESCE(m.cost,0) AS market_cost,
+              COALESCE(m.impressions,0) AS market_impressions,
+              COALESCE(m.clicks,0) AS market_clicks,
+              COALESCE(m.apply_starts,0) AS market_apply_starts,
+              COALESCE(m.applies,0) AS market_applies
+            FROM target t
+            LEFT JOIN market m USING (segment)
+            ${companyBreakdownOrder(mode)}
+          `;
+          const rows = await queryRows(conn, sql);
+          if (token !== companyBreakdownToken) return;
+          renderCompanyBreakdownRows(rows, mode);
+        } finally { await conn.close(); }
+      } catch (err) {
+        console.error(err);
+        if (token !== companyBreakdownToken) return;
+        const body2 = companyBreakdownBodyEl();
+        if (body2) body2.innerHTML = `<div class="company-empty-state">個社内訳分析の集計でエラーが発生しました。<br>${esc(err && err.message ? err.message : err)}</div>`;
+      }
+    }
+
     function renderCompanySummaryLoading() {
       if (!els.companySummaryPanel) return;
       els.companySummaryPanel.classList.remove('hidden');
@@ -1316,7 +1498,7 @@
             <button class="company-btn" type="button" data-company-summary-refresh>再集計</button>
           </div>
         </div>
-        ${!hasTargetData ? '<div class="company-empty-state">この集計期間では、対象企業の実績データが見つかりませんでした。通常分析側で集計期間を変更してから、再集計してください。</div>' : `<div class="company-summary-grid">${cards}</div>${renderCompanyComparisonTable(safeRow, safeMarketRow)}`}
+        ${!hasTargetData ? '<div class="company-empty-state">この集計期間では、対象企業の実績データが見つかりませんでした。通常分析側で集計期間を変更してから、再集計してください。</div>' : `<div class="company-summary-grid">${cards}</div>${renderCompanyComparisonTable(safeRow, safeMarketRow)}${renderCompanyBreakdownShell()}`}
       `;
     }
     async function loadCompanySummary() {
@@ -1347,6 +1529,7 @@
           if (token !== companySummaryToken) return;
           renderCompanySummary(targetRow, marketRow, months);
           setCompanyStatus('対象企業とマーケット平均のサマリーを表示しました。', 'ok');
+          if (Number(targetRow.count || 0) > 0) loadCompanyBreakdown(months);
         } finally { await conn.close(); }
       } catch (err) {
         console.error(err);
@@ -1424,7 +1607,7 @@
         if (currentBtn) { currentBtn.disabled = false; currentBtn.textContent = '個社明細CSVを出力'; }
       }
     }
-    function selectCompany(companyId, companyName) { selectedCompany = { id:String(companyId || '').trim(), name:String(companyName || '').trim() }; if (!els.companySelectedPanel) return; els.companySelectedPanel.classList.remove('hidden'); els.companySelectedPanel.innerHTML = `<div class="company-selected-title">分析対象企業</div><div class="company-selected-main"><span class="company-selected-id">ID ${esc(selectedCompany.id)}</span><span>${esc(selectedCompany.name)}</span></div><p class="company-mode-subtitle" style="margin-top:8px;">この企業について、現在の集計期間における基本サマリー・マーケット平均比較・個社明細CSV出力を表示します。</p>`; setCompanyStatus('企業を選択しました。基本サマリーを集計します。', 'ok'); loadCompanySummary(); }
+    function selectCompany(companyId, companyName) { selectedCompany = { id:String(companyId || '').trim(), name:String(companyName || '').trim() }; if (!els.companySelectedPanel) return; els.companySelectedPanel.classList.remove('hidden'); els.companySelectedPanel.innerHTML = `<div class="company-selected-title">分析対象企業</div><div class="company-selected-main"><span class="company-selected-id">ID ${esc(selectedCompany.id)}</span><span>${esc(selectedCompany.name)}</span></div><p class="company-mode-subtitle" style="margin-top:8px;">この企業について、現在の集計期間における基本サマリー・マーケット平均比較・個社内訳分析・個社明細CSV出力を表示します。</p>`; setCompanyStatus('企業を選択しました。基本サマリーを集計します。', 'ok'); loadCompanySummary(); }
     async function searchCompanies() { if (!appState) { setCompanyStatus('先にデータフォルダを読み込んでください。','bad'); return; } const keyword = String(els.companySearchInput?.value || '').trim(); if (!keyword) { setCompanyStatus('企業IDまたは企業名を入力してください。','warn'); return; } try { setCompanyStatus('企業マスタを検索中...','warn'); const db = await getDb(); const conn = await db.connect(); try { const companyPath = await ensureCompanyMasterRegistered(db); const isNumeric = /^\d+$/.test(keyword); const whereParts = []; if (isNumeric) { whereParts.push(`CAST("企業ID" AS VARCHAR) = ${sqlLiteral(keyword)}`); whereParts.push(`CAST("企業ID" AS VARCHAR) LIKE ${sqlLiteral(keyword + '%')}`); } whereParts.push(`"企業名" LIKE ${sqlLiteral('%' + keyword + '%')}`); const sql = `SELECT "企業ID", "企業名" FROM read_parquet(${sqlLiteral(companyPath)}) WHERE ${whereParts.map(p => '(' + p + ')').join(' OR ')} ORDER BY CASE WHEN CAST("企業ID" AS VARCHAR) = ${sqlLiteral(keyword)} THEN 0 WHEN CAST("企業ID" AS VARCHAR) LIKE ${sqlLiteral(keyword + '%')} THEN 1 WHEN "企業名" = ${sqlLiteral(keyword)} THEN 2 WHEN "企業名" LIKE ${sqlLiteral(keyword + '%')} THEN 3 ELSE 4 END, "企業ID" LIMIT 30`; const rows = await queryRows(conn, sql); renderCompanyResults(rows); setCompanyStatus(rows.length ? `${rows.length}件の候補を表示しています。対象企業を選択してください。` : '候補が見つかりませんでした。別の表記で検索してください。', rows.length ? 'ok' : 'warn'); } finally { await conn.close(); } } catch (err) { console.error(err); setCompanyStatus(err && err.message ? err.message : '企業検索でエラーが発生しました。','bad'); } }
     function openModeSwitchDialog() { if (!els.modeSwitchDialog) return; if (typeof els.modeSwitchDialog.showModal === 'function') els.modeSwitchDialog.showModal(); else els.modeSwitchDialog.setAttribute('open',''); }
     function closeModeSwitchDialog() { if (!els.modeSwitchDialog) return; if (typeof els.modeSwitchDialog.close === 'function') els.modeSwitchDialog.close(); else els.modeSwitchDialog.removeAttribute('open'); }
@@ -3750,6 +3933,13 @@
       if (downloadBtn) { downloadCompanyDetailCsv(); return; }
       const refreshBtn = e.target.closest('[data-company-summary-refresh]');
       if (refreshBtn) { loadCompanySummary(); return; }
+      const breakdownBtn = e.target.closest('[data-company-breakdown-mode]');
+      if (breakdownBtn) {
+        companyBreakdownMode = breakdownBtn.dataset.companyBreakdownMode || 'month';
+        els.companySummaryPanel.querySelectorAll('[data-company-breakdown-mode]').forEach(btn => btn.classList.toggle('active', btn === breakdownBtn));
+        loadCompanyBreakdown();
+        return;
+      }
     });
     renderChartMetricSelectors();
     updateViewControls();
