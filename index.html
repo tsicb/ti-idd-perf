@@ -550,6 +550,19 @@
     .company-chart-controls select:focus { border-color:#38bdf8; box-shadow:0 0 0 3px rgba(56,189,248,.18); }
     .company-chart-scroll { overflow-x:auto; overflow-y:hidden; padding-bottom:2px; }
     .company-chart-canvas-wrap { min-width:760px; height:340px; border-radius:16px; padding:14px 14px 8px; background:rgba(2,6,23,.54); border:1px solid rgba(148,163,184,.18); }
+
+    /* Company mode horizontal containment: keep wide charts/tables from stretching the whole page */
+    #companyModeArea, .company-mode-shell, .company-panel, .company-summary-panel, .company-selected-card, .company-breakdown-block, .company-breakdown-body, .company-chart-block { min-width:0; max-width:100%; box-sizing:border-box; }
+    #companyModeArea, .company-mode-shell { overflow:hidden; }
+    .company-chart-block { overflow:hidden; }
+    .company-chart-scroll { display:block; width:100%; max-width:100%; min-width:0; overflow-x:auto; overflow-y:hidden; padding:0 0 10px; overscroll-behavior-x:contain; scrollbar-gutter:stable; }
+    .company-chart-canvas-wrap { flex:0 0 auto; max-width:none; box-sizing:border-box; }
+    .company-breakdown-table-wrap, .company-compare-table-wrap { width:100%; max-width:100%; min-width:0; overflow-x:auto; overflow-y:auto; padding-bottom:8px; scrollbar-gutter:stable; box-sizing:border-box; }
+    .company-chart-scroll::-webkit-scrollbar, .company-breakdown-table-wrap::-webkit-scrollbar, .company-compare-table-wrap::-webkit-scrollbar { height:12px; width:12px; }
+    .company-chart-scroll::-webkit-scrollbar-track, .company-breakdown-table-wrap::-webkit-scrollbar-track, .company-compare-table-wrap::-webkit-scrollbar-track { background:rgba(15,23,42,.82); border-radius:999px; }
+    .company-chart-scroll::-webkit-scrollbar-thumb, .company-breakdown-table-wrap::-webkit-scrollbar-thumb, .company-compare-table-wrap::-webkit-scrollbar-thumb { background:linear-gradient(90deg,#0ea5e9,#22d3ee); border-radius:999px; border:3px solid rgba(15,23,42,.82); }
+    .company-chart-scroll::-webkit-scrollbar-thumb:hover, .company-breakdown-table-wrap::-webkit-scrollbar-thumb:hover, .company-compare-table-wrap::-webkit-scrollbar-thumb:hover { background:linear-gradient(90deg,#38bdf8,#67e8f9); }
+
     @media (max-width:1180px) { .company-summary-grid { grid-template-columns:repeat(3,minmax(130px,1fr)); } }
     @media (max-width:760px) { .company-search-row { grid-template-columns:1fr; } .company-result-btn { grid-template-columns:1fr; } .company-summary-grid { grid-template-columns:1fr 1fr; } }
     .comparison-card.chart-view .table-operation-actions { display:none; }
