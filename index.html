@@ -477,6 +477,9 @@
     .company-search-row { display:grid; grid-template-columns:minmax(260px,1fr) auto; gap:12px; align-items:end; }
     .company-search-row label { display:grid; gap:7px; color:#cbd5e1; font-size:13px; font-weight:950; }
     .company-search-row input { width:100%; min-height:48px; border:1px solid rgba(125,211,252,.34); border-radius:16px; padding:12px 14px; background:rgba(2,6,23,.62); color:#f8fafc; font-family:inherit; font-weight:900; outline:none; box-shadow:inset 0 2px 5px rgba(0,0,0,.18); }
+    .company-search-row input::placeholder { color:rgba(226,232,240,.45); }
+    .company-search-row input:focus { border-color:#38bdf8; background:rgba(15,23,42,.96); color:#f8fafc; box-shadow:0 0 0 4px rgba(56,189,248,.22), inset 0 2px 5px rgba(0,0,0,.22); }
+    .company-search-row input:focus::placeholder { color:rgba(226,232,240,.36); }
     .company-status { min-height:22px; color:#cbd5e1; font-size:13px; font-weight:850; }
     .company-status.warn { color:#fde68a; } .company-status.ok { color:#86efac; } .company-status.bad { color:#fecaca; }
     .company-results { display:grid; gap:8px; }
@@ -535,6 +538,9 @@
     .company-breakdown-table td { text-align:right; color:#e5e7eb; font-weight:850; }
     .company-breakdown-table tbody tr:last-child td { border-bottom:none; }
     .company-breakdown-table .segment-name { color:#f8fafc; font-weight:950; }
+    .company-breakdown-table td.better { color:#bbf7d0; background:rgba(22,163,74,.18); box-shadow:inset 4px 0 0 rgba(34,197,94,.70); font-weight:950; }
+    .company-breakdown-table td.worse { color:#fecaca; background:rgba(239,68,68,.16); box-shadow:inset 4px 0 0 rgba(248,113,113,.72); font-weight:950; }
+    .company-breakdown-table td.neutral { color:#cbd5e1; background:rgba(148,163,184,.06); font-weight:900; }
     @media (max-width:1180px) { .company-summary-grid { grid-template-columns:repeat(3,minmax(130px,1fr)); } }
     @media (max-width:760px) { .company-search-row { grid-template-columns:1fr; } .company-result-btn { grid-template-columns:1fr; } .company-summary-grid { grid-template-columns:1fr 1fr; } }
     .comparison-card.chart-view .table-operation-actions { display:none; }
