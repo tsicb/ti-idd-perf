@@ -563,6 +563,170 @@
     .company-chart-scroll::-webkit-scrollbar-thumb, .company-breakdown-table-wrap::-webkit-scrollbar-thumb, .company-compare-table-wrap::-webkit-scrollbar-thumb { background:linear-gradient(90deg,#0ea5e9,#22d3ee); border-radius:999px; border:3px solid rgba(15,23,42,.82); }
     .company-chart-scroll::-webkit-scrollbar-thumb:hover, .company-breakdown-table-wrap::-webkit-scrollbar-thumb:hover, .company-compare-table-wrap::-webkit-scrollbar-thumb:hover { background:linear-gradient(90deg,#38bdf8,#67e8f9); }
 
+
+
+    /* Company mode theme refresh: Deep Slate / Analyst Mode */
+    body.company-mode-active { background:
+      radial-gradient(circle at 86% 4%, rgba(34,211,238,.16), transparent 34%),
+      radial-gradient(circle at 4% 18%, rgba(167,139,250,.10), transparent 30%),
+      linear-gradient(135deg,#101827 0%,#172033 48%,#1f2a3d 100%);
+      background-attachment:fixed;
+    }
+    .company-mode-shell {
+      border-radius:24px;
+      background:linear-gradient(135deg,rgba(17,24,39,.97),rgba(30,41,59,.95));
+      border:1px solid rgba(56,189,248,.28);
+      color:#e5e7eb;
+      box-shadow:0 24px 70px rgba(2,6,23,.36), inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .company-mode-shell::before { background:radial-gradient(circle,rgba(34,211,238,.20),transparent 66%); }
+    .company-mode-kicker {
+      background:rgba(8,145,178,.16);
+      border-color:rgba(103,232,249,.34);
+      color:#67e8f9;
+    }
+    .company-mode-title { color:#f8fafc; text-shadow:0 1px 0 rgba(0,0,0,.18); }
+    .company-mode-subtitle { color:#cbd5e1; }
+    .company-btn {
+      border-color:rgba(125,211,252,.34);
+      background:rgba(30,41,59,.72);
+      color:#e0f2fe;
+      border-radius:13px;
+      box-shadow:none;
+    }
+    .company-btn:hover { border-color:rgba(103,232,249,.62); background:rgba(14,116,144,.20); }
+    .company-btn.primary {
+      background:linear-gradient(180deg,#22d3ee,#0891b2);
+      color:#062331;
+      border-color:#67e8f9;
+      box-shadow:0 10px 26px rgba(34,211,238,.18);
+    }
+    .company-btn.export {
+      background:linear-gradient(180deg,#34d399,#059669);
+      color:#042014;
+      border-color:rgba(110,231,183,.72);
+    }
+    .company-panel,
+    .company-summary-panel,
+    .company-compare-block,
+    .company-breakdown-block,
+    .company-chart-block {
+      background:rgba(30,41,59,.58);
+      border-color:rgba(148,163,184,.24);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.045);
+    }
+    .company-summary-panel { background:rgba(17,24,39,.62); border-color:rgba(103,232,249,.24); }
+    .company-selected-card {
+      border-color:rgba(52,211,153,.36);
+      background:rgba(6,78,59,.18);
+    }
+    .company-selected-title { color:#a7f3d0; }
+    .company-selected-main { color:#ecfdf5; }
+    .company-selected-id {
+      background:rgba(6,78,59,.52);
+      border-color:rgba(110,231,183,.34);
+      color:#a7f3d0;
+    }
+    .company-search-row input,
+    .company-chart-controls select {
+      background:rgba(15,23,42,.88);
+      border-color:rgba(125,211,252,.30);
+      color:#f8fafc;
+    }
+    .company-search-row input:focus,
+    .company-chart-controls select:focus {
+      background:rgba(15,23,42,.98);
+      border-color:#22d3ee;
+      box-shadow:0 0 0 4px rgba(34,211,238,.18), inset 0 2px 5px rgba(0,0,0,.22);
+    }
+    .company-summary-card {
+      background:rgba(30,41,59,.66);
+      border-color:rgba(148,163,184,.20);
+    }
+    .company-summary-card.primary {
+      background:linear-gradient(180deg,rgba(8,145,178,.22),rgba(30,41,59,.66));
+      border-color:rgba(103,232,249,.34);
+    }
+    .company-summary-note,
+    .company-compare-note,
+    .company-breakdown-note,
+    .company-chart-note { color:#a8b4c5; }
+    .company-compare-table-wrap,
+    .company-breakdown-table-wrap,
+    .company-chart-canvas-wrap {
+      background:rgba(15,23,42,.64);
+      border-color:rgba(148,163,184,.20);
+    }
+    .company-compare-table th,
+    .company-breakdown-table th {
+      color:#cffafe;
+      background:#12324a;
+      border-bottom-color:rgba(148,163,184,.20);
+    }
+    .company-compare-table td,
+    .company-breakdown-table td {
+      color:#e5e7eb;
+      border-bottom-color:rgba(148,163,184,.14);
+    }
+    .company-compare-table tbody tr:nth-child(even) td:not(.better):not(.worse):not(.neutral),
+    .company-breakdown-table tbody tr:nth-child(even) td:not(.better):not(.worse):not(.neutral) {
+      background:rgba(30,41,59,.28);
+    }
+    .company-breakdown-table th:first-child,
+    .company-breakdown-table td:first-child { background:#172033; }
+    .company-breakdown-table tbody tr:nth-child(even) td:first-child { background:#1b2638; }
+    .company-compare-table .better,
+    .company-breakdown-table td.better {
+      color:#34d399;
+      background:rgba(16,185,129,.14);
+      box-shadow:inset 4px 0 0 rgba(52,211,153,.72);
+      font-weight:950;
+    }
+    .company-compare-table .worse,
+    .company-breakdown-table td.worse {
+      color:#fb7185;
+      background:rgba(244,63,94,.14);
+      box-shadow:inset 4px 0 0 rgba(251,113,133,.74);
+      font-weight:950;
+    }
+    .company-compare-table .neutral,
+    .company-breakdown-table td.neutral {
+      color:#cbd5e1;
+      background:rgba(148,163,184,.08);
+      box-shadow:inset 4px 0 0 rgba(148,163,184,.35);
+      font-weight:900;
+    }
+    .company-breakdown-tab {
+      border-color:rgba(125,211,252,.28);
+      background:rgba(30,41,59,.70);
+      color:#bae6fd;
+      border-radius:14px;
+    }
+    .company-breakdown-tab.active {
+      background:linear-gradient(180deg,#22d3ee,#0891b2);
+      color:#062331;
+      border-color:#67e8f9;
+      box-shadow:0 10px 24px rgba(34,211,238,.18);
+    }
+    .company-empty-state {
+      background:rgba(30,41,59,.48);
+      border-color:rgba(148,163,184,.30);
+      color:#cbd5e1;
+    }
+    .company-status.warn { color:#fbbf24; }
+    .company-status.ok { color:#34d399; }
+    .company-status.bad { color:#fb7185; }
+    .company-result-btn { background:rgba(30,41,59,.52); border-color:rgba(148,163,184,.20); }
+    .company-result-btn:hover { background:rgba(8,145,178,.20); border-color:rgba(103,232,249,.46); }
+    .company-result-id { color:#67e8f9; }
+    .company-result-action { color:#a5f3fc; }
+    .company-chart-scroll::-webkit-scrollbar-thumb,
+    .company-breakdown-table-wrap::-webkit-scrollbar-thumb,
+    .company-compare-table-wrap::-webkit-scrollbar-thumb { background:linear-gradient(90deg,#0891b2,#22d3ee); border-color:rgba(15,23,42,.82); }
+    .company-chart-scroll::-webkit-scrollbar-thumb:hover,
+    .company-breakdown-table-wrap::-webkit-scrollbar-thumb:hover,
+    .company-compare-table-wrap::-webkit-scrollbar-thumb:hover { background:linear-gradient(90deg,#22d3ee,#67e8f9); }
+
     @media (max-width:1180px) { .company-summary-grid { grid-template-columns:repeat(3,minmax(130px,1fr)); } }
     @media (max-width:760px) { .company-search-row { grid-template-columns:1fr; } .company-result-btn { grid-template-columns:1fr; } .company-summary-grid { grid-template-columns:1fr 1fr; } }
     .comparison-card.chart-view .table-operation-actions { display:none; }
@@ -1497,8 +1661,8 @@
             {
               label: metric.type === 'volume' ? `同区分1社平均 ${metric.label}` : `同区分 ${metric.label}`,
               data: marketData,
-              borderColor:'rgba(168,85,247,1)',
-              backgroundColor:isMonth ? 'rgba(168,85,247,.10)' : 'rgba(168,85,247,.45)',
+              borderColor:'rgba(167,139,250,1)',
+              backgroundColor:isMonth ? 'rgba(167,139,250,.12)' : 'rgba(167,139,250,.46)',
               borderWidth:isMonth ? 2 : 1,
               borderDash:isMonth ? [6,4] : [],
               borderRadius:isMonth ? 0 : 8,
@@ -1512,7 +1676,7 @@
           maintainAspectRatio:false,
           interaction:{ mode:'index', intersect:false },
           plugins:{
-            legend:{ labels:{ color:'#e5e7eb', font:{ family:'inherit', weight:'bold' }, boxWidth:14, boxHeight:10 } },
+            legend:{ labels:{ color:'#e2e8f0', font:{ family:'inherit', weight:'bold' }, boxWidth:14, boxHeight:10 } },
             tooltip:{
               callbacks:{
                 label:(ctx) => `${ctx.dataset.label}: ${companyChartValueLabel(ctx.parsed.y, metricId)}`
@@ -1522,13 +1686,13 @@
           scales:{
             x:{
               ticks:{ color:'#cbd5e1', font:{ family:'inherit', weight:'bold' }, maxRotation:isMonth ? 0 : 40, minRotation:0 },
-              grid:{ color:'rgba(148,163,184,.10)' }
+              grid:{ color:'rgba(148,163,184,.13)' }
             },
             y:{
               beginAtZero:true,
               ticks:{ color:'#cbd5e1', callback:(value) => companyChartValueLabel(value, metricId) },
-              grid:{ color:'rgba(148,163,184,.16)' },
-              title:{ display:true, text:metric.label, color:'#bae6fd', font:{ family:'inherit', weight:'bold' } }
+              grid:{ color:'rgba(148,163,184,.18)' },
+              title:{ display:true, text:metric.label, color:'#cffafe', font:{ family:'inherit', weight:'bold' } }
             }
           }
         }
