@@ -606,6 +606,32 @@
       color:#042014;
       border-color:rgba(110,231,183,.72);
     }
+    .company-mask-toggle {
+      border-color:rgba(251,191,36,.34);
+      color:#fde68a;
+    }
+    .company-mask-toggle.active {
+      background:linear-gradient(180deg,#fbbf24,#d97706);
+      color:#1f1300;
+      border-color:#fde68a;
+      box-shadow:0 10px 24px rgba(251,191,36,.18);
+    }
+    .company-mask-badge {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 8px;
+      border-radius:999px;
+      background:rgba(251,191,36,.14);
+      border:1px solid rgba(253,230,138,.36);
+      color:#fde68a;
+      font-size:12px;
+      font-weight:950;
+    }
+    .company-name-hidden-text {
+      color:#fde68a;
+      letter-spacing:.02em;
+    }
     .company-panel,
     .company-summary-panel,
     .company-compare-block,
@@ -879,7 +905,7 @@
               <h1 class="company-mode-title">企業分析モード</h1>
               <p class="company-mode-subtitle">企業IDまたは企業名で対象企業を検索し、個社実績の分析へ進むためのモードです。通常の市場分析とは切り分けて表示します。</p>
             </div>
-            <div class="company-mode-actions"><button id="backToMarketModeBtn" class="company-btn" type="button">通常分析へ戻る</button></div>
+            <div class="company-mode-actions"><button id="companyMaskToggleBtn" class="company-btn company-mask-toggle" type="button" aria-pressed="false">👁 企業名を伏せる</button><button id="backToMarketModeBtn" class="company-btn" type="button">通常分析へ戻る</button></div>
           </div>
           <div class="company-panel">
             <div class="company-search-row">
@@ -925,7 +951,7 @@
       searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalAll: document.getElementById('periodModalAll'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
       relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
       comparisonToolbar: document.getElementById('comparisonToolbar'), comparisonContent: document.getElementById('comparisonContent'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), columnMenuBtn: document.getElementById('columnMenuBtn'), columnPopover: document.getElementById('columnPopover'), chartControls: document.getElementById('chartControls'), chartLeftMetric: document.getElementById('chartLeftMetric'), chartRightMetric: document.getElementById('chartRightMetric'), chartAxisPopover: document.getElementById('chartAxisPopover'), floatingXScroll: document.getElementById('floatingXScroll'), floatingXScrollInner: document.getElementById('floatingXScrollInner'), log: document.getElementById('log'),
-      modeSettingsBtn: document.getElementById('modeSettingsBtn'), modeSwitchDialog: document.getElementById('modeSwitchDialog'), modeSwitchCloseBtn: document.getElementById('modeSwitchCloseBtn'), openCompanyModeBtn: document.getElementById('openCompanyModeBtn'), companyModeArea: document.getElementById('companyModeArea'), backToMarketModeBtn: document.getElementById('backToMarketModeBtn'), companySearchInput: document.getElementById('companySearchInput'), companySearchBtn: document.getElementById('companySearchBtn'), companySearchStatus: document.getElementById('companySearchStatus'), companyResults: document.getElementById('companyResults'), companySelectedPanel: document.getElementById('companySelectedPanel'), companySummaryPanel: document.getElementById('companySummaryPanel')
+      modeSettingsBtn: document.getElementById('modeSettingsBtn'), modeSwitchDialog: document.getElementById('modeSwitchDialog'), modeSwitchCloseBtn: document.getElementById('modeSwitchCloseBtn'), openCompanyModeBtn: document.getElementById('openCompanyModeBtn'), companyModeArea: document.getElementById('companyModeArea'), companyMaskToggleBtn: document.getElementById('companyMaskToggleBtn'), backToMarketModeBtn: document.getElementById('backToMarketModeBtn'), companySearchInput: document.getElementById('companySearchInput'), companySearchBtn: document.getElementById('companySearchBtn'), companySearchStatus: document.getElementById('companySearchStatus'), companyResults: document.getElementById('companyResults'), companySelectedPanel: document.getElementById('companySelectedPanel'), companySummaryPanel: document.getElementById('companySummaryPanel')
     };
 
     // カード（backdrop-filter）内にモーダルを置くと、下のカードの重なり順に負けることがあるため、body直下へ移動します。
@@ -1016,6 +1042,8 @@
     let selectedCompany = null;
     let companyPeriodRange = null;
     let companySummaryToken = 0;
+    let companyNameMasked = false;
+    let lastCompanySearchRows = [];
     let companyBreakdownMode = 'month';
     let companyBreakdownToken = 0;
     let companyBreakdownChart = null;
@@ -1446,7 +1474,48 @@
       return virtualPath;
     }
     function setCompanyStatus(message, type='') { if (!els.companySearchStatus) return; els.companySearchStatus.textContent = message || ''; els.companySearchStatus.className = `company-status ${type}`.trim(); }
-    function renderCompanyResults(rows) { if (!els.companyResults) return; if (!rows || !rows.length) { els.companyResults.innerHTML = '<div class="empty" style="background:rgba(255,255,255,.06);border-color:rgba(148,163,184,.28);color:#cbd5e1;">該当する企業候補がありません。</div>'; return; } els.companyResults.innerHTML = rows.map(row => { const id = row['企業ID']; const name = row['企業名'] || ''; return `<button class="company-result-btn" type="button" data-company-id="${esc(id)}" data-company-name="${esc(name)}"><span class="company-result-id">ID ${esc(id)}</span><span class="company-result-name">${esc(name)}</span><span class="company-result-action">選択</span></button>`; }).join(''); }
+    function companyDisplayName(name, id='') {
+      if (!companyNameMasked) return String(name || '');
+      const suffix = id ? `（ID ${id}）` : '';
+      return `企業名非表示${suffix}`;
+    }
+    function companyDisplayNameHtml(name, id='') {
+      if (!companyNameMasked) return esc(name || '');
+      return `<span class="company-name-hidden-text">${esc(companyDisplayName(name, id))}</span>`;
+    }
+    function updateCompanyMaskToggle() {
+      if (!els.companyMaskToggleBtn) return;
+      els.companyMaskToggleBtn.classList.toggle('active', companyNameMasked);
+      els.companyMaskToggleBtn.setAttribute('aria-pressed', String(companyNameMasked));
+      els.companyMaskToggleBtn.textContent = companyNameMasked ? '🙈 企業名マスク中' : '👁 企業名を伏せる';
+      document.body.classList.toggle('company-name-masked', companyNameMasked);
+    }
+    function renderCompanyResults(rows) {
+      if (!els.companyResults) return;
+      lastCompanySearchRows = Array.isArray(rows) ? rows : [];
+      if (!lastCompanySearchRows.length) {
+        els.companyResults.innerHTML = '<div class="empty" style="background:rgba(255,255,255,.06);border-color:rgba(148,163,184,.28);color:#cbd5e1;">該当する企業候補がありません。</div>';
+        return;
+      }
+      els.companyResults.innerHTML = lastCompanySearchRows.map(row => {
+        const id = row['企業ID'];
+        const name = row['企業名'] || '';
+        return `<button class="company-result-btn" type="button" data-company-id="${esc(id)}"><span class="company-result-id">ID ${esc(id)}</span><span class="company-result-name">${companyDisplayNameHtml(name, id)}</span><span class="company-result-action">選択</span></button>`;
+      }).join('');
+    }
+    function renderCompanySelectedPanel() {
+      if (!els.companySelectedPanel || !selectedCompany) return;
+      els.companySelectedPanel.classList.remove('hidden');
+      const maskBadge = companyNameMasked ? '<span class="company-mask-badge">画面共有用マスクON</span>' : '';
+      els.companySelectedPanel.innerHTML = `<div class="company-selected-title">分析対象企業 ${maskBadge}</div><div class="company-selected-main"><span class="company-selected-id">ID ${esc(selectedCompany.id)}</span><span>${companyDisplayNameHtml(selectedCompany.name, selectedCompany.id)}</span></div><p class="company-mode-subtitle" style="margin-top:8px;">この企業について、データが存在する最初の月から最後の月までを自動検出し、基本サマリー・マーケット平均比較・個社内訳分析・個社明細CSV出力を表示します。</p>`;
+    }
+    function toggleCompanyNameMask() {
+      companyNameMasked = !companyNameMasked;
+      updateCompanyMaskToggle();
+      renderCompanyResults(lastCompanySearchRows);
+      renderCompanySelectedPanel();
+      setCompanyStatus(companyNameMasked ? '画面共有用に企業名を伏せています。CSV出力の中身は通常どおりです。' : '企業名の表示を元に戻しました。', companyNameMasked ? 'warn' : 'ok');
+    }
     function companyMetricItems(row) {
       const r = calcRates(row || {});
       return [
@@ -2143,11 +2212,11 @@
         if (currentBtn) { currentBtn.disabled = false; currentBtn.textContent = '個社明細CSVを出力'; }
       }
     }
-    function selectCompany(companyId, companyName) { selectedCompany = { id:String(companyId || '').trim(), name:String(companyName || '').trim() }; companyPeriodRange = null; companyBreakdownToken++; if (!els.companySelectedPanel) return; els.companySelectedPanel.classList.remove('hidden'); els.companySelectedPanel.innerHTML = `<div class="company-selected-title">分析対象企業</div><div class="company-selected-main"><span class="company-selected-id">ID ${esc(selectedCompany.id)}</span><span>${esc(selectedCompany.name)}</span></div><p class="company-mode-subtitle" style="margin-top:8px;">この企業について、データが存在する最初の月から最後の月までを自動検出し、基本サマリー・マーケット平均比較・個社内訳分析・個社明細CSV出力を表示します。</p>`; setCompanyStatus('企業を選択しました。対象企業のデータ存在期間を確認します。', 'ok'); loadCompanySummary(); }
+    function selectCompany(companyId, companyName) { selectedCompany = { id:String(companyId || '').trim(), name:String(companyName || '').trim() }; companyPeriodRange = null; companyBreakdownToken++; if (!els.companySelectedPanel) return; renderCompanySelectedPanel(); setCompanyStatus('企業を選択しました。対象企業のデータ存在期間を確認します。', 'ok'); loadCompanySummary(); }
     async function searchCompanies() { if (!appState) { setCompanyStatus('先にデータフォルダを読み込んでください。','bad'); return; } const keyword = String(els.companySearchInput?.value || '').trim(); if (!keyword) { setCompanyStatus('企業IDまたは企業名を入力してください。','warn'); return; } try { setCompanyStatus('企業マスタを検索中...','warn'); const db = await getDb(); const conn = await db.connect(); try { const companyPath = await ensureCompanyMasterRegistered(db); const isNumeric = /^\d+$/.test(keyword); const whereParts = []; if (isNumeric) { whereParts.push(`CAST("企業ID" AS VARCHAR) = ${sqlLiteral(keyword)}`); whereParts.push(`CAST("企業ID" AS VARCHAR) LIKE ${sqlLiteral(keyword + '%')}`); } whereParts.push(`"企業名" LIKE ${sqlLiteral('%' + keyword + '%')}`); const sql = `SELECT "企業ID", "企業名" FROM read_parquet(${sqlLiteral(companyPath)}) WHERE ${whereParts.map(p => '(' + p + ')').join(' OR ')} ORDER BY CASE WHEN CAST("企業ID" AS VARCHAR) = ${sqlLiteral(keyword)} THEN 0 WHEN CAST("企業ID" AS VARCHAR) LIKE ${sqlLiteral(keyword + '%')} THEN 1 WHEN "企業名" = ${sqlLiteral(keyword)} THEN 2 WHEN "企業名" LIKE ${sqlLiteral(keyword + '%')} THEN 3 ELSE 4 END, "企業ID" LIMIT 30`; const rows = await queryRows(conn, sql); renderCompanyResults(rows); setCompanyStatus(rows.length ? `${rows.length}件の候補を表示しています。対象企業を選択してください。` : '候補が見つかりませんでした。別の表記で検索してください。', rows.length ? 'ok' : 'warn'); } finally { await conn.close(); } } catch (err) { console.error(err); setCompanyStatus(err && err.message ? err.message : '企業検索でエラーが発生しました。','bad'); } }
     function openModeSwitchDialog() { if (!els.modeSwitchDialog) return; if (typeof els.modeSwitchDialog.showModal === 'function') els.modeSwitchDialog.showModal(); else els.modeSwitchDialog.setAttribute('open',''); }
     function closeModeSwitchDialog() { if (!els.modeSwitchDialog) return; if (typeof els.modeSwitchDialog.close === 'function') els.modeSwitchDialog.close(); else els.modeSwitchDialog.removeAttribute('open'); }
-    function enterCompanyMode() { closeModeSwitchDialog(); document.body.classList.add('company-mode-active'); if (els.companyModeArea) els.companyModeArea.classList.remove('hidden'); if (els.floatingXScroll) els.floatingXScroll.classList.add('hidden'); setCompanyStatus('企業IDは完全一致・前方一致、企業名は部分一致で候補を表示します。'); if (selectedCompany) loadCompanySummary(); requestAnimationFrame(() => els.companySearchInput && els.companySearchInput.focus()); }
+    function enterCompanyMode() { closeModeSwitchDialog(); document.body.classList.add('company-mode-active'); updateCompanyMaskToggle(); if (els.companyModeArea) els.companyModeArea.classList.remove('hidden'); if (els.floatingXScroll) els.floatingXScroll.classList.add('hidden'); setCompanyStatus('企業IDは完全一致・前方一致、企業名は部分一致で候補を表示します。'); if (selectedCompany) { renderCompanySelectedPanel(); loadCompanySummary(); } requestAnimationFrame(() => els.companySearchInput && els.companySearchInput.focus()); }
     function exitCompanyMode() { destroyCompanyBreakdownChart(); document.body.classList.remove('company-mode-active'); if (els.companyModeArea) els.companyModeArea.classList.add('hidden'); scheduleFloatingScrollbarUpdate(); }
 
     function relatedJobColumn(preferAgg=true) {
@@ -4460,10 +4529,11 @@
     if (els.modeSettingsBtn) els.modeSettingsBtn.addEventListener('click', openModeSwitchDialog);
     if (els.modeSwitchCloseBtn) els.modeSwitchCloseBtn.addEventListener('click', closeModeSwitchDialog);
     if (els.openCompanyModeBtn) els.openCompanyModeBtn.addEventListener('click', enterCompanyMode);
+    if (els.companyMaskToggleBtn) els.companyMaskToggleBtn.addEventListener('click', toggleCompanyNameMask);
     if (els.backToMarketModeBtn) els.backToMarketModeBtn.addEventListener('click', exitCompanyMode);
     if (els.companySearchBtn) els.companySearchBtn.addEventListener('click', searchCompanies);
     if (els.companySearchInput) els.companySearchInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchCompanies(); });
-    if (els.companyResults) els.companyResults.addEventListener('click', e => { const btn = e.target.closest('[data-company-id]'); if (!btn) return; selectCompany(btn.dataset.companyId, btn.dataset.companyName); });
+    if (els.companyResults) els.companyResults.addEventListener('click', e => { const btn = e.target.closest('[data-company-id]'); if (!btn) return; const row = lastCompanySearchRows.find(item => String(item['企業ID']) === String(btn.dataset.companyId)); selectCompany(btn.dataset.companyId, row ? row['企業名'] : ''); });
     if (els.companySummaryPanel) els.companySummaryPanel.addEventListener('change', e => {
       const chartMetricSelect = e.target.closest('#companyBreakdownChartMetric');
       if (chartMetricSelect) {
@@ -4486,6 +4556,7 @@
         return;
       }
     });
+    updateCompanyMaskToggle();
     renderChartMetricSelectors();
     updateViewControls();
     updateColumnMenuLabel();
