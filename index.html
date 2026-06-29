@@ -8,8 +8,7 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Kaisei+Opti:wght@400;500;700&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700;800;900&display=swap');
     :root {
       --bg1:#fef3c7; --bg2:#ffedd5; --bg3:#fef9c3;
       --card:rgba(255,255,255,.92); --text:#44403c; --muted:#78716c; --line:#f5f5f4;
@@ -17,7 +16,7 @@
       --green:#059669; --rose:#e11d48; --amber:#d97706; --violet:#7c3aed; --stone:#a8a29e;
       --shadow:0 12px 24px -8px rgba(0,0,0,.15); --radius:2rem;
       --search-sticky-offset:0px; --comparison-toolbar-offset:0px; --comparison-summary-offset:36px;
-      --company-font:'Kaisei Opti','Yuji Syuku','Yu Mincho','Hiragino Mincho ProN','Yu Gothic',YuGothic,'Meiryo',serif;
+      --company-font:'Noto Serif JP','Yu Mincho','Hiragino Mincho ProN','MS Mincho','Meiryo',serif;
     }
     * { box-sizing:border-box; }
     body {
@@ -1198,6 +1197,85 @@
       line-height:1.74;
     }
 
+
+
+    /* Company mode integrated analysis panel */
+    .company-analysis-toolbar {
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px;
+      border:1px solid #d7dee8;
+      border-radius:16px;
+      background:linear-gradient(180deg,#ffffff,#f8fafc);
+      margin:12px 0 14px;
+    }
+    .company-analysis-left,
+    .company-analysis-right {
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:10px;
+    }
+    .company-view-toggle {
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      padding:4px;
+      border-radius:999px;
+      background:#e2e8f0;
+      border:1px solid #cbd5e1;
+      box-shadow:inset 0 1px 2px rgba(15,23,42,.08);
+    }
+    .company-view-tab {
+      border:0;
+      border-radius:999px;
+      padding:8px 14px;
+      background:transparent;
+      color:#475569;
+      font-family:var(--company-font);
+      font-size:13px;
+      font-weight:900;
+      cursor:pointer;
+      transition:.12s;
+    }
+    .company-view-tab:hover { background:#ffffff; color:#1e293b; }
+    .company-view-tab.active {
+      background:linear-gradient(180deg,#0ea5e9,#0369a1);
+      color:#ffffff;
+      box-shadow:0 5px 12px rgba(14,116,144,.18);
+    }
+    .company-analysis-tabs {
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:8px;
+    }
+    .company-analysis-tab {
+      border:1px solid #cbd5e1;
+      border-radius:999px;
+      padding:8px 13px;
+      background:#ffffff;
+      color:#475569;
+      font-family:var(--company-font);
+      font-size:13px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 3px 8px rgba(71,85,105,.07);
+      transition:.12s;
+    }
+    .company-analysis-tab:hover { background:#f0f9ff; border-color:#38bdf8; color:#075985; }
+    .company-analysis-tab.active {
+      background:linear-gradient(180deg,#334155,#1e293b);
+      color:#ffffff;
+      border-color:#334155;
+      box-shadow:0 8px 16px rgba(30,41,59,.18);
+    }
+    .company-analysis-body { min-height:90px; }
+    .company-overall-chart-meta { margin:0 0 10px; color:#475569; font-size:12px; font-weight:850; line-height:1.7; }
+
     @media (max-width:1180px) { .company-summary-grid { grid-template-columns:repeat(3,minmax(130px,1fr)); } }
     @media (max-width:760px) { .company-search-row { grid-template-columns:1fr; } .company-result-btn { grid-template-columns:1fr; } .company-summary-grid { grid-template-columns:1fr 1fr; } }
     .comparison-card.chart-view .table-operation-actions { display:none; }
@@ -1535,6 +1613,9 @@
     let companySummaryToken = 0;
     let lastCompanySearchRows = [];
     let companyBreakdownMode = 'month';
+    let companyAnalysisMode = 'overall';
+    let companyAnalysisView = 'table';
+    let companyOverallAnalysis = null;
     let companyBreakdownToken = 0;
     let companyBreakdownChart = null;
     let companyBreakdownChartRows = [];
@@ -1832,6 +1913,8 @@
       companyPeriodSelecting = 'start';
       companyPeriodHoverMonth = '';
       companyBadgeModalMode = 'job';
+      companyAnalysisMode = 'overall';
+      companyAnalysisView = 'table';
       clearTimeout(companyFilterRefreshTimer);
     }
 
@@ -2402,29 +2485,52 @@
           </div>
         </div>`;
     }
-    const COMPANY_BREAKDOWN_MODES = {
-      month: { label:'月別', title:'月別推移', segmentLabel:'集計月', empty:'対象期間内に月別表示できるデータがありません。' },
-      job: { label:'職種別', title:'職種別内訳', segmentLabel:'代表職種', empty:'代表職種別に表示できるデータがありません。' },
-      pref: { label:'都道府県別', title:'都道府県別内訳', segmentLabel:'都道府県', empty:'都道府県別に表示できるデータがありません。' }
+    const COMPANY_ANALYSIS_MODES = {
+      overall: { label:'全体', title:'全体' },
+      job: { label:'職種比較', title:'職種比較' },
+      pref: { label:'都道府県比較', title:'都道府県比較' },
+      month: { label:'月別推移', title:'月別推移' }
     };
-    function companyBreakdownModeButtons() {
-      return Object.entries(COMPANY_BREAKDOWN_MODES).map(([key, info]) => `<button class="company-breakdown-tab ${companyBreakdownMode === key ? 'active' : ''}" type="button" data-company-breakdown-mode="${esc(key)}">${esc(info.label)}</button>`).join('');
+    const COMPANY_BREAKDOWN_MODES = {
+      month: { label:'月別推移', title:'月別推移', segmentLabel:'集計月', empty:'対象期間内に月別表示できるデータがありません。' },
+      job: { label:'職種比較', title:'職種比較', segmentLabel:'代表職種', empty:'代表職種別に表示できるデータがありません。' },
+      pref: { label:'都道府県比較', title:'都道府県比較', segmentLabel:'都道府県', empty:'都道府県別に表示できるデータがありません。' }
+    };
+    function companyAnalysisModeButtons() {
+      return Object.entries(COMPANY_ANALYSIS_MODES).map(([key, info]) => `<button class="company-analysis-tab ${companyAnalysisMode === key ? 'active' : ''}" type="button" data-company-analysis-mode="${esc(key)}">${esc(info.label)}</button>`).join('');
     }
-    function renderCompanyBreakdownShell() {
-      const info = COMPANY_BREAKDOWN_MODES[companyBreakdownMode] || COMPANY_BREAKDOWN_MODES.month;
+    function companyAnalysisViewToggle() {
       return `
-        <div class="company-breakdown-block">
-          <div class="company-breakdown-head">
-            <div>
-              <div class="company-breakdown-title">個社内訳分析</div>
-              <div class="company-breakdown-note">対象企業の実績を、月別・職種別・都道府県別に分解して確認します。市場平均列は、同じ月・代表職種・都道府県における対象企業除外の市場平均です。</div>
-            </div>
-            <div class="company-breakdown-tabs">${companyBreakdownModeButtons()}</div>
-          </div>
-          <div id="companyBreakdownBody" class="company-breakdown-body"><div class="company-empty-state">${esc(info.title)}を集計しています...</div></div>
+        <div class="company-view-toggle" aria-label="個社分析結果の表示形式">
+          <button class="company-view-tab ${companyAnalysisView === 'table' ? 'active' : ''}" data-company-analysis-view="table" type="button">比較表</button>
+          <button class="company-view-tab ${companyAnalysisView === 'chart' ? 'active' : ''}" data-company-analysis-view="chart" type="button">グラフ</button>
         </div>`;
     }
-    function companyBreakdownBodyEl() { return document.getElementById('companyBreakdownBody'); }
+    function renderCompanyAnalysisShell(targetRow, marketRow, months, hasTargetData) {
+      companyOverallAnalysis = { targetRow, marketRow, months };
+      const periodText = months && months.length ? `${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length - 1])}` : '-';
+      const activeInfo = COMPANY_ANALYSIS_MODES[companyAnalysisMode] || COMPANY_ANALYSIS_MODES.overall;
+      return `
+        <div class="company-summary-head">
+          <div>
+            <div class="company-summary-title">個社分析結果</div>
+            <div class="company-summary-note">企業分析モードフィルターで絞り込んだ対象企業実績と、同じ条件で対象企業を除外した市場参考値を比較しています。集計期間：${esc(periodText)}</div>
+          </div>
+          <div class="company-summary-actions">
+            <button class="company-btn export" type="button" data-company-summary-csv-download>個社集計CSVを出力</button>
+          </div>
+        </div>
+        ${!hasTargetData ? '<div class="company-empty-state">この条件に一致する対象企業の実績データが見つかりませんでした。企業分析モードフィルター条件を確認してください。</div>' : `
+          <div class="company-analysis-toolbar">
+            <div class="company-analysis-left">${companyAnalysisViewToggle()}</div>
+            <div class="company-analysis-right"><div class="company-analysis-tabs">${companyAnalysisModeButtons()}</div></div>
+          </div>
+          <div class="company-breakdown-meta">表示：${esc(activeInfo.title)} / ${companyAnalysisView === 'chart' ? 'グラフ' : '比較表'}。対象企業列と市場平均列は色分けしています。</div>
+          <div id="companyAnalysisBody" class="company-analysis-body"><div class="company-empty-state">${esc(activeInfo.title)}を集計しています...</div></div>
+        `}
+      `;
+    }
+    function companyBreakdownBodyEl() { return document.getElementById('companyAnalysisBody'); }
     function companySegmentLabel(mode, value) {
       const raw = String(value ?? '').trim();
       if (mode === 'month') {
@@ -2444,7 +2550,7 @@
         applies: toNum(row && row[`${prefix}_applies`])
       };
     }
-    const COMPANY_CHART_FONT = 'Kaisei Opti, Yu Mincho, Hiragino Mincho ProN, Meiryo, serif';
+    const COMPANY_CHART_FONT = 'Noto Serif JP, Yu Mincho, Hiragino Mincho ProN, Meiryo, serif';
     const COMPANY_CHART_METRICS = {
       cpa: { label:'CPA', unit:'円', type:'rate', better:'lower' },
       cvr: { label:'応募率', unit:'%', type:'rate', better:'higher' },
@@ -2482,6 +2588,78 @@
         companyBreakdownChart = null;
       }
     }
+
+    function companyOverallMetricValue(row, metricId, isMarket=false, marketCompanyCount=1) {
+      const metric = COMPANY_COMPARE_METRICS.find(item => item.id === metricId) || COMPANY_COMPARE_METRICS.find(item => item.id === 'cpa');
+      return companyMetricValue(row, metric, isMarket && metric.source === 'volume' ? marketCompanyCount : 1);
+    }
+    function renderCompanyOverallChart(targetRow, marketRow) {
+      const canvas = document.getElementById('companyBreakdownChart');
+      if (!canvas || typeof Chart === 'undefined') { destroyCompanyBreakdownChart(); return; }
+      const metricId = COMPANY_CHART_METRICS[companyBreakdownChartMetric] ? companyBreakdownChartMetric : 'cpa';
+      const metricInfo = COMPANY_CHART_METRICS[metricId] || COMPANY_CHART_METRICS.cpa;
+      const metric = COMPANY_COMPARE_METRICS.find(item => item.id === metricId) || COMPANY_COMPARE_METRICS.find(item => item.id === 'cpa');
+      const marketCompanies = Math.max(0, Math.floor(toNum(marketRow && marketRow.company_count)));
+      const targetValue = companyOverallMetricValue(targetRow, metricId, false, 1);
+      const marketValue = marketCompanies ? companyOverallMetricValue(marketRow, metricId, true, marketCompanies) : null;
+      destroyCompanyBreakdownChart();
+      const ctx = canvas.getContext('2d');
+      companyBreakdownChart = new Chart(ctx, {
+        type:'bar',
+        data:{
+          labels:['対象企業', '市場平均'],
+          datasets:[{
+            label: metricInfo.label,
+            data:[targetValue, marketValue],
+            backgroundColor:['rgba(14,116,144,.62)', 'rgba(124,58,237,.42)'],
+            borderColor:['rgba(14,116,144,1)', 'rgba(124,58,237,1)'],
+            borderWidth:1,
+            borderRadius:10
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{
+            legend:{ display:false },
+            tooltip:{ callbacks:{ label:(ctx) => `${ctx.label}: ${companyChartValueLabel(ctx.parsed.y, metricId)}` } }
+          },
+          scales:{
+            x:{ ticks:{ color:'#475569', font:{ family:COMPANY_CHART_FONT, weight:'bold' } }, grid:{ color:'rgba(100,116,139,.12)' } },
+            y:{ beginAtZero:true, ticks:{ color:'#475569', callback:(value) => companyChartValueLabel(value, metricId) }, grid:{ color:'rgba(100,116,139,.20)' }, title:{ display:true, text:metric.label, color:'#0f172a', font:{ family:COMPANY_CHART_FONT, weight:'bold' } } }
+          }
+        }
+      });
+    }
+    function renderCompanyOverallRows() {
+      const body = companyBreakdownBodyEl();
+      if (!body || !companyOverallAnalysis) return;
+      const { targetRow, marketRow } = companyOverallAnalysis;
+      if (companyAnalysisView === 'chart') {
+        const metric = COMPANY_CHART_METRICS[companyBreakdownChartMetric] || COMPANY_CHART_METRICS.cpa;
+        body.innerHTML = `
+          <div class="company-chart-block">
+            <div class="company-chart-head">
+              <div>
+                <div class="company-chart-title">全体グラフ</div>
+                <div class="company-chart-note">対象企業と市場平均を、選択した指標で比較します。</div>
+              </div>
+              <label class="company-chart-controls">表示指標
+                <select id="companyBreakdownChartMetric">${companyChartMetricOptions()}</select>
+              </label>
+            </div>
+            <p class="company-overall-chart-meta">表示指標：${esc(metric.label)}。件数・金額系の市場平均は1社平均、率・CPC・CPAは合算値から加重算出しています。</p>
+            <div class="company-chart-scroll">
+              <div class="company-chart-canvas-wrap" style="min-width:760px;"><canvas id="companyBreakdownChart"></canvas></div>
+            </div>
+          </div>`;
+        requestAnimationFrame(() => renderCompanyOverallChart(targetRow, marketRow));
+      } else {
+        destroyCompanyBreakdownChart();
+        body.innerHTML = renderCompanyComparisonTable(targetRow, marketRow);
+      }
+    }
+
     function renderCompanyBreakdownChart() {
       const canvas = document.getElementById('companyBreakdownChart');
       if (!canvas || typeof Chart === 'undefined') { destroyCompanyBreakdownChart(); return; }
@@ -2608,16 +2786,22 @@
         </tr>`;
       }).join('');
       const shown = rows.length;
-      body.innerHTML = `
-        <p class="company-breakdown-meta">表示：${esc(info.title)} / ${esc(fmtNum(shown))}行。CPA差分は「対象企業 − 市場平均」です。CPAは低いほど良好、応募率は高いほど良好として色分けしています。</p>
-        ${companyChartShell(rows, mode)}
-        <div class="company-breakdown-table-wrap">
-          <table class="company-breakdown-table">
-            <thead><tr><th>${esc(info.segmentLabel)}</th><th class="company-target-col">該当件数</th><th class="company-target-col">消化金額</th><th class="company-target-col">クリック数</th><th class="company-target-col">応募数</th><th class="company-target-col">CPA</th><th class="company-market-col">市場平均CPA</th><th>CPA差分</th><th class="company-target-col">応募率</th><th class="company-market-col">市場平均応募率</th><th>応募率差分</th></tr></thead>
-            <tbody>${trs}</tbody>
-          </table>
-        </div>`;
-      requestAnimationFrame(renderCompanyBreakdownChart);
+      if (companyAnalysisView === 'chart') {
+        body.innerHTML = `
+          <p class="company-breakdown-meta">表示：${esc(info.title)} / ${esc(fmtNum(shown))}行。グラフでは対象企業と市場平均を比較します。</p>
+          ${companyChartShell(rows, mode)}`;
+        requestAnimationFrame(renderCompanyBreakdownChart);
+      } else {
+        destroyCompanyBreakdownChart();
+        body.innerHTML = `
+          <p class="company-breakdown-meta">表示：${esc(info.title)} / ${esc(fmtNum(shown))}行。CPA差分は「対象企業 − 市場平均」です。CPAは低いほど良好、応募率は高いほど良好として色分けしています。</p>
+          <div class="company-breakdown-table-wrap">
+            <table class="company-breakdown-table">
+              <thead><tr><th>${esc(info.segmentLabel)}</th><th class="company-target-col">該当件数</th><th class="company-target-col">消化金額</th><th class="company-target-col">クリック数</th><th class="company-target-col">応募数</th><th class="company-target-col">CPA</th><th class="company-market-col">市場平均CPA</th><th>CPA差分</th><th class="company-target-col">応募率</th><th class="company-market-col">市場平均応募率</th><th>応募率差分</th></tr></thead>
+              <tbody>${trs}</tbody>
+            </table>
+          </div>`;
+      }
     }
 
     function renderCompanyBreakdownLoading() {
@@ -2715,21 +2899,10 @@
       if (!els.companySummaryPanel) return;
       const safeRow = targetRow || { count:0, company_count:0, cost:0, impressions:0, clicks:0, apply_starts:0, applies:0 };
       const safeMarketRow = marketRow || { count:0, company_count:0, cost:0, impressions:0, clicks:0, apply_starts:0, applies:0 };
-      const periodText = months && months.length ? `${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length - 1])}` : '-';
       const hasTargetData = Number(safeRow.count || 0) > 0;
       els.companySummaryPanel.classList.remove('hidden');
-      els.companySummaryPanel.innerHTML = `
-        <div class="company-summary-head">
-          <div>
-            <div class="company-summary-title">個社分析結果</div>
-            <div class="company-summary-note">企業分析モードフィルターで絞り込んだ対象企業実績と、同じ条件で対象企業を除外した市場参考値を比較しています。集計期間：${esc(periodText)}</div>
-          </div>
-          <div class="company-summary-actions">
-            <button class="company-btn export" type="button" data-company-summary-csv-download>個社集計CSVを出力</button>
-          </div>
-        </div>
-        ${!hasTargetData ? '<div class="company-empty-state">この条件に一致する対象企業の実績データが見つかりませんでした。企業分析モードフィルター条件を確認してください。</div>' : `${renderCompanyComparisonTable(safeRow, safeMarketRow)}${renderCompanyBreakdownShell()}`}
-      `;
+      els.companySummaryPanel.innerHTML = renderCompanyAnalysisShell(safeRow, safeMarketRow, months, hasTargetData);
+      if (hasTargetData && companyAnalysisMode === 'overall') renderCompanyOverallRows();
     }
     async function loadCompanySummary(options={}) {
       if (!selectedCompany || !appState) return;
@@ -2773,7 +2946,7 @@
           if (token !== companySummaryToken) return;
           renderCompanySummary(targetRow, marketRow, months);
           setCompanyStatus(`企業分析モードフィルター条件のサマリーを表示しました。集計期間：${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length - 1])}`, 'ok');
-          if (Number(targetRow.count || 0) > 0) loadCompanyBreakdown(months, { scrollState });
+          if (Number(targetRow.count || 0) > 0 && companyAnalysisMode !== 'overall') loadCompanyBreakdown(months, { scrollState });
         } finally { await conn.close(); }
       } catch (err) {
         console.error(err);
@@ -5412,17 +5585,30 @@
       const chartMetricSelect = e.target.closest('#companyBreakdownChartMetric');
       if (chartMetricSelect) {
         companyBreakdownChartMetric = chartMetricSelect.value || 'cpa';
-        renderCompanyBreakdownChart();
+        if (companyAnalysisMode === 'overall') renderCompanyOverallRows();
+        else renderCompanyBreakdownChart();
       }
     });
     if (els.companySummaryPanel) els.companySummaryPanel.addEventListener('click', e => {
       const summaryDownloadBtn = e.target.closest('[data-company-summary-csv-download]');
       if (summaryDownloadBtn) { downloadCompanyAggregateCsv(); return; }
-      const breakdownBtn = e.target.closest('[data-company-breakdown-mode]');
-      if (breakdownBtn) {
-        companyBreakdownMode = breakdownBtn.dataset.companyBreakdownMode || 'month';
-        els.companySummaryPanel.querySelectorAll('[data-company-breakdown-mode]').forEach(btn => btn.classList.toggle('active', btn === breakdownBtn));
-        loadCompanyBreakdown(null, { scrollState:startScrollPreservation() });
+      const viewBtn = e.target.closest('[data-company-analysis-view]');
+      if (viewBtn) {
+        companyAnalysisView = viewBtn.dataset.companyAnalysisView === 'chart' ? 'chart' : 'table';
+        const scrollState = startScrollPreservation();
+        if (companyOverallAnalysis) renderCompanySummary(companyOverallAnalysis.targetRow, companyOverallAnalysis.marketRow, companyOverallAnalysis.months);
+        if (companyAnalysisMode !== 'overall') loadCompanyBreakdown(null, { scrollState });
+        else restorePreservedScroll(scrollState);
+        return;
+      }
+      const analysisBtn = e.target.closest('[data-company-analysis-mode]');
+      if (analysisBtn) {
+        companyAnalysisMode = analysisBtn.dataset.companyAnalysisMode || 'overall';
+        companyBreakdownMode = companyAnalysisMode === 'overall' ? 'month' : companyAnalysisMode;
+        const scrollState = startScrollPreservation();
+        if (companyOverallAnalysis) renderCompanySummary(companyOverallAnalysis.targetRow, companyOverallAnalysis.marketRow, companyOverallAnalysis.months);
+        if (companyAnalysisMode !== 'overall') loadCompanyBreakdown(null, { scrollState });
+        else restorePreservedScroll(scrollState);
         return;
       }
     });
