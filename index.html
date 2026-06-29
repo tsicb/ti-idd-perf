@@ -541,6 +541,15 @@
     .company-breakdown-table td.better { color:#bbf7d0; background:rgba(22,163,74,.18); box-shadow:inset 4px 0 0 rgba(34,197,94,.70); font-weight:950; }
     .company-breakdown-table td.worse { color:#fecaca; background:rgba(239,68,68,.16); box-shadow:inset 4px 0 0 rgba(248,113,113,.72); font-weight:950; }
     .company-breakdown-table td.neutral { color:#cbd5e1; background:rgba(148,163,184,.06); font-weight:900; }
+    .company-chart-block { margin:0 0 14px; padding:14px; border-radius:18px; background:rgba(15,23,42,.70); border:1px solid rgba(125,211,252,.22); }
+    .company-chart-head { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:10px; }
+    .company-chart-title { color:#f8fafc; font-size:14px; font-weight:950; }
+    .company-chart-note { margin-top:3px; color:#94a3b8; font-size:12px; font-weight:850; line-height:1.6; }
+    .company-chart-controls { display:flex; flex-wrap:wrap; align-items:center; gap:8px; color:#cbd5e1; font-size:12px; font-weight:950; }
+    .company-chart-controls select { min-width:138px; border:1px solid rgba(125,211,252,.34); border-radius:13px; padding:8px 30px 8px 10px; background:rgba(2,6,23,.72); color:#f8fafc; font-family:inherit; font-size:12px; font-weight:900; outline:none; }
+    .company-chart-controls select:focus { border-color:#38bdf8; box-shadow:0 0 0 3px rgba(56,189,248,.18); }
+    .company-chart-scroll { overflow-x:auto; overflow-y:hidden; padding-bottom:2px; }
+    .company-chart-canvas-wrap { min-width:760px; height:340px; border-radius:16px; padding:14px 14px 8px; background:rgba(2,6,23,.54); border:1px solid rgba(148,163,184,.18); }
     @media (max-width:1180px) { .company-summary-grid { grid-template-columns:repeat(3,minmax(130px,1fr)); } }
     @media (max-width:760px) { .company-search-row { grid-template-columns:1fr; } .company-result-btn { grid-template-columns:1fr; } .company-summary-grid { grid-template-columns:1fr 1fr; } }
     .comparison-card.chart-view .table-operation-actions { display:none; }
@@ -832,6 +841,10 @@
     let companySummaryToken = 0;
     let companyBreakdownMode = 'month';
     let companyBreakdownToken = 0;
+    let companyBreakdownChart = null;
+    let companyBreakdownChartRows = [];
+    let companyBreakdownChartMode = 'month';
+    let companyBreakdownChartMetric = 'cpa';
     const registeredFiles = new Set();
     const DEFAULT_FOLDER_PATH = String.raw`K:\天市事業\public\1049\共有情報\tenichiプラス\indeedマージレポート\output_dataset`;
     const PREFECTURES = [
@@ -1402,11 +1415,142 @@
         applies: toNum(row && row[`${prefix}_applies`])
       };
     }
+    const COMPANY_CHART_METRICS = {
+      cpa: { label:'CPA', unit:'円', type:'rate', better:'lower' },
+      cvr: { label:'応募率', unit:'%', type:'rate', better:'higher' },
+      cost: { label:'消化金額', unit:'円', type:'volume', field:'cost' },
+      clicks: { label:'クリック数', unit:'回', type:'volume', field:'clicks' },
+      applies: { label:'応募数', unit:'件', type:'volume', field:'applies' }
+    };
+    function companyChartMetricOptions() {
+      return Object.entries(COMPANY_CHART_METRICS).map(([key, info]) => `<option value="${esc(key)}" ${companyBreakdownChartMetric === key ? 'selected' : ''}>${esc(info.label)}</option>`).join('');
+    }
+    function companyChartValue(row, prefix, metricId) {
+      const metric = COMPANY_CHART_METRICS[metricId] || COMPANY_CHART_METRICS.cpa;
+      const raw = companyBreakdownMetricPair(row, prefix);
+      const rates = calcRates(raw);
+      if (metricId === 'cpa') return rates.cpa;
+      if (metricId === 'cvr') return rates.cvr;
+      const value = toNum(raw[metric.field]);
+      if (prefix === 'market') {
+        const companies = toNum(raw.company_count);
+        return companies ? value / companies : null;
+      }
+      return value;
+    }
+    function companyChartValueLabel(value, metricId) {
+      if (value === null || value === undefined || !Number.isFinite(Number(value))) return '-';
+      const metric = COMPANY_CHART_METRICS[metricId] || COMPANY_CHART_METRICS.cpa;
+      const n = Number(value);
+      if (metric.unit === '円') return `¥${fmtNum(n, 0)}`;
+      if (metric.unit === '%') return `${fmtNum(n, 2)}%`;
+      return `${fmtNum(n, 0)}${metric.unit}`;
+    }
+    function destroyCompanyBreakdownChart() {
+      if (companyBreakdownChart) {
+        companyBreakdownChart.destroy();
+        companyBreakdownChart = null;
+      }
+    }
+    function renderCompanyBreakdownChart() {
+      const canvas = document.getElementById('companyBreakdownChart');
+      if (!canvas || typeof Chart === 'undefined') { destroyCompanyBreakdownChart(); return; }
+      const rows = companyBreakdownChartRows || [];
+      const mode = companyBreakdownChartMode || 'month';
+      if (!rows.length) { destroyCompanyBreakdownChart(); return; }
+      const metricId = COMPANY_CHART_METRICS[companyBreakdownChartMetric] ? companyBreakdownChartMetric : 'cpa';
+      const metric = COMPANY_CHART_METRICS[metricId] || COMPANY_CHART_METRICS.cpa;
+      const labels = rows.map(row => companySegmentLabel(mode, row.segment));
+      const targetData = rows.map(row => companyChartValue(row, 'target', metricId));
+      const marketData = rows.map(row => companyChartValue(row, 'market', metricId));
+      const isMonth = mode === 'month';
+      destroyCompanyBreakdownChart();
+      const ctx = canvas.getContext('2d');
+      companyBreakdownChart = new Chart(ctx, {
+        type: isMonth ? 'line' : 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: `対象企業 ${metric.label}`,
+              data: targetData,
+              borderColor:'rgba(34,211,238,1)',
+              backgroundColor:isMonth ? 'rgba(34,211,238,.12)' : 'rgba(34,211,238,.62)',
+              borderWidth:isMonth ? 3 : 1,
+              borderRadius:isMonth ? 0 : 8,
+              tension:.28,
+              spanGaps:false
+            },
+            {
+              label: metric.type === 'volume' ? `同区分1社平均 ${metric.label}` : `同区分 ${metric.label}`,
+              data: marketData,
+              borderColor:'rgba(168,85,247,1)',
+              backgroundColor:isMonth ? 'rgba(168,85,247,.10)' : 'rgba(168,85,247,.45)',
+              borderWidth:isMonth ? 2 : 1,
+              borderDash:isMonth ? [6,4] : [],
+              borderRadius:isMonth ? 0 : 8,
+              tension:.28,
+              spanGaps:false
+            }
+          ]
+        },
+        options: {
+          responsive:true,
+          maintainAspectRatio:false,
+          interaction:{ mode:'index', intersect:false },
+          plugins:{
+            legend:{ labels:{ color:'#e5e7eb', font:{ family:'inherit', weight:'bold' }, boxWidth:14, boxHeight:10 } },
+            tooltip:{
+              callbacks:{
+                label:(ctx) => `${ctx.dataset.label}: ${companyChartValueLabel(ctx.parsed.y, metricId)}`
+              }
+            }
+          },
+          scales:{
+            x:{
+              ticks:{ color:'#cbd5e1', font:{ family:'inherit', weight:'bold' }, maxRotation:isMonth ? 0 : 40, minRotation:0 },
+              grid:{ color:'rgba(148,163,184,.10)' }
+            },
+            y:{
+              beginAtZero:true,
+              ticks:{ color:'#cbd5e1', callback:(value) => companyChartValueLabel(value, metricId) },
+              grid:{ color:'rgba(148,163,184,.16)' },
+              title:{ display:true, text:metric.label, color:'#bae6fd', font:{ family:'inherit', weight:'bold' } }
+            }
+          }
+        }
+      });
+    }
+    function companyChartShell(rows, mode) {
+      const info = COMPANY_BREAKDOWN_MODES[mode] || COMPANY_BREAKDOWN_MODES.month;
+      const metric = COMPANY_CHART_METRICS[companyBreakdownChartMetric] || COMPANY_CHART_METRICS.cpa;
+      const rowCount = rows ? rows.length : 0;
+      const minWidth = mode === 'month' ? Math.max(760, rowCount * 82) : Math.max(760, rowCount * 62);
+      const compareNote = metric.type === 'volume' ? '数量・金額系は、対象企業と同区分の1社平均を比較します。' : 'CPA・応募率は、対象企業と同区分の加重値を比較します。';
+      return `
+        <div class="company-chart-block">
+          <div class="company-chart-head">
+            <div>
+              <div class="company-chart-title">${esc(info.title)}グラフ</div>
+              <div class="company-chart-note">${esc(compareNote)}</div>
+            </div>
+            <label class="company-chart-controls">表示指標
+              <select id="companyBreakdownChartMetric">${companyChartMetricOptions()}</select>
+            </label>
+          </div>
+          <div class="company-chart-scroll">
+            <div class="company-chart-canvas-wrap" style="min-width:${esc(minWidth)}px;"><canvas id="companyBreakdownChart"></canvas></div>
+          </div>
+        </div>`;
+    }
     function renderCompanyBreakdownRows(rows, mode) {
       const body = companyBreakdownBodyEl();
       if (!body) return;
       const info = COMPANY_BREAKDOWN_MODES[mode] || COMPANY_BREAKDOWN_MODES.month;
+      companyBreakdownChartRows = rows || [];
+      companyBreakdownChartMode = mode || 'month';
       if (!rows || !rows.length) {
+        destroyCompanyBreakdownChart();
         body.innerHTML = `<div class="company-empty-state">${esc(info.empty)}</div>`;
         return;
       }
@@ -1436,14 +1580,18 @@
       const shown = rows.length;
       body.innerHTML = `
         <p class="company-breakdown-meta">表示：${esc(info.title)} / ${esc(fmtNum(shown))}行。CPA差分は「対象企業 − 同区分値」です。CPAは低いほど良好、応募率は高いほど良好として色分けしています。</p>
+        ${companyChartShell(rows, mode)}
         <div class="company-breakdown-table-wrap">
           <table class="company-breakdown-table">
             <thead><tr><th>${esc(info.segmentLabel)}</th><th>該当件数</th><th>消化金額</th><th>クリック数</th><th>応募数</th><th>CPA</th><th>同区分CPA</th><th>CPA差分</th><th>応募率</th><th>同区分応募率</th><th>応募率差分</th></tr></thead>
             <tbody>${trs}</tbody>
           </table>
         </div>`;
+      requestAnimationFrame(renderCompanyBreakdownChart);
     }
+
     function renderCompanyBreakdownLoading() {
+      destroyCompanyBreakdownChart();
       const body = companyBreakdownBodyEl();
       const info = COMPANY_BREAKDOWN_MODES[companyBreakdownMode] || COMPANY_BREAKDOWN_MODES.month;
       if (body) body.innerHTML = `<div class="company-empty-state">${esc(info.title)}を集計しています...</div>`;
@@ -1823,7 +1971,7 @@
     function openModeSwitchDialog() { if (!els.modeSwitchDialog) return; if (typeof els.modeSwitchDialog.showModal === 'function') els.modeSwitchDialog.showModal(); else els.modeSwitchDialog.setAttribute('open',''); }
     function closeModeSwitchDialog() { if (!els.modeSwitchDialog) return; if (typeof els.modeSwitchDialog.close === 'function') els.modeSwitchDialog.close(); else els.modeSwitchDialog.removeAttribute('open'); }
     function enterCompanyMode() { closeModeSwitchDialog(); document.body.classList.add('company-mode-active'); if (els.companyModeArea) els.companyModeArea.classList.remove('hidden'); if (els.floatingXScroll) els.floatingXScroll.classList.add('hidden'); setCompanyStatus('企業IDは完全一致・前方一致、企業名は部分一致で候補を表示します。'); if (selectedCompany) loadCompanySummary(); requestAnimationFrame(() => els.companySearchInput && els.companySearchInput.focus()); }
-    function exitCompanyMode() { document.body.classList.remove('company-mode-active'); if (els.companyModeArea) els.companyModeArea.classList.add('hidden'); scheduleFloatingScrollbarUpdate(); }
+    function exitCompanyMode() { destroyCompanyBreakdownChart(); document.body.classList.remove('company-mode-active'); if (els.companyModeArea) els.companyModeArea.classList.add('hidden'); scheduleFloatingScrollbarUpdate(); }
 
     function relatedJobColumn(preferAgg=true) {
       return preferAgg && appState && appState.hasAggRelated ? '関連職種_集計用' : '関連職種';
@@ -4139,6 +4287,13 @@
     if (els.companySearchBtn) els.companySearchBtn.addEventListener('click', searchCompanies);
     if (els.companySearchInput) els.companySearchInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchCompanies(); });
     if (els.companyResults) els.companyResults.addEventListener('click', e => { const btn = e.target.closest('[data-company-id]'); if (!btn) return; selectCompany(btn.dataset.companyId, btn.dataset.companyName); });
+    if (els.companySummaryPanel) els.companySummaryPanel.addEventListener('change', e => {
+      const chartMetricSelect = e.target.closest('#companyBreakdownChartMetric');
+      if (chartMetricSelect) {
+        companyBreakdownChartMetric = chartMetricSelect.value || 'cpa';
+        renderCompanyBreakdownChart();
+      }
+    });
     if (els.companySummaryPanel) els.companySummaryPanel.addEventListener('click', e => {
       const summaryDownloadBtn = e.target.closest('[data-company-summary-csv-download]');
       if (summaryDownloadBtn) { downloadCompanyAggregateCsv(); return; }
