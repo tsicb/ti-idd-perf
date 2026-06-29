@@ -491,6 +491,9 @@
     .company-selected-id { padding:4px 8px; border-radius:999px; background:rgba(20,83,45,.55); border:1px solid rgba(134,239,172,.35); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:#bbf7d0; }
     .company-summary-panel { border-color:rgba(125,211,252,.28); background:rgba(2,6,23,.36); }
     .company-summary-head { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:6px; }
+    .company-summary-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:flex-end; }
+    .company-btn.export { background:linear-gradient(180deg,#16a34a,#15803d); color:#fff; border-color:rgba(134,239,172,.62); }
+    .company-btn:disabled { opacity:.55; cursor:not-allowed; }
     .company-summary-title { color:#f8fafc; font-size:18px; font-weight:950; }
     .company-summary-note { color:#94a3b8; font-size:12px; font-weight:850; line-height:1.7; }
     .company-summary-grid { display:grid; grid-template-columns:repeat(6,minmax(130px,1fr)); gap:10px; }
@@ -867,6 +870,31 @@
     function splitKeywords(text) { return String(text || '').split(/[\s　]+/).map(s => s.trim()).filter(Boolean); }
     function toPlainValue(value) { if (typeof value === 'bigint') return Number(value); if (value && typeof value === 'object' && typeof value.valueOf === 'function') { const v = value.valueOf(); if (typeof v !== 'object') return v; } return value; }
     function tableToRows(table) { const fields = table.schema.fields.map(f => f.name); return table.toArray().map(row => { if (row && typeof row.toJSON === 'function') { const json = row.toJSON(); const out = {}; Object.keys(json).forEach(k => out[k] = toPlainValue(json[k])); return out; } const out = {}; fields.forEach(name => out[name] = toPlainValue(row[name])); return out; }); }
+    function csvCell(value) {
+      if (value === null || value === undefined) return '';
+      const text = String(value);
+      return /[",\r\n]/.test(text) ? '"' + text.replaceAll('"', '""') + '"' : text;
+    }
+    function rowsToCsv(rows, columns) {
+      const header = columns.map(col => csvCell(col.label)).join(',');
+      const body = rows.map(row => columns.map(col => csvCell(row[col.key])).join(',')).join('\r\n');
+      return header + (body ? '\r\n' + body : '');
+    }
+    function downloadTextFile(filename, text, mime='text/csv;charset=utf-8;') {
+      const blob = new Blob(['\uFEFF', text], { type:mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1200);
+    }
+    function safeFileName(value, fallback='company') {
+      const cleaned = String(value || '').normalize('NFKC').replace(/[\\/:*?"<>|\r\n\t]/g, '_').replace(/\s+/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '');
+      return (cleaned || fallback).slice(0, 80);
+    }
 
     function normalizeMatchText(value) {
       const text = String(value ?? '').normalize('NFKC').toLowerCase();
@@ -1283,7 +1311,10 @@
             <div class="company-summary-title">基本サマリー</div>
             <div class="company-summary-note">対象企業とマーケット平均を、現在の集計期間で比較しています。集計期間：${esc(periodText)}</div>
           </div>
-          <button class="company-btn" type="button" data-company-summary-refresh>再集計</button>
+          <div class="company-summary-actions">
+            <button class="company-btn export" type="button" data-company-csv-download>個社明細CSVを出力</button>
+            <button class="company-btn" type="button" data-company-summary-refresh>再集計</button>
+          </div>
         </div>
         ${!hasTargetData ? '<div class="company-empty-state">この集計期間では、対象企業の実績データが見つかりませんでした。通常分析側で集計期間を変更してから、再集計してください。</div>' : `<div class="company-summary-grid">${cards}</div>${renderCompanyComparisonTable(safeRow, safeMarketRow)}`}
       `;
@@ -1324,7 +1355,76 @@
         setCompanyStatus('基本サマリー集計でエラーが発生しました。', 'bad');
       }
     }
-    function selectCompany(companyId, companyName) { selectedCompany = { id:String(companyId || '').trim(), name:String(companyName || '').trim() }; if (!els.companySelectedPanel) return; els.companySelectedPanel.classList.remove('hidden'); els.companySelectedPanel.innerHTML = `<div class="company-selected-title">分析対象企業</div><div class="company-selected-main"><span class="company-selected-id">ID ${esc(selectedCompany.id)}</span><span>${esc(selectedCompany.name)}</span></div><p class="company-mode-subtitle" style="margin-top:8px;">この企業について、現在の集計期間における基本サマリーとマーケット平均比較を表示します。</p>`; setCompanyStatus('企業を選択しました。基本サマリーを集計します。', 'ok'); loadCompanySummary(); }
+    async function downloadCompanyDetailCsv() {
+      if (!selectedCompany || !appState) { setCompanyStatus('先に対象企業を選択してください。', 'warn'); return; }
+      const months = selectedMonths();
+      if (!months.length) { setCompanyStatus('出力対象の集計期間がありません。', 'warn'); return; }
+      const btn = els.companySummaryPanel ? els.companySummaryPanel.querySelector('[data-company-csv-download]') : null;
+      if (btn) { btn.disabled = true; btn.textContent = 'CSV作成中...'; }
+      const token = ++companySummaryToken;
+      try {
+        setCompanyStatus('個社明細CSVを作成中...', 'warn');
+        const db = await getDb();
+        const conn = await db.connect();
+        try {
+          try { await conn.query('LOAD parquet;'); } catch(e) { /* autoload環境では不要 */ }
+          const paths = await registerMonths(db, months);
+          if (!paths.length) throw new Error('選択期間のfactファイルが見つかりません。');
+          const source = readExpr(paths);
+          const targetWhere = `CAST("企業ID" AS VARCHAR) = ${sqlLiteral(selectedCompany.id)}`;
+          const companyNameLiteral = sqlLiteral(selectedCompany.name || '');
+          const sql = `
+            SELECT
+              CAST("企業ID" AS VARCHAR) AS "企業ID",
+              ${companyNameLiteral} AS "企業名",
+              "集計年月キー",
+              "管理番号",
+              "タイトル",
+              "代表職種",
+              "関連職種",
+              "関連職種_集計用",
+              "関連職種数",
+              "キャンペーン",
+              "都道府県",
+              "市区町村",
+              COALESCE("消化金額",0) AS "消化金額",
+              COALESCE("表示回数",0) AS "表示回数",
+              COALESCE("クリック数",0) AS "クリック数",
+              COALESCE("応募開始数",0) AS "応募開始数",
+              COALESCE("応募数",0) AS "応募数",
+              CASE WHEN COALESCE("表示回数",0) > 0 THEN ROUND(COALESCE("クリック数",0) * 100.0 / COALESCE("表示回数",0), 4) ELSE NULL END AS "クリック率",
+              CASE WHEN COALESCE("クリック数",0) > 0 THEN ROUND(COALESCE("応募開始数",0) * 100.0 / COALESCE("クリック数",0), 4) ELSE NULL END AS "応募開始率",
+              CASE WHEN COALESCE("クリック数",0) > 0 THEN ROUND(COALESCE("応募数",0) * 100.0 / COALESCE("クリック数",0), 4) ELSE NULL END AS "応募率",
+              CASE WHEN COALESCE("クリック数",0) > 0 THEN ROUND(COALESCE("消化金額",0) * 1.0 / COALESCE("クリック数",0), 2) ELSE NULL END AS "CPC",
+              CASE WHEN COALESCE("応募数",0) > 0 THEN ROUND(COALESCE("消化金額",0) * 1.0 / COALESCE("応募数",0), 2) ELSE NULL END AS "CPA"
+            FROM ${source}
+            WHERE ${targetWhere}
+            ORDER BY "集計年月キー", "管理番号", "タイトル", "都道府県", "市区町村", "キャンペーン"
+          `;
+          const rows = await queryRows(conn, sql);
+          if (token !== companySummaryToken) return;
+          if (!rows.length) { setCompanyStatus('この集計期間では、対象企業の明細データがありません。', 'warn'); showToast('<div class="toast-title">CSV出力対象がありません</div><div class="toast-note">集計期間を変更してから再度お試しください。</div>', 3600); return; }
+          const columns = [
+            '企業ID','企業名','集計年月キー','管理番号','タイトル','代表職種','関連職種','関連職種_集計用','関連職種数','キャンペーン','都道府県','市区町村','消化金額','表示回数','クリック数','応募開始数','応募数','クリック率','応募開始率','応募率','CPC','CPA'
+          ].map(key => ({ key, label:key }));
+          const csv = rowsToCsv(rows, columns);
+          const from = String(months[0] || '');
+          const to = String(months[months.length - 1] || '');
+          const fileName = `company_${safeFileName(selectedCompany.id, 'id')}_${safeFileName(selectedCompany.name, 'name')}_${from}-${to}.csv`;
+          downloadTextFile(fileName, csv);
+          setCompanyStatus(`${rows.length.toLocaleString('ja-JP')}行の個社明細CSVを出力しました。`, 'ok');
+          showToast(`<div class="toast-title">CSVを出力しました</div><div class="toast-note">${esc(rows.length.toLocaleString('ja-JP'))}行 / UTF-8 BOM付きCSV</div>`, 3600);
+        } finally { await conn.close(); }
+      } catch (err) {
+        console.error(err);
+        if (token !== companySummaryToken) return;
+        setCompanyStatus(err && err.message ? err.message : 'CSV出力でエラーが発生しました。', 'bad');
+      } finally {
+        const currentBtn = els.companySummaryPanel ? els.companySummaryPanel.querySelector('[data-company-csv-download]') : null;
+        if (currentBtn) { currentBtn.disabled = false; currentBtn.textContent = '個社明細CSVを出力'; }
+      }
+    }
+    function selectCompany(companyId, companyName) { selectedCompany = { id:String(companyId || '').trim(), name:String(companyName || '').trim() }; if (!els.companySelectedPanel) return; els.companySelectedPanel.classList.remove('hidden'); els.companySelectedPanel.innerHTML = `<div class="company-selected-title">分析対象企業</div><div class="company-selected-main"><span class="company-selected-id">ID ${esc(selectedCompany.id)}</span><span>${esc(selectedCompany.name)}</span></div><p class="company-mode-subtitle" style="margin-top:8px;">この企業について、現在の集計期間における基本サマリー・マーケット平均比較・個社明細CSV出力を表示します。</p>`; setCompanyStatus('企業を選択しました。基本サマリーを集計します。', 'ok'); loadCompanySummary(); }
     async function searchCompanies() { if (!appState) { setCompanyStatus('先にデータフォルダを読み込んでください。','bad'); return; } const keyword = String(els.companySearchInput?.value || '').trim(); if (!keyword) { setCompanyStatus('企業IDまたは企業名を入力してください。','warn'); return; } try { setCompanyStatus('企業マスタを検索中...','warn'); const db = await getDb(); const conn = await db.connect(); try { const companyPath = await ensureCompanyMasterRegistered(db); const isNumeric = /^\d+$/.test(keyword); const whereParts = []; if (isNumeric) { whereParts.push(`CAST("企業ID" AS VARCHAR) = ${sqlLiteral(keyword)}`); whereParts.push(`CAST("企業ID" AS VARCHAR) LIKE ${sqlLiteral(keyword + '%')}`); } whereParts.push(`"企業名" LIKE ${sqlLiteral('%' + keyword + '%')}`); const sql = `SELECT "企業ID", "企業名" FROM read_parquet(${sqlLiteral(companyPath)}) WHERE ${whereParts.map(p => '(' + p + ')').join(' OR ')} ORDER BY CASE WHEN CAST("企業ID" AS VARCHAR) = ${sqlLiteral(keyword)} THEN 0 WHEN CAST("企業ID" AS VARCHAR) LIKE ${sqlLiteral(keyword + '%')} THEN 1 WHEN "企業名" = ${sqlLiteral(keyword)} THEN 2 WHEN "企業名" LIKE ${sqlLiteral(keyword + '%')} THEN 3 ELSE 4 END, "企業ID" LIMIT 30`; const rows = await queryRows(conn, sql); renderCompanyResults(rows); setCompanyStatus(rows.length ? `${rows.length}件の候補を表示しています。対象企業を選択してください。` : '候補が見つかりませんでした。別の表記で検索してください。', rows.length ? 'ok' : 'warn'); } finally { await conn.close(); } } catch (err) { console.error(err); setCompanyStatus(err && err.message ? err.message : '企業検索でエラーが発生しました。','bad'); } }
     function openModeSwitchDialog() { if (!els.modeSwitchDialog) return; if (typeof els.modeSwitchDialog.showModal === 'function') els.modeSwitchDialog.showModal(); else els.modeSwitchDialog.setAttribute('open',''); }
     function closeModeSwitchDialog() { if (!els.modeSwitchDialog) return; if (typeof els.modeSwitchDialog.close === 'function') els.modeSwitchDialog.close(); else els.modeSwitchDialog.removeAttribute('open'); }
@@ -3645,7 +3745,12 @@
     if (els.companySearchBtn) els.companySearchBtn.addEventListener('click', searchCompanies);
     if (els.companySearchInput) els.companySearchInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchCompanies(); });
     if (els.companyResults) els.companyResults.addEventListener('click', e => { const btn = e.target.closest('[data-company-id]'); if (!btn) return; selectCompany(btn.dataset.companyId, btn.dataset.companyName); });
-    if (els.companySummaryPanel) els.companySummaryPanel.addEventListener('click', e => { const btn = e.target.closest('[data-company-summary-refresh]'); if (!btn) return; loadCompanySummary(); });
+    if (els.companySummaryPanel) els.companySummaryPanel.addEventListener('click', e => {
+      const downloadBtn = e.target.closest('[data-company-csv-download]');
+      if (downloadBtn) { downloadCompanyDetailCsv(); return; }
+      const refreshBtn = e.target.closest('[data-company-summary-refresh]');
+      if (refreshBtn) { loadCompanySummary(); return; }
+    });
     renderChartMetricSelectors();
     updateViewControls();
     updateColumnMenuLabel();
