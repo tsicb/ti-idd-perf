@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
   <title>天市×indeedPLUS運用実績</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=LINE+Seed+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700;800;900&display=swap');
     :root {
@@ -16,12 +18,13 @@
       --green:#059669; --rose:#e11d48; --amber:#d97706; --violet:#7c3aed; --stone:#a8a29e;
       --shadow:0 12px 24px -8px rgba(0,0,0,.15); --radius:2rem;
       --search-sticky-offset:0px; --comparison-toolbar-offset:0px; --comparison-summary-offset:36px;
+      --normal-font:'LINE Seed JP','Noto Sans JP','Hiragino Sans','Yu Gothic UI','Yu Gothic','Meiryo',system-ui,sans-serif;
       --company-font:'Noto Serif JP','Yu Mincho','Hiragino Mincho ProN','MS Mincho','Meiryo',serif;
     }
     * { box-sizing:border-box; }
     body {
       margin:0; min-height:100vh; color:var(--text);
-      font-family:'Zen Maru Gothic', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family:var(--normal-font);
       background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 50%,var(--bg3) 100%);
       background-attachment:fixed;
     }
@@ -83,6 +86,8 @@
     @media (max-width:700px) { .toast { width:calc(100vw - 24px); } }
     .field { display:grid; gap:6px; min-width:180px; flex:1; }
     .field.sm { flex:0 0 150px; min-width:140px; } .field.md { flex:0 0 210px; min-width:180px; }
+    .field.period-field { flex:0 0 270px; min-width:255px; }
+    .field.employment-field { flex:0 0 220px; min-width:200px; }
     .search-filters-placeholder { display:none; height:0; }
     .search-filters-shell {
       position:sticky; top:0; z-index:240;
@@ -112,11 +117,42 @@
     }
     .search-filters-shell .field { min-width:160px; }
     .search-filters-shell label.label { font-size:12px; }
-    .search-filters-shell input[type="text"], .search-filters-shell select, .search-filters-shell .range-btn { padding-top:9px; padding-bottom:9px; border-width:3px; }
+    .search-filters-shell input[type="text"], .search-filters-shell select, .search-filters-shell .range-btn, .search-filters-shell .multi-filter-btn { padding-top:9px; padding-bottom:9px; border-width:3px; }
     @media (max-width:900px) {
       .search-filters-shell { position:static; padding:0; border:0; box-shadow:none; background:transparent; }
       .search-filters-shell .search-filter-row { background:transparent; }
     }
+
+    .advanced-filter-btn {
+      width:100%; min-height:43px; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:10px 14px; border-radius:18px; border:3px solid #fed7aa;
+      background:linear-gradient(180deg,#fff7ed,#ffedd5); color:#9a3412; font-weight:950; cursor:pointer;
+      box-shadow:0 5px 0 #fdba74; transition:transform .08s ease, filter .12s ease, box-shadow .08s ease; white-space:nowrap;
+    }
+    .advanced-filter-btn:hover { filter:brightness(1.02); transform:translateY(-1px); }
+    .advanced-filter-btn.active { border-color:#0ea5e9; background:linear-gradient(180deg,#e0f2fe,#bae6fd); color:#075985; box-shadow:0 5px 0 #38bdf8; }
+    .advanced-filter-count { min-width:22px; height:22px; display:inline-grid; place-items:center; padding:0 7px; border-radius:999px; background:#fff; border:1px solid rgba(154,52,18,.18); font-size:11px; line-height:1; }
+    .filter-footnote { margin-top:6px; font-size:11px; color:#78716c; font-weight:800; line-height:1.45; }
+    .advanced-dialog { width:min(760px, calc(100vw - 28px)); max-height:min(86dvh, 760px); border:0; border-radius:28px; padding:0; background:transparent; color:#44403c; }
+    .advanced-dialog:not([open]) { display:none; }
+    .advanced-dialog::backdrop { background:rgba(28,25,23,.34); backdrop-filter:blur(3px); }
+    .advanced-dialog-box { padding:20px; border:4px solid #fff; border-radius:28px; background:linear-gradient(180deg,#ffffff,#fff7ed 120%); box-shadow:0 28px 80px rgba(120,53,15,.22); }
+    .advanced-dialog-head { display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:16px; }
+    .advanced-dialog-title { font-size:20px; font-weight:950; color:#292524; }
+    .advanced-dialog-note { margin-top:5px; color:#78716c; font-size:12px; line-height:1.7; font-weight:850; }
+    .advanced-dialog-actions { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+    .advanced-grid { display:grid; grid-template-columns:repeat(2,minmax(220px,1fr)); gap:14px; }
+    .advanced-field { display:grid; gap:7px; padding:14px; border-radius:22px; background:#fff; border:2px solid #ffedd5; box-shadow:inset 0 1px 0 rgba(255,255,255,.9); }
+    .advanced-field.full { grid-column:1/-1; }
+    .advanced-field-title { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px; font-weight:950; color:#57534e; }
+    .advanced-field-note { color:#78716c; font-size:11px; line-height:1.55; font-weight:800; }
+    .advanced-field input[type="text"], .advanced-field select { width:100%; border:3px solid #f5f5f4; border-radius:17px; padding:11px 13px; font-weight:900; background:#fafaf9; color:#44403c; outline:none; }
+    .advanced-field input[type="text"]:focus, .advanced-field select:focus { border-color:#fdba74; box-shadow:0 0 0 4px #ffedd5; background:#fff; }
+    .advanced-disabled-note { display:none; margin-top:4px; font-size:11px; color:#b45309; font-weight:900; }
+    .advanced-field.is-disabled { opacity:.58; }
+    .advanced-field.is-disabled .advanced-disabled-note { display:block; }
+    @media (max-width:720px) { .advanced-grid { grid-template-columns:1fr; } .advanced-dialog-head { display:grid; } }
+
     label.label { font-size:13px; font-weight:950; color:#57534e; display:flex; align-items:center; gap:6px; }
 
     .field-help {
@@ -157,7 +193,62 @@
     .stat-title { color:var(--muted); font-size:12px; font-weight:950; }
     .stat-value { margin-top:8px; font-size:23px; font-weight:950; color:#292524; }
     .unit { color:var(--muted); font-size:13px; margin-left:3px; }
-    .comparison-card { overflow:visible; }
+    .comparison-card { overflow:visible; position:relative; }
+    .comparison-loading-overlay {
+      position:absolute;
+      inset:0;
+      z-index:80;
+      display:block;
+      background:rgba(255,255,255,.54);
+      backdrop-filter:blur(2px);
+      border-radius:28px;
+      pointer-events:auto;
+      opacity:0;
+      transition:opacity .14s ease;
+      --comparison-loading-top:92px;
+    }
+    .comparison-loading-overlay.hidden { display:none!important; }
+    .comparison-card.busy .comparison-loading-overlay { opacity:1; }
+    .comparison-loading-box {
+      position:absolute;
+      left:50%;
+      top:var(--comparison-loading-top, 92px);
+      transform:translate(-50%, -50%);
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      max-width:min(460px, calc(100vw - 44px));
+      padding:12px 18px;
+      border-radius:999px;
+      background:rgba(255,255,255,.94);
+      border:1px solid rgba(251,146,60,.42);
+      box-shadow:0 10px 28px rgba(120,53,15,.14), inset 0 0 0 1px rgba(255,255,255,.75);
+      color:#7c2d12;
+      font-weight:900;
+      letter-spacing:.02em;
+      white-space:nowrap;
+    }
+    .comparison-spinner {
+      width:16px;
+      height:16px;
+      border-radius:999px;
+      border:3px solid rgba(251,146,60,.26);
+      border-top-color:#0ea5e9;
+      animation:comparisonSpin .72s linear infinite;
+      flex:0 0 auto;
+    }
+    @keyframes comparisonSpin { to { transform:rotate(360deg); } }
+    .comparison-card.busy #comparisonContent { opacity:.92; }
+    .comparison-placeholder-space {
+      min-height:360px;
+      border:1px dashed rgba(251,146,60,.34);
+      border-radius:22px;
+      background:rgba(255,251,235,.42);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin:10px 0 0;
+    }
     .comparison-toolbar {
       position:sticky; top:var(--search-sticky-offset); z-index:60;
       margin:-2px -2px 0; padding:2px 2px 12px;
@@ -212,8 +303,52 @@
     th,td { padding:6px 10px; border-right:1px solid #f5f5f4; border-bottom:1px solid #f5f5f4; text-align:left; vertical-align:middle; white-space:nowrap; line-height:1.25; overflow:hidden; text-overflow:ellipsis; }
     th { background:#f5f5f4; color:#57534e; font-size:12px; font-weight:950; padding-top:8px; padding-bottom:8px; }
     .table-wrap th:nth-child(n+3), .table-wrap td:nth-child(n+3), .comparison-freeze-pane th:nth-child(n+3), .comparison-freeze-pane td:nth-child(n+3) { text-align:right; font-family:Consolas, Menlo, 'SFMono-Regular', 'Liberation Mono', ui-monospace, monospace; font-variant-numeric:tabular-nums lining-nums; font-feature-settings:'tnum' 1, 'lnum' 1; letter-spacing:0; }
-    .table-wrap th:nth-child(n+3), .comparison-freeze-pane th:nth-child(n+3) { font-family:'Zen Maru Gothic', system-ui, sans-serif; }
+    .table-wrap th:nth-child(n+3), .comparison-freeze-pane th:nth-child(n+3) { font-family:var(--normal-font); }
     .th-unit { color:#a8a29e; font-size:10px; font-weight:950; margin-left:2px; }
+    body:not(.company-mode-active) th.sortable-table-head {
+      cursor:pointer;
+      user-select:none;
+      transition:background-color .12s ease, color .12s ease, box-shadow .12s ease;
+    }
+    body:not(.company-mode-active) th.sortable-table-head:hover {
+      background:#fff7ed;
+      color:#9a3412;
+      box-shadow:inset 0 -2px 0 rgba(251,146,60,.45);
+    }
+    body:not(.company-mode-active) th.sortable-table-head.is-sorted {
+      background:#ffedd5;
+      color:#9a3412;
+      box-shadow:inset 0 -2px 0 #fb923c;
+    }
+    body:not(.company-mode-active) th.sortable-table-head .th-inner {
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      max-width:100%;
+      min-width:0;
+      vertical-align:middle;
+    }
+    body:not(.company-mode-active) th.metric-head .th-inner {
+      justify-content:flex-end;
+      width:100%;
+    }
+    body:not(.company-mode-active) .th-label {
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    body:not(.company-mode-active) .sort-indicator {
+      flex:0 0 auto;
+      min-width:12px;
+      text-align:center;
+      font-size:10px;
+      line-height:1;
+      color:#d6d3d1;
+      transform:translateY(-1px);
+    }
+    body:not(.company-mode-active) th.sortable-table-head:hover .sort-indicator { color:#fb923c; }
+    body:not(.company-mode-active) th.sortable-table-head.is-sorted .sort-indicator { color:#ea580c; font-weight:900; }
     .summary-row td:nth-child(n+3) { font-weight:950; }
     .comparison-freeze-pane .summary-row td { box-shadow:0 3px 0 rgba(14,165,233,.16); }
     .comparison-freeze-pane table { background:#fff; }
@@ -328,8 +463,31 @@
       width:100%; min-height:52px; text-align:left; border:4px solid #fff; border-radius:18px; padding:12px 14px;
       background:#fff7ed; color:#44403c; font-weight:950; font-family:inherit; cursor:pointer;
       box-shadow:inset 0 2px 4px rgba(0,0,0,.04);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.15;
     }
     .range-btn:hover { background:#ffedd5; }
+    .employment-multi { position:relative; }
+    .multi-filter-btn {
+      width:100%; min-height:52px; display:flex; align-items:center; justify-content:space-between; gap:10px;
+      text-align:left; border:4px solid #fff; border-radius:18px; padding:12px 14px;
+      background:#fafaf9; color:#44403c; font-weight:500; font-family:inherit; cursor:pointer;
+      box-shadow:inset 0 2px 4px rgba(0,0,0,.04);
+      white-space:nowrap; overflow:hidden;
+    }
+    .multi-filter-btn::after { content:'▾'; flex:0 0 auto; color:#78716c; font-size:12px; }
+    .multi-filter-btn:hover { background:#fff7ed; }
+    .multi-filter-btn:focus { border-color:#7dd3fc; background:#fff; box-shadow:0 0 0 4px #e0f2fe, inset 0 2px 4px rgba(0,0,0,.05); outline:none; }
+    .multi-filter-btn:disabled { opacity:.55; cursor:not-allowed; background:#f5f5f4; }
+    .multi-filter-btn-text { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+    .multi-filter-popover {
+      position:absolute; z-index:420; top:calc(100% + 8px); left:0; width:min(280px, calc(100vw - 32px));
+      padding:10px; border:3px solid #fed7aa; border-radius:18px;
+      background:rgba(255,255,255,.98); box-shadow:0 18px 42px rgba(120,53,15,.18);
+    }
+    .multi-filter-option { display:flex; align-items:center; gap:8px; padding:8px 9px; border-radius:12px; color:#44403c; font-size:13px; font-weight:500; cursor:pointer; user-select:none; }
+    .multi-filter-option:hover { background:#fff7ed; }
+    .multi-filter-option input { width:16px; height:16px; accent-color:#f97316; }
+    .multi-filter-divider { height:1px; background:#fed7aa; margin:5px 4px; }
     .hidden-control { display:none!important; }
     dialog.month-modal {
       position:fixed;
@@ -404,6 +562,35 @@
     .view-tab { border:0; background:transparent; color:#64748b; font-family:inherit; font-weight:950; font-size:15px; padding:8px 15px; border-radius:999px; cursor:pointer; line-height:1; transition:.12s; }
     .view-tab:hover { color:#0f172a; background:rgba(255,255,255,.72); }
     .view-tab.active { background:linear-gradient(180deg,#38bdf8,#0ea5e9); color:#fff; box-shadow:0 3px 0 #0369a1; }
+    .comparison-card.list-view .chart-controls { display:none; }
+    .comparison-card.list-view .tabs { display:none; }
+    .comparison-card.list-view .comparisonCopyBtn { display:none; }
+    .comparison-card.list-view .table-operation-actions { display:flex; }
+    .result-list { display:flex; flex-direction:column; gap:18px; }
+    .result-section { border:2px solid #f5f5f4; border-radius:22px; background:#fff; overflow:visible; box-shadow:0 8px 20px rgba(120,113,108,.08); }
+    .result-section-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:14px 16px 10px; background:linear-gradient(180deg,#fff7ed,#fff); border-bottom:1px solid #f5f5f4; border-radius:20px 20px 0 0; }
+    .result-section-title { margin:0; font-size:16px; font-weight:950; color:#1c1917; }
+    .result-section-note { margin:4px 0 0; font-size:12px; font-weight:800; color:#78716c; line-height:1.55; }
+    .result-section-badge { flex:0 0 auto; display:inline-flex; align-items:center; padding:5px 10px; border-radius:999px; border:1px solid #fed7aa; background:#fff7ed; color:#9a3412; font-size:12px; font-weight:950; }
+    .result-list-table-wrap { position:relative; overflow-x:auto; overflow-y:visible; padding:0 0 8px; scrollbar-gutter:stable; border-radius:0 0 20px 20px; background:#fff; }
+    .result-list-table-wrap .metric-table { min-width:980px; }
+    .result-list-table-wrap thead th {
+      position:sticky;
+      top:calc(var(--search-sticky-offset) + 8px);
+      z-index:42;
+      background:#f5f5f4;
+      box-shadow:0 2px 0 #e7e5e4, 0 8px 14px -16px rgba(0,0,0,.45);
+    }
+    .result-list-table-wrap thead th:first-child { z-index:43; }
+    .detail-table-section .comparison-freeze-pane,
+    .comparison-card .comparison-freeze-pane {
+      top:calc(var(--search-sticky-offset) + var(--comparison-toolbar-offset));
+    }
+    .detail-table-section { margin-top:16px; border:2px solid #f5f5f4; border-radius:20px; background:#fff; overflow:hidden; }
+    .detail-table-head { padding:12px 14px 8px; background:#fff7ed; border-bottom:1px solid #f5f5f4; }
+    .detail-table-title { margin:0; font-size:15px; font-weight:950; color:#1c1917; }
+    .detail-table-note { margin:3px 0 0; font-size:12px; font-weight:800; color:#78716c; }
+
     .chart-controls { position:relative; display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:5px 8px; border-radius:16px; background:#fff7ed; border:1px solid #fed7aa; }
     .chart-control { display:flex; align-items:center; gap:5px; font-size:12px; font-weight:950; color:#7c2d12; }
     .chart-control select { width:auto; min-width:104px; padding:7px 28px 7px 10px; border-radius:12px; border-width:2px; background-color:#fff; font-size:12px; }
@@ -415,10 +602,125 @@
     .chart-icon-btn.cap-active { background:linear-gradient(180deg,#fef9c3,#fde68a); color:#854d0e; box-shadow:0 2px 0 #facc15, inset 0 1px 0 rgba(255,255,255,.9); }
     .chart-style-mini.disabled { opacity:.42; filter:grayscale(.2); }
     .chart-style-mini.disabled .chart-icon-btn { pointer-events:none; cursor:not-allowed; }
+
+    .chart-auto-note { font-size:12px; font-weight:900; color:#9a3412; opacity:.82; }
+    .chart-toggle-control { gap:8px; }
+    .chart-label-switch {
+      display:inline-flex; align-items:center; gap:8px; min-height:38px;
+      padding:7px 12px; border:2px solid #fed7aa; border-radius:999px;
+      background:#fff7ed; color:#9a3412; font-family:inherit; font-size:12px; font-weight:950;
+      cursor:pointer; box-shadow:0 2px 0 #fed7aa, inset 0 1px 0 rgba(255,255,255,.92); transition:.14s ease;
+      white-space:nowrap;
+    }
+    .chart-label-switch:hover { background:#ffedd5; border-color:#fdba74; }
+    .chart-label-switch.active { background:linear-gradient(180deg,#ecfeff,#bae6fd); border-color:#7dd3fc; color:#0369a1; box-shadow:0 3px 0 #7dd3fc, inset 0 1px 0 rgba(255,255,255,.9); }
+    .chart-label-title { line-height:1; }
+    .chart-switch-track { position:relative; width:34px; height:19px; border-radius:999px; background:#fed7aa; flex:0 0 auto; transition:.14s ease; }
+    .chart-label-switch.active .chart-switch-track { background:#0ea5e9; }
+    .chart-switch-thumb { position:absolute; top:3px; left:3px; width:13px; height:13px; border-radius:50%; background:#fff; box-shadow:0 1px 4px rgba(15,23,42,.22); transition:.14s ease; }
+    .chart-label-switch.active .chart-switch-thumb { transform:translateX(15px); }
+    .comparison-card.list-view .chart-label-toolbar { display:none !important; }
+    .comparison-card.chart-view .chart-label-toolbar { display:inline-flex; }
+    .comparison-card.chart-view .analysis-tabs { flex:0 1 auto; min-width:0; overflow-x:auto; scrollbar-width:none; }
+    .comparison-card.chart-view .analysis-tabs::-webkit-scrollbar { display:none; }
+    .comparison-card .table-operation-actions { margin-left:auto; }
+    .comparison-card.chart-view .table-operation-actions { flex:0 0 auto; margin-left:auto; }
+    .comparison-card.table-view .table-head-actions,
+    .comparison-card.list-view .table-head-actions { flex:1 1 auto; justify-content:flex-end; margin-left:auto; }
+    .comparison-card.table-view .table-operation-actions,
+    .comparison-card.list-view .table-operation-actions { margin-left:auto; }
     .chart-panel { overflow:visible; padding:8px 4px 4px; }
-    .chart-scroll { overflow-x:auto; overflow-y:hidden; padding:0 0 4px; }
+    .chart-scroll { overflow-x:auto; overflow-y:hidden; padding:0 0 4px; width:100%; max-width:100%; box-sizing:border-box; }
+
+    .chart-scroll.sticky-y-axis-enabled { display:flex; align-items:flex-start; position:relative; width:100%; max-width:100%; }
+    .chart-scroll.sticky-y-axis-enabled .chart-canvas-wrap {
+      flex:1 0 auto;
+      width:100%;
+      max-width:none;
+      box-sizing:border-box;
+    }
+    .chart-sticky-y-axis {
+      position:sticky;
+      left:0;
+      top:0;
+      z-index:6;
+      flex:0 0 var(--sticky-y-axis-width, 96px);
+      width:var(--sticky-y-axis-width, 96px);
+      margin-right:calc(-1 * var(--sticky-y-axis-width, 96px));
+      min-height:0;
+      box-sizing:border-box;
+      border-radius:14px 0 0 14px;
+      background:#fff;
+      border-right:1px solid #e7e5e4;
+      box-shadow:none;
+      pointer-events:none;
+      overflow:visible;
+      isolation:isolate;
+      opacity:0;
+      transform:translateX(-8px);
+      transition:opacity .16s ease, transform .16s ease;
+      will-change:opacity, transform;
+    }
+    .chart-sticky-y-axis.is-visible {
+      opacity:1;
+      transform:translateX(0);
+    }
+    .chart-sticky-y-axis::after {
+      content:"";
+      position:absolute;
+      top:0;
+      right:0;
+      bottom:0;
+      width:1px;
+      background:#e7e5e4;
+      opacity:1;
+    }
+    .chart-sticky-y-title {
+      position:absolute;
+      left:7px;
+      top:-26px;
+      max-width:calc(var(--sticky-y-axis-width, 96px) - 16px);
+      height:18px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 6px;
+      border-radius:999px;
+      background:#fff;
+      color:#78716c;
+      font-size:10px;
+      font-weight:950;
+      letter-spacing:.02em;
+      line-height:1;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      box-shadow:0 0 0 1px rgba(231,229,228,.9), 0 1px 3px rgba(68,64,60,.04);
+      z-index:2;
+    }
+    .chart-sticky-y-line {
+      position:absolute;
+      right:7px;
+      width:2px;
+      border-radius:999px;
+      background:#a8a29e;
+      opacity:.65;
+    }
+    .chart-sticky-y-tick {
+      position:absolute;
+      right:13px;
+      max-width:calc(var(--sticky-y-axis-width, 96px) - 28px);
+      transform:translateY(-50%);
+      color:#57534e;
+      font-size:11px;
+      font-weight:900;
+      line-height:1;
+      white-space:nowrap;
+      text-align:right;
+      text-shadow:0 1px 0 rgba(255,255,255,.95), 0 -1px 0 rgba(255,255,255,.95);
+    }
     .chart-canvas-wrap { min-width:860px; height:460px; background:#fff; border:2px solid #f5f5f4; border-radius:22px; padding:18px 18px 12px; }
-    .chart-custom-legend-wrap { display:flex; justify-content:center; align-items:center; width:100%; margin:3px 0 10px; pointer-events:auto; }
+    .chart-custom-legend-wrap { display:none !important; }
     .chart-custom-legend { display:flex; justify-content:center; align-items:center; gap:8px 12px; flex-wrap:wrap; max-width:100%; padding:5px 10px; border-radius:999px; background:rgba(255,255,255,.86); border:1px solid #e7e5e4; box-shadow:0 3px 10px rgba(68,64,60,.08); }
     .chart-legend-item { display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; border-radius:999px; padding:4px 7px; color:#44403c; font-family:inherit; font-size:12px; font-weight:900; cursor:pointer; white-space:nowrap; transition:.12s; }
     .chart-legend-item:hover { background:#fff7ed; color:#7c2d12; }
@@ -431,10 +733,48 @@
     .chart-context { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0 4px 10px; color:#57534e; font-size:12px; font-weight:900; }
     .chart-context-label { color:#78716c; }
     .chart-context-chip { display:inline-flex; align-items:center; gap:6px; max-width:100%; padding:5px 10px; border-radius:999px; border:1px solid #fed7aa; background:#fff7ed; color:#7c2d12; box-shadow:inset 0 1px 0 rgba(255,255,255,.9); }
+    .chart-context-series { gap:7px; border-color:rgba(148,163,184,.38); background:#fff; color:#334155; }
+    .chart-context-series-dot { flex:0 0 auto; width:10px; height:10px; border-radius:999px; background:var(--series-color, #64748b); box-shadow:0 0 0 3px var(--series-bg, rgba(100,116,139,.14)); }
     .chart-context-chip .keyword-inline { gap:5px; }
     .chart-context-chip .keyword-op-badge { height:16px; min-width:30px; padding:0 7px; font-size:9px; background:#fff; border-color:#fdba74; color:#9a3412; }
     .chart-context-location { border-color:#facc15; background:#fef9c3; color:#854d0e; }
     .chart-context-cap { border-color:#bae6fd; background:#ecfeff; color:#075985; }
+    .toolbar-context-summary {
+      flex:1 1 380px; min-width:260px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+      margin:0; padding:0 4px; color:#57534e; font-size:12px; font-weight:900;
+    }
+    .toolbar-context-summary .chart-context { margin:0; min-width:0; flex:1 1 auto; flex-wrap:wrap; row-gap:6px; }
+    .toolbar-context-summary .chart-context-chip { max-width:min(1120px, 100%); overflow:visible; text-overflow:clip; white-space:normal; }
+    .toolbar-context-summary .keyword-inline { flex-wrap:wrap; overflow:visible; text-overflow:clip; gap:3px; }
+    .toolbar-context-summary .keyword-op-badge,
+    .chart-context-chip .keyword-op-badge {
+      height:14px; min-width:0; padding:0 4px; border-radius:999px; font-size:8px; letter-spacing:0; line-height:1;
+      border-color:#fdba74; background:#fff; color:#9a3412; box-shadow:none; transform:translateY(-.5px);
+    }
+    .toolbar-context-summary .keyword-term { white-space:nowrap; }
+    .metric-table td.metric-cell,
+    .metric-table th.metric-head {
+      text-align:right !important;
+    }
+    .metric-table td.metric-cell {
+      font-family:Consolas, Menlo, 'SFMono-Regular', 'Liberation Mono', ui-monospace, monospace;
+      font-variant-numeric:tabular-nums lining-nums;
+      font-feature-settings:'tnum' 1, 'lnum' 1;
+      letter-spacing:0;
+    }
+    @media (max-width:980px) { .toolbar-context-summary { order:3; flex-basis:100%; } }
+
+    .comparison-card.chart-view .view-toggle { order:1; flex:0 0 auto; }
+    .comparison-card.chart-view .chart-controls { order:2; flex:0 0 auto; }
+    .comparison-card.chart-view .table-head-actions { order:3; flex:1 1 auto; justify-content:flex-start; min-width:0; }
+    .comparison-card.chart-view .toolbar-context-summary { order:4; flex:1 1 100%; padding:2px 4px 0; }
+    .table-operation-actions #comparisonCopyBtn { display:none !important; }
+    .result-section-head-main { min-width:0; flex:1 1 auto; }
+    .result-section-actions { flex:0 0 auto; display:flex; align-items:center; justify-content:flex-end; gap:8px; }
+    .table-title-copy-btn { white-space:nowrap; }
+    .detail-table-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+    .detail-table-head-main { min-width:0; flex:1 1 auto; }
+
     .month-trend-toggle { display:inline-flex; align-items:center; gap:3px; padding:3px; border-radius:999px; background:#f1f5f9; border:1px solid #e2e8f0; box-shadow:inset 0 1px 2px rgba(15,23,42,.06); }
     .month-trend-btn { border:0; background:transparent; color:#64748b; border-radius:999px; padding:5px 10px; font-family:inherit; font-size:12px; line-height:1; font-weight:950; cursor:pointer; transition:.12s; }
     .month-trend-btn:hover { background:rgba(255,255,255,.78); color:#0f172a; }
@@ -538,6 +878,9 @@
     .company-breakdown-table th, .company-breakdown-table td { padding:10px 11px; border-bottom:1px solid rgba(148,163,184,.16); white-space:nowrap; }
     .company-breakdown-table th { text-align:right; color:#bae6fd; font-size:12px; font-weight:950; background:rgba(14,165,233,.10); }
     .company-breakdown-table th:first-child, .company-breakdown-table td:first-child { text-align:left; position:sticky; left:0; z-index:1; background:rgba(15,23,42,.96); }
+    .company-compare-table th,
+    .company-breakdown-table th { position:sticky; top:calc(var(--search-sticky-offset) + 8px); z-index:5; }
+    .company-breakdown-table th:first-child { z-index:6; }
     .company-breakdown-table td { text-align:right; color:#e5e7eb; font-weight:850; }
     .company-breakdown-table tbody tr:last-child td { border-bottom:none; }
     .company-breakdown-table .segment-name { color:#f8fafc; font-weight:950; }
@@ -1408,13 +1751,334 @@
 
     @media (max-width:1180px) { .company-summary-grid { grid-template-columns:repeat(3,minmax(130px,1fr)); } }
     @media (max-width:760px) { .company-search-row { grid-template-columns:1fr; } .company-result-btn { grid-template-columns:1fr; } .company-summary-grid { grid-template-columns:1fr 1fr; } }
-    .comparison-card.chart-view .table-operation-actions { display:none; }
+    .comparison-card.chart-view .table-operation-actions { display:flex; }
     .comparison-card.table-view .chart-controls { display:none; }
     .table-wrap tbody tr.pref-highlight-row:hover td { background:#fef3c7; }
     @media (max-width:700px) {
       dialog.month-modal { left:50%; top:50%; right:auto; width:calc(100vw - 24px); max-height:calc(100dvh - 24px); padding:14px; }
       .month-grid { grid-template-columns:repeat(3,1fr); max-height:calc(100dvh - 180px); }
     }
+
+    /* Step16: table header sticky fix
+       Page-level sticky headers were stopping at an awkward vertical offset when the
+       top filter area was not visible.  Each results table now owns its own scroll
+       area, and the header sticks to the top of that table area. */
+    .result-list-table-wrap {
+      max-height:min(560px, calc(100vh - 220px));
+      overflow:auto;
+      overscroll-behavior:contain;
+      border-top:1px solid #f5f5f4;
+    }
+    .result-list-table-wrap thead th {
+      position:sticky;
+      top:0!important;
+      z-index:18;
+      background:#f5f5f4;
+      box-shadow:0 2px 0 #e7e5e4, 0 8px 14px -18px rgba(0,0,0,.45);
+    }
+    .result-list-table-wrap thead th:first-child { z-index:19; }
+    .result-list-table-wrap::-webkit-scrollbar { width:14px; height:16px; }
+    .result-list-table-wrap::-webkit-scrollbar-track { background:#f5f5f4; border-radius:999px; }
+    .result-list-table-wrap::-webkit-scrollbar-thumb { background:linear-gradient(to bottom,#d6d3d1,#a8a29e); border-radius:999px; border:3px solid #f5f5f4; }
+    .result-list-table-wrap { scrollbar-color:#a8a29e #f5f5f4; scrollbar-width:auto; }
+
+    .comparison-card .comparison-freeze-pane,
+    .detail-table-section .comparison-freeze-pane {
+      position:relative!important;
+      top:auto!important;
+      z-index:22;
+      border-bottom:1px solid #e7e5e4;
+      box-shadow:0 8px 16px -18px rgba(0,0,0,.42);
+    }
+    .comparison-card .table-wrap,
+    .detail-table-section .table-wrap {
+      max-height:min(560px, calc(100vh - 240px));
+      overflow:auto;
+      overscroll-behavior:contain;
+    }
+    .comparison-card .table-wrap::-webkit-scrollbar,
+    .detail-table-section .table-wrap::-webkit-scrollbar { width:14px; height:16px; }
+    .comparison-card .table-wrap::-webkit-scrollbar-track,
+    .detail-table-section .table-wrap::-webkit-scrollbar-track { background:#f5f5f4; border-radius:999px; }
+    .comparison-card .table-wrap::-webkit-scrollbar-thumb,
+    .detail-table-section .table-wrap::-webkit-scrollbar-thumb { background:linear-gradient(to bottom,#d6d3d1,#a8a29e); border-radius:999px; border:3px solid #f5f5f4; }
+
+    @media (max-width:900px) {
+      .result-list-table-wrap,
+      .comparison-card .table-wrap,
+      .detail-table-section .table-wrap {
+        max-height:70vh;
+      }
+    }
+
+
+    /* Step17: page-level table headers
+       Tables no longer create their own vertical scrollbars.  The page owns vertical
+       scrolling, while a lightweight fixed header clone appears only while the
+       current table is passing under the sticky search/result toolbar. */
+    .result-list-table-wrap,
+    .comparison-card .table-wrap,
+    .detail-table-section .table-wrap {
+      max-height:none !important;
+      overflow-x:auto !important;
+      overflow-y:visible !important;
+      overscroll-behavior-x:contain;
+      overscroll-behavior-y:auto;
+      scrollbar-gutter:stable;
+    }
+    .result-list-table-wrap {
+      border-top:1px solid #f5f5f4;
+      padding-bottom:8px;
+    }
+    .result-list-table-wrap thead th {
+      position:static !important;
+      top:auto !important;
+      z-index:auto !important;
+      box-shadow:none !important;
+    }
+    .comparison-card .comparison-freeze-pane,
+    .detail-table-section .comparison-freeze-pane {
+      position:relative !important;
+      top:auto !important;
+      z-index:22;
+      border-bottom:1px solid #e7e5e4;
+      box-shadow:0 8px 16px -18px rgba(0,0,0,.42);
+    }
+    .comparison-card .table-wrap,
+    .detail-table-section .table-wrap {
+      border-top:0;
+    }
+    @media (max-width:900px) {
+      .result-list-table-wrap,
+      .comparison-card .table-wrap,
+      .detail-table-section .table-wrap {
+        max-height:none !important;
+      }
+    }
+    .page-sticky-table-header {
+      position:fixed;
+      left:0;
+      top:0;
+      width:0;
+      overflow:hidden;
+      z-index:92;
+      display:none;
+      pointer-events:auto;
+      background:#fff;
+      border-bottom:1px solid #e7e5e4;
+      box-shadow:0 12px 20px -20px rgba(68,64,60,.5);
+      box-sizing:border-box;
+    }
+    .page-sticky-table-header.is-visible { display:block; }
+    .page-sticky-table-header-inner {
+      will-change:transform;
+      background:#fff;
+      box-sizing:border-box;
+    }
+    .page-sticky-table-header table {
+      table-layout:fixed;
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      font-size:13px;
+    }
+    .page-sticky-table-header th {
+      background:#f5f5f4;
+      color:#57534e;
+      font-size:12px;
+      font-weight:950;
+      padding:8px 10px;
+      border-right:1px solid #f5f5f4;
+      border-bottom:1px solid #e7e5e4;
+      text-align:left;
+      vertical-align:middle;
+      white-space:nowrap;
+      line-height:1.25;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .page-sticky-table-header th:nth-child(n+3) {
+      text-align:right;
+      font-family:var(--normal-font);
+    }
+
+
+    /* Step42: keep table body, visible wrapper and cloned sticky header widths in sync. */
+    body:not(.company-mode-active) .result-list-table-wrap,
+    body:not(.company-mode-active) .comparison-card .table-wrap,
+    body:not(.company-mode-active) .detail-table-section .table-wrap {
+      scrollbar-gutter:auto !important;
+    }
+    body:not(.company-mode-active) .result-list-table-wrap .metric-table {
+      width:100%;
+      min-width:max(980px, 100%);
+      box-sizing:border-box;
+    }
+    body:not(.company-mode-active) .comparison-card .table-wrap .metric-table,
+    body:not(.company-mode-active) .detail-table-section .table-wrap .metric-table,
+    body:not(.company-mode-active) .comparison-card .comparison-freeze-pane .metric-table,
+    body:not(.company-mode-active) .detail-table-section .comparison-freeze-pane .metric-table {
+      width:100%;
+      min-width:100%;
+      box-sizing:border-box;
+    }
+    body:not(.company-mode-active) .metric-table th:last-child,
+    body:not(.company-mode-active) .metric-table td:last-child,
+    body:not(.company-mode-active) .page-sticky-table-header th:last-child {
+      padding-right:14px;
+    }
+
+
+    /* Step24: align table/list toolbar layout with individual metric mode */
+    .comparison-card.table-view .view-toggle,
+    .comparison-card.list-view .view-toggle { order:1; flex:0 0 auto; }
+    .comparison-card.table-view .chart-controls,
+    .comparison-card.list-view .chart-controls { display:none !important; }
+    .comparison-card.table-view .table-head-actions,
+    .comparison-card.list-view .table-head-actions {
+      order:2;
+      flex:1 1 auto;
+      justify-content:flex-end;
+      align-items:center;
+      margin-left:auto;
+      min-width:0;
+    }
+    .comparison-card.table-view .toolbar-context-summary,
+    .comparison-card.list-view .toolbar-context-summary {
+      order:4;
+      flex:1 1 100%;
+      width:100%;
+      min-width:0;
+      padding:2px 4px 0;
+      margin-top:-4px;
+    }
+    .comparison-card.table-view .table-operation-actions,
+    .comparison-card.list-view .table-operation-actions {
+      margin-left:auto;
+      justify-content:flex-end;
+    }
+    .comparison-card .column-menu-toolbar { order:99; }
+    .comparison-card.chart-view .column-menu-toolbar { margin-left:0; }
+
+
+
+    /* Step39: LINE Seed JP weight tuning for normal mode
+       Keep the rounded LINE Seed look, but reduce boldness in compact Japanese text. */
+    body:not(.company-mode-active) {
+      font-weight:400;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:geometricPrecision;
+    }
+    body:not(.company-mode-active) h1 {
+      font-weight:700;
+      letter-spacing:.005em;
+    }
+    body:not(.company-mode-active) h2,
+    body:not(.company-mode-active) h3,
+    body:not(.company-mode-active) .result-section-title,
+    body:not(.company-mode-active) .detail-table-title,
+    body:not(.company-mode-active) .advanced-dialog-title,
+    body:not(.company-mode-active) .month-modal-title {
+      font-weight:600;
+      letter-spacing:.005em;
+    }
+    body:not(.company-mode-active) label.label,
+    body:not(.company-mode-active) .advanced-field-title,
+    body:not(.company-mode-active) .chart-control,
+    body:not(.company-mode-active) .folder-guide-line,
+    body:not(.company-mode-active) .folder-cta-note,
+    body:not(.company-mode-active) .stat-title,
+    body:not(.company-mode-active) .column-popover-title {
+      font-weight:600;
+      letter-spacing:.01em;
+    }
+    body:not(.company-mode-active) .filter-footnote,
+    body:not(.company-mode-active) .advanced-dialog-note,
+    body:not(.company-mode-active) .advanced-field-note,
+    body:not(.company-mode-active) .result-section-note,
+    body:not(.company-mode-active) .detail-table-note,
+    body:not(.company-mode-active) .main-subtitle,
+    body:not(.company-mode-active) .empty,
+    body:not(.company-mode-active) .chart-note,
+    body:not(.company-mode-active) .axis-cap-help,
+    body:not(.company-mode-active) .month-modal-note {
+      font-weight:400;
+      letter-spacing:.005em;
+    }
+    body:not(.company-mode-active) input,
+    body:not(.company-mode-active) select,
+    body:not(.company-mode-active) textarea,
+    body:not(.company-mode-active) .multi-filter-btn,
+    body:not(.company-mode-active) .advanced-field input[type="text"],
+    body:not(.company-mode-active) .advanced-field select {
+      font-weight:500;
+      letter-spacing:.005em;
+    }
+    body:not(.company-mode-active) .btn,
+    body:not(.company-mode-active) .tab,
+    body:not(.company-mode-active) .view-tab,
+    body:not(.company-mode-active) .chart-label-switch,
+    body:not(.company-mode-active) .chart-icon-btn,
+    body:not(.company-mode-active) .month-btn,
+    body:not(.company-mode-active) .preset-btn,
+    body:not(.company-mode-active) .axis-cap-option,
+    body:not(.company-mode-active) .mode-settings-btn,
+    body:not(.company-mode-active) .multi-filter-option {
+      font-weight:600;
+      letter-spacing:.01em;
+    }
+    body:not(.company-mode-active) .btn.primary,
+    body:not(.company-mode-active) .tab.active,
+    body:not(.company-mode-active) .view-tab.active,
+    body:not(.company-mode-active) .chip.selected,
+    body:not(.company-mode-active) .chart-label-switch.active {
+      font-weight:700;
+    }
+    body:not(.company-mode-active) .chip,
+    body:not(.company-mode-active) .pill,
+    body:not(.company-mode-active) .hintpill,
+    body:not(.company-mode-active) .result-section-badge,
+    body:not(.company-mode-active) .context-pill,
+    body:not(.company-mode-active) .keyword-op-badge,
+    body:not(.company-mode-active) .series-color-chip,
+    body:not(.company-mode-active) .sticky-y-axis-title {
+      font-weight:500;
+      letter-spacing:.018em;
+    }
+    body:not(.company-mode-active) .chip.selected,
+    body:not(.company-mode-active) .context-pill.series-context,
+    body:not(.company-mode-active) .summary-row td {
+      font-weight:600;
+    }
+    body:not(.company-mode-active) th,
+    body:not(.company-mode-active) .table-wrap th:nth-child(n+3),
+    body:not(.company-mode-active) .comparison-freeze-pane th:nth-child(n+3),
+    body:not(.company-mode-active) .page-sticky-table-header th,
+    body:not(.company-mode-active) .result-list-table-wrap thead th {
+      font-weight:600;
+      letter-spacing:.012em;
+    }
+    body:not(.company-mode-active) td,
+    body:not(.company-mode-active) .table-wrap td,
+    body:not(.company-mode-active) .comparison-freeze-pane td {
+      font-weight:400;
+    }
+    body:not(.company-mode-active) .table-wrap td:nth-child(n+3),
+    body:not(.company-mode-active) .comparison-freeze-pane td:nth-child(n+3) {
+      font-weight:500;
+      letter-spacing:0;
+    }
+    body:not(.company-mode-active) .summary-row td,
+    body:not(.company-mode-active) .summary-row td:nth-child(n+3),
+    body:not(.company-mode-active) .stat-value,
+    body:not(.company-mode-active) .kv div:nth-child(even) {
+      font-weight:600;
+    }
+    body:not(.company-mode-active) .comparison-loading-box {
+      font-weight:500;
+      letter-spacing:.015em;
+    }
+
   </style>
 </head>
 <body>
@@ -1462,21 +2126,41 @@
             <label class="label" for="locationInput">📍 勤務地</label>
             <input id="locationInput" type="text" placeholder="例：東京 新宿" />
           </div>
-          <div class="field sm">
-            <label class="label" for="searchMode">キーワード条件<span class="field-help" tabindex="0" title="複数キーワードを入力したときの検索方法です。
-「どれか含む」は、いずれかの言葉を含む求人を集計します。
-「すべて含む」は、すべての言葉を含む求人だけを集計します。" aria-label="複数キーワードを入力したときの検索方法です。どれか含むは、いずれかの言葉を含む求人を集計します。すべて含むは、すべての言葉を含む求人だけを集計します。">?</span></label>
-            <select id="searchMode"><option value="OR">どれか含む</option><option value="AND">すべて含む</option></select>
+          <div class="field md employment-field">
+            <label class="label" for="employmentFilterBtn">雇用形態</label>
+            <div id="employmentMulti" class="employment-multi">
+              <button id="employmentFilterBtn" class="multi-filter-btn" type="button"><span id="employmentFilterBtnText" class="multi-filter-btn-text">すべて</span></button>
+              <div id="employmentPopover" class="multi-filter-popover hidden" role="group" aria-label="雇用形態を選択">
+                <label class="multi-filter-option"><input type="checkbox" data-employment-value="all" checked>すべて</label>
+                <div class="multi-filter-divider"></div>
+                <label class="multi-filter-option"><input type="checkbox" data-employment-value="正社員">正社員</label>
+                <label class="multi-filter-option"><input type="checkbox" data-employment-value="契約社員">契約社員</label>
+                <label class="multi-filter-option"><input type="checkbox" data-employment-value="派遣社員">派遣社員</label>
+                <label class="multi-filter-option"><input type="checkbox" data-employment-value="アルバイト・パート">アルバイト・パート</label>
+                <label class="multi-filter-option"><input type="checkbox" data-employment-value="業務委託">業務委託</label>
+                <label class="multi-filter-option"><input type="checkbox" data-employment-value="__blank__">未取得・空白</label>
+              </div>
+            </div>
+            <select id="employmentFilter" class="hidden-control" aria-hidden="true" tabindex="-1">
+              <option value="all">すべて</option>
+              <option value="正社員">正社員</option>
+              <option value="契約社員">契約社員</option>
+              <option value="派遣社員">派遣社員</option>
+              <option value="アルバイト・パート">アルバイト・パート</option>
+              <option value="業務委託">業務委託</option>
+              <option value="__blank__">未取得・空白</option>
+            </select>
+            <div id="employmentFilterNote" class="filter-footnote hidden">2026年6月以降のデータで利用できます。</div>
           </div>
-          <div class="field md">
-            <label class="label" for="campaignFilter">SA-条件</label>
-            <select id="campaignFilter"><option value="all">すべて</option><option value="sa-only">SA-のみ</option><option value="non-sa-only">SA-以外</option></select>
-          </div>
-          <div class="field md">
+          <div class="field md period-field">
             <label class="label" for="periodRangeBtn">集計期間</label>
             <button id="periodRangeBtn" class="range-btn" type="button">期間を選択</button>
             <select id="periodFrom" class="hidden-control"></select>
             <select id="periodTo" class="hidden-control"></select>
+          </div>
+          <div class="field sm">
+            <label class="label" for="advancedFilterBtn">詳細条件</label>
+            <button id="advancedFilterBtn" class="advanced-filter-btn" type="button">詳細条件<span id="advancedFilterCount" class="advanced-filter-count hidden">0</span></button>
           </div>
         </div>
 
@@ -1494,6 +2178,51 @@
           <div id="periodMonthGrid" class="month-grid"></div>
         </dialog>
 
+        <dialog id="advancedFilterDialog" class="advanced-dialog" aria-label="詳細条件を設定">
+          <div class="advanced-dialog-box">
+            <div class="advanced-dialog-head">
+              <div>
+                <div class="advanced-dialog-title">詳細条件</div>
+                <div class="advanced-dialog-note">SA-条件、検索方式、Indeed職種、ジョブブーストなどを必要なときだけ指定します。</div>
+              </div>
+              <div class="advanced-dialog-actions">
+                <button id="advancedFilterReset" class="btn ghost small" type="button">詳細条件をリセット</button>
+                <button id="advancedFilterClose" class="btn ghost small" type="button">閉じる</button>
+                <button id="advancedFilterApply" class="btn secondary small" type="button">適用して閉じる</button>
+              </div>
+            </div>
+            <div class="advanced-grid">
+              <div class="advanced-field">
+                <div class="advanced-field-title"><label for="searchMode">フリーワードの条件</label></div>
+                <select id="searchMode"><option value="AND">すべて含む</option><option value="OR">どれか含む</option></select>
+                <div class="advanced-field-note">スペース区切りで複数語を入れたときの扱いです。通常は「すべて含む」が自然です。</div>
+              </div>
+              <div class="advanced-field">
+                <div class="advanced-field-title"><label for="locationMode">勤務地の条件</label></div>
+                <select id="locationMode"><option value="OR">どれか含む</option><option value="AND">すべて含む</option></select>
+                <div class="advanced-field-note">複数都道府県をまとめて見るため、初期値は「どれか含む」です。</div>
+              </div>
+              <div class="advanced-field">
+                <div class="advanced-field-title"><label for="campaignFilter">SA-条件</label></div>
+                <select id="campaignFilter"><option value="all">すべて</option><option value="sa-only">SA-のみ</option><option value="non-sa-only">SA-以外</option></select>
+                <div class="advanced-field-note">SA-は派遣求人の目安として使っていた条件です。雇用形態とは完全一致しません。</div>
+              </div>
+              <div id="jobBoostField" class="advanced-field">
+                <div class="advanced-field-title"><label for="jobBoostFilter">ジョブブースト適用</label></div>
+                <select id="jobBoostFilter"><option value="all">すべて</option><option value="applied">適用あり</option><option value="not-applied">適用なし</option><option value="__blank__">未取得・空白</option></select>
+                <div class="advanced-field-note">現時点では母数が少ないため、参考条件として扱います。</div>
+                <div class="advanced-disabled-note">このデータセットにはジョブブースト適用列がありません。</div>
+              </div>
+              <div id="indeedJobField" class="advanced-field full">
+                <div class="advanced-field-title"><label for="indeedJobInput">Indeed職種</label></div>
+                <input id="indeedJobInput" type="text" placeholder="例：マーケティング 交通・運輸" />
+                <div class="advanced-field-note">元CSVの「職種」列です。粒度が粗い分類も含まれるため、まずは補助的な絞り込み条件として使います。</div>
+                <div class="advanced-disabled-note">このデータセットにはIndeed職種列がありません。</div>
+              </div>
+            </div>
+          </div>
+        </dialog>
+
         <div class="related-head">
           <div>
             <h2 style="margin-bottom:4px;">関連する職種</h2>
@@ -1508,46 +2237,41 @@
       <div class="card span-12 comparison-card table-view">
         <div id="comparisonToolbar" class="header comparison-toolbar">
           <div class="view-toggle" aria-label="表示形式">
-            <button class="view-tab active" data-view="table" type="button">比較表</button>
-            <button class="view-tab" data-view="chart" type="button">グラフ</button>
+            <button class="view-tab active" data-view="table" type="button">表一覧</button>
+            <button class="view-tab" data-view="chart" type="button">個別指標</button>
           </div>
-          <div id="chartControls" class="chart-controls hidden" aria-label="グラフ軸の選択">
-            <label class="chart-control">左軸
-              <span class="chart-style-mini" data-axis-controls="left" aria-label="左軸のグラフ形式">
-                <button class="chart-icon-btn" data-axis="left" data-style="bar" type="button" title="左軸を棒グラフで表示">▮</button>
-                <button class="chart-icon-btn" data-axis="left" data-style="line" type="button" title="左軸を折れ線グラフで表示">⌁</button>
-                <button class="chart-icon-btn" data-axis="left" data-style="label" type="button" title="左軸のデータラベルを表示/非表示">123</button>
-                <button class="chart-icon-btn" data-axis="left" data-style="cap" type="button" title="左軸の上限を調整">↕</button>
-              </span>
+          <div id="chartControls" class="chart-controls hidden" aria-label="グラフ表示設定">
+            <label class="chart-control chart-metric-control">指標
               <select id="chartLeftMetric"></select>
             </label>
-            <label class="chart-control">右軸
-              <span class="chart-style-mini" data-axis-controls="right" aria-label="右軸のグラフ形式">
-                <button class="chart-icon-btn" data-axis="right" data-style="bar" type="button" title="右軸を棒グラフで表示">▮</button>
-                <button class="chart-icon-btn" data-axis="right" data-style="line" type="button" title="右軸を折れ線グラフで表示">⌁</button>
-                <button class="chart-icon-btn" data-axis="right" data-style="label" type="button" title="右軸のデータラベルを表示/非表示">123</button>
-                <button class="chart-icon-btn" data-axis="right" data-style="cap" type="button" title="右軸の上限を調整">↕</button>
-              </span>
-              <select id="chartRightMetric"></select>
-            </label>
-            <div id="chartAxisPopover" class="axis-cap-popover hidden"></div>
           </div>
           <div class="table-head-actions">
-            <div class="tabs">
+            <div class="tabs analysis-tabs" aria-label="分析軸">
               <button class="tab active" data-mode="job" type="button">職種比較</button>
+              <button class="tab" data-mode="month-job" type="button">職種推移</button>
               <button class="tab" data-mode="prefecture" type="button">都道府県比較</button>
-              <button class="tab" data-mode="month" type="button">月別推移</button>
+              <button class="tab" data-mode="month-prefecture" type="button">エリア推移</button>
+              <button class="tab" data-mode="month-yoy" type="button">時期比較</button>
+              <button class="tab" data-mode="month" type="button">全体推移</button>
             </div>
             <div class="table-operation-actions">
-              <div class="column-menu-wrap">
+              <button id="chartLabelToggle" class="chart-label-switch chart-label-toggle-tab active chart-label-toolbar" data-axis="left" data-style="label" type="button" title="データラベルを表示/非表示" aria-pressed="true">
+                <span class="chart-label-title">データラベル</span>
+                <span class="chart-switch-track"><span class="chart-switch-thumb"></span></span>
+              </button>
+              <div class="column-menu-wrap column-menu-toolbar">
                 <button id="columnMenuBtn" class="btn ghost small" type="button">表示列：標準</button>
                 <div id="columnPopover" class="column-popover hidden"></div>
               </div>
               <button id="comparisonCopyBtn" class="btn ghost small" type="button" disabled>表をコピー</button>
             </div>
           </div>
+          <div id="comparisonContextSummary" class="toolbar-context-summary" aria-label="現在の集計条件"></div>
         </div>
         <div id="comparisonContent"></div>
+        <div id="comparisonLoadingOverlay" class="comparison-loading-overlay hidden" aria-hidden="true">
+          <div class="comparison-loading-box"><span class="comparison-spinner" aria-hidden="true"></span><span id="comparisonLoadingText">再集計中...</span></div>
+        </div>
       </div>
 
       <section id="companyModeArea" class="span-12 company-mode hidden" aria-label="企業分析モード">
@@ -1632,10 +2356,10 @@
 
     const els = {
       folderInput: document.getElementById('folderInput'), folderSelectBtn: document.getElementById('folderSelectBtn'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), comparisonCopyBtn: document.getElementById('comparisonCopyBtn'), mainStatus: document.getElementById('mainStatus'), toast: document.getElementById('toast'),
-      datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), searchFiltersShell: document.getElementById('searchFiltersShell'), searchFilters: document.getElementById('searchFilters'), searchFiltersPlaceholder: document.getElementById('searchFiltersPlaceholder'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'),
+      datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), searchFiltersShell: document.getElementById('searchFiltersShell'), searchFilters: document.getElementById('searchFilters'), searchFiltersPlaceholder: document.getElementById('searchFiltersPlaceholder'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'), employmentFilter: document.getElementById('employmentFilter'), employmentFilterBtn: document.getElementById('employmentFilterBtn'), employmentFilterBtnText: document.getElementById('employmentFilterBtnText'), employmentPopover: document.getElementById('employmentPopover'), employmentFilterNote: document.getElementById('employmentFilterNote'), advancedFilterBtn: document.getElementById('advancedFilterBtn'), advancedFilterCount: document.getElementById('advancedFilterCount'), advancedFilterDialog: document.getElementById('advancedFilterDialog'), advancedFilterClose: document.getElementById('advancedFilterClose'), advancedFilterApply: document.getElementById('advancedFilterApply'), advancedFilterReset: document.getElementById('advancedFilterReset'), locationMode: document.getElementById('locationMode'), indeedJobInput: document.getElementById('indeedJobInput'), jobBoostFilter: document.getElementById('jobBoostFilter'), indeedJobField: document.getElementById('indeedJobField'), jobBoostField: document.getElementById('jobBoostField'),
       searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalAll: document.getElementById('periodModalAll'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
       relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
-      comparisonToolbar: document.getElementById('comparisonToolbar'), comparisonContent: document.getElementById('comparisonContent'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), columnMenuBtn: document.getElementById('columnMenuBtn'), columnPopover: document.getElementById('columnPopover'), chartControls: document.getElementById('chartControls'), chartLeftMetric: document.getElementById('chartLeftMetric'), chartRightMetric: document.getElementById('chartRightMetric'), chartAxisPopover: document.getElementById('chartAxisPopover'), floatingXScroll: document.getElementById('floatingXScroll'), floatingXScrollInner: document.getElementById('floatingXScrollInner'), log: document.getElementById('log'),
+      comparisonToolbar: document.getElementById('comparisonToolbar'), comparisonContextSummary: document.getElementById('comparisonContextSummary'), comparisonContent: document.getElementById('comparisonContent'), comparisonLoadingOverlay: document.getElementById('comparisonLoadingOverlay'), comparisonLoadingText: document.getElementById('comparisonLoadingText'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), columnMenuBtn: document.getElementById('columnMenuBtn'), columnPopover: document.getElementById('columnPopover'), chartControls: document.getElementById('chartControls'), chartLeftMetric: document.getElementById('chartLeftMetric'), chartLabelToggle: document.getElementById('chartLabelToggle'), chartRightMetric: null, chartAxisPopover: null, floatingXScroll: document.getElementById('floatingXScroll'), floatingXScrollInner: document.getElementById('floatingXScrollInner'), log: document.getElementById('log'),
       modeSettingsBtn: document.getElementById('modeSettingsBtn'), modeSwitchDialog: document.getElementById('modeSwitchDialog'), modeSwitchCloseBtn: document.getElementById('modeSwitchCloseBtn'), openCompanyModeBtn: document.getElementById('openCompanyModeBtn'), companyModeArea: document.getElementById('companyModeArea'), backToMarketModeBtn: document.getElementById('backToMarketModeBtn'), companySearchInput: document.getElementById('companySearchInput'), companySearchBtn: document.getElementById('companySearchBtn'), companySearchStatus: document.getElementById('companySearchStatus'), companyResults: document.getElementById('companyResults'), companySelectedPanel: document.getElementById('companySelectedPanel'), companyFilterPanel: document.getElementById('companyFilterPanel'), companySummaryPanel: document.getElementById('companySummaryPanel'), companyPeriodModal: document.getElementById('companyPeriodModal'), companyPeriodModalClose: document.getElementById('companyPeriodModalClose'), companyPeriodModalAll: document.getElementById('companyPeriodModalAll'), companyPeriodModalNote: document.getElementById('companyPeriodModalNote'), companyPeriodMonthGrid: document.getElementById('companyPeriodMonthGrid'), companyBadgeModal: document.getElementById('companyBadgeModal'), companyBadgeModalTitle: document.getElementById('companyBadgeModalTitle'), companyBadgeModalNote: document.getElementById('companyBadgeModalNote'), companyBadgeModalClose: document.getElementById('companyBadgeModalClose'), companyBadgeModalClear: document.getElementById('companyBadgeModalClear'), companyBadgeGrid: document.getElementById('companyBadgeGrid')
     };
 
@@ -1646,6 +2370,9 @@
     if (els.modeSwitchDialog && els.modeSwitchDialog.parentElement !== document.body) {
       document.body.appendChild(els.modeSwitchDialog);
     }
+    if (els.advancedFilterDialog && els.advancedFilterDialog.parentElement !== document.body) {
+      document.body.appendChild(els.advancedFilterDialog);
+    }
     if (els.companyPeriodModal && els.companyPeriodModal.parentElement !== document.body) {
       document.body.appendChild(els.companyPeriodModal);
     }
@@ -1653,18 +2380,27 @@
       document.body.appendChild(els.companyBadgeModal);
     }
 
+    const NORMAL_CHART_FONT = '"LINE Seed JP", "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, system-ui, sans-serif';
+    if (window.Chart && window.Chart.defaults && window.Chart.defaults.font) {
+      window.Chart.defaults.font.family = NORMAL_CHART_FONT;
+      window.Chart.defaults.font.weight = '500';
+    }
+
     let dbPromise = null;
     let appState = null;
     let selectedJobTitles = [];
+    let selectedEmploymentTypes = ['all'];
+    let analysisMode = 'job';
     let comparisonMode = 'job';
-    let outputView = 'table';
+    let outputView = 'table'; // table=表一覧, chart=個別指標
+    let lastComparisonListResults = null;
     let monthGraphType = 'overall';
     let movingAverageWindow = 'none';
     let chartLeftMetric = 'cpa';
     let chartRightMetric = 'none';
     let chartLeftType = 'bar';
     let chartRightType = 'line';
-    let chartLeftLabels = false;
+    let chartLeftLabels = true;
     let chartRightLabels = false;
     let chartLeftCapMode = 'auto';
     let chartRightCapMode = 'auto';
@@ -1680,6 +2416,8 @@
     let comparisonCache = new Map();
     let monthGraphDataCache = new Map();
     let monthGraphRenderToken = 0;
+    let comparisonPrefetchToken = 0;
+    let comparisonPrefetchTimer = null;
     const MAX_COMPARISON_CACHE = 24;
     const MAX_MONTH_GRAPH_CACHE = 16;
     const MAX_MONTH_JOB_TREND_SERIES = 5;
@@ -1722,6 +2460,7 @@
     const HIGHER_IS_BETTER_METRICS = new Set(['count','cost','impressions','clicks','apply_starts','applies','ctr','applyStartRate','cvr']);
     const LOWER_IS_BETTER_METRICS = new Set(['cpc','cpa']);
     let visibleMetricIds = [...COLUMN_PRESETS.standard];
+    const tableSortStates = new Map();
     let activeColumnPreset = 'standard';
     let textDirty = false;
     let periodDraftStart = '';
@@ -1767,6 +2506,87 @@
     let toastTimer = null;
 
     function setStatus(text, type='') { els.mainStatus.textContent = text; els.mainStatus.className = `status top-only-control ${type}`.trim(); }
+
+
+    let comparisonBusyCount = 0;
+
+    function comparisonCardElement() {
+      return els.comparisonContent ? els.comparisonContent.closest('.comparison-card') : null;
+    }
+
+    let comparisonLoadingPositionRaf = 0;
+
+    function updateComparisonLoadingPosition() {
+      const card = comparisonCardElement();
+      const overlay = els.comparisonLoadingOverlay;
+      if (!card || !overlay || overlay.classList.contains('hidden')) return;
+      const rect = card.getBoundingClientRect();
+      if (!Number.isFinite(rect.height) || rect.height <= 0) return;
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+      const visibleTop = Math.max(rect.top, 0);
+      const visibleBottom = Math.min(rect.bottom, viewportHeight);
+      let topInCard;
+      if (visibleBottom > visibleTop + 24) {
+        topInCard = ((visibleTop + visibleBottom) / 2) - rect.top;
+      } else {
+        topInCard = (viewportHeight / 2) - rect.top;
+      }
+      const margin = 76;
+      const maxTop = Math.max(margin, rect.height - margin);
+      topInCard = Math.min(Math.max(topInCard, margin), maxTop);
+      overlay.style.setProperty('--comparison-loading-top', `${Math.round(topInCard)}px`);
+    }
+
+    function scheduleComparisonLoadingPosition() {
+      if (comparisonLoadingPositionRaf) return;
+      comparisonLoadingPositionRaf = requestAnimationFrame(() => {
+        comparisonLoadingPositionRaf = 0;
+        updateComparisonLoadingPosition();
+      });
+    }
+
+    window.addEventListener('scroll', () => {
+      if (comparisonBusyCount > 0) scheduleComparisonLoadingPosition();
+    }, { passive:true });
+    window.addEventListener('resize', () => {
+      if (comparisonBusyCount > 0) scheduleComparisonLoadingPosition();
+    });
+
+    function hasComparisonContent() {
+      if (!els.comparisonContent) return false;
+      const text = String(els.comparisonContent.textContent || '').trim();
+      return els.comparisonContent.children.length > 0 && text !== '';
+    }
+
+    function showComparisonBusy(message='再集計中...') {
+      comparisonBusyCount += 1;
+      const card = comparisonCardElement();
+      if (!card || !els.comparisonLoadingOverlay) return;
+      if (!hasComparisonContent()) {
+        els.comparisonContent.innerHTML = '<div class="comparison-placeholder-space"><div class="empty">集計準備中...</div></div>';
+      }
+      if (els.comparisonLoadingText) els.comparisonLoadingText.textContent = message;
+      els.comparisonLoadingOverlay.classList.remove('hidden');
+      els.comparisonLoadingOverlay.setAttribute('aria-hidden', 'false');
+      card.classList.add('busy');
+      card.setAttribute('aria-busy', 'true');
+      updateComparisonLoadingPosition();
+      scheduleComparisonLoadingPosition();
+    }
+
+    function hideComparisonBusy() {
+      comparisonBusyCount = Math.max(0, comparisonBusyCount - 1);
+      if (comparisonBusyCount > 0) return;
+      const card = comparisonCardElement();
+      if (!card || !els.comparisonLoadingOverlay) return;
+      requestAnimationFrame(() => {
+        if (comparisonBusyCount > 0) return;
+        card.classList.remove('busy');
+        card.removeAttribute('aria-busy');
+        els.comparisonLoadingOverlay.classList.add('hidden');
+        els.comparisonLoadingOverlay.setAttribute('aria-hidden', 'true');
+      });
+    }
     function showToast(html, duration=6500) {
       if (!els.toast) return;
       els.toast.innerHTML = html;
@@ -1942,7 +2762,7 @@
 
     async function handleFiles(fileList) {
       const files = Array.from(fileList || []);
-      clearLog(); selectedJobTitles = []; companyMasterVirtualPath = null; selectedCompany = null; companyPeriodRange = null; resetCompanyFilters(); companySummaryToken++; if (els.companySelectedPanel) els.companySelectedPanel.classList.add('hidden'); if (els.companyFilterPanel) els.companyFilterPanel.classList.add('hidden'); if (els.companySummaryPanel) els.companySummaryPanel.classList.add('hidden'); registeredFiles.clear(); comparisonCache.clear(); monthGraphDataCache.clear(); lastCopyRows = []; lastDisplayRows = []; lastTableHelper = ''; if (els.copyBtn) els.copyBtn.disabled = true; if (els.comparisonCopyBtn) els.comparisonCopyBtn.disabled = true;
+      clearLog(); selectedJobTitles = []; selectedEmploymentTypes = ['all']; companyMasterVirtualPath = null; selectedCompany = null; companyPeriodRange = null; resetCompanyFilters(); companySummaryToken++; if (els.companySelectedPanel) els.companySelectedPanel.classList.add('hidden'); if (els.companyFilterPanel) els.companyFilterPanel.classList.add('hidden'); if (els.companySummaryPanel) els.companySummaryPanel.classList.add('hidden'); registeredFiles.clear(); clearComparisonCaches(); lastCopyRows = []; lastDisplayRows = []; lastTableHelper = ''; if (els.copyBtn) els.copyBtn.disabled = true; if (els.comparisonCopyBtn) els.comparisonCopyBtn.disabled = true;
       if (!files.length) return;
       setStatus('データ確認中...', 'warn');
       const manifestItem = findManifestFile(files);
@@ -1957,8 +2777,13 @@
       const monthMax = manifest.month_max || maxMonthFromFactFiles(factFiles);
       const factSchemaNames = new Set((Array.isArray(manifest.fact_schema) ? manifest.fact_schema : []).map(col => col && col.name).filter(Boolean));
       const hasAggRelated = factSchemaNames.has('関連職種_集計用');
+      const hasEmploymentType = factSchemaNames.has('雇用形態');
+      const hasIndeedJob = factSchemaNames.has('Indeed職種');
+      const hasJobBoost = factSchemaNames.has('ジョブブースト適用');
       const jobTitleMaster = await loadJobTitleMaster(selectedFileMap, manifest);
-      appState = { files, manifest, manifestItem, prefix, selectedFileMap, factFiles, factFileMap, availableMonths, monthMax, hasAggRelated, jobTitleNormToTitle: jobTitleMaster.normToTitle, jobTitleMasterFound: jobTitleMaster.found, sessionId: Date.now() };
+      appState = { files, manifest, manifestItem, prefix, selectedFileMap, factFiles, factFileMap, availableMonths, monthMax, hasAggRelated, hasEmploymentType, hasIndeedJob, hasJobBoost, jobTitleNormToTitle: jobTitleMaster.normToTitle, jobTitleMasterFound: jobTitleMaster.found, sessionId: Date.now() };
+      updateFilterAvailability();
+      updateAdvancedFilterButton();
       renderKv(els.datasetInfo, [
         ['range', `利用可能期間：${esc(formatMonthLabel(manifest.month_min))}〜${esc(formatMonthLabel(monthMax))}`],
         ['months', `読み込み可能な月：${esc(availableMonths.length)}か月分`],
@@ -2470,6 +3295,116 @@
 
     function readExpr(paths) { return paths.length === 1 ? `read_parquet(${sqlLiteral(paths[0])})` : `read_parquet([${paths.map(sqlLiteral).join(', ')}])`; }
 
+    function hasFactColumn(name) {
+      const schema = appState && appState.manifest && Array.isArray(appState.manifest.fact_schema) ? appState.manifest.fact_schema : [];
+      return schema.some(col => col && col.name === name);
+    }
+    function setSelectValueIfPossible(select, value) {
+      if (!select) return;
+      const values = Array.from(select.options || []).map(opt => opt.value);
+      select.value = values.includes(value) ? value : (values.includes('all') ? 'all' : (select.options[0]?.value || ''));
+    }
+    const EMPLOYMENT_LABELS = {
+      all:'すべて',
+      '正社員':'正社員',
+      '契約社員':'契約社員',
+      '派遣社員':'派遣社員',
+      'アルバイト・パート':'アルバイト・パート',
+      '業務委託':'業務委託',
+      '__blank__':'未取得・空白'
+    };
+    function normalizeEmploymentSelection(values) {
+      const clean = Array.from(new Set((values || []).map(v => String(v || '').trim()).filter(Boolean)));
+      if (!clean.length || clean.includes('all')) return ['all'];
+      return clean;
+    }
+    function activeEmploymentValues() {
+      if (!appState || !appState.hasEmploymentType) return [];
+      const values = normalizeEmploymentSelection(selectedEmploymentTypes);
+      return values.includes('all') ? [] : values;
+    }
+    function employmentSelectionLabel(values=selectedEmploymentTypes) {
+      const normalized = normalizeEmploymentSelection(values);
+      if (normalized.includes('all')) return 'すべて';
+      const labels = normalized.map(v => EMPLOYMENT_LABELS[v] || v);
+      if (labels.length <= 2) return labels.join('・');
+      return `${labels.slice(0, 2).join('・')} 他${labels.length - 2}件`;
+    }
+    function employmentSelectionFullLabel(values=selectedEmploymentTypes) {
+      const normalized = normalizeEmploymentSelection(values);
+      if (normalized.includes('all')) return 'すべて';
+      return normalized.map(v => EMPLOYMENT_LABELS[v] || v).join(' OR ');
+    }
+    function syncEmploymentUi() {
+      selectedEmploymentTypes = normalizeEmploymentSelection(selectedEmploymentTypes);
+      if (els.employmentFilter) els.employmentFilter.value = selectedEmploymentTypes.includes('all') ? 'all' : selectedEmploymentTypes[0];
+      if (els.employmentFilterBtnText) els.employmentFilterBtnText.textContent = employmentSelectionLabel();
+      if (els.employmentFilterBtn) els.employmentFilterBtn.title = `雇用形態：${employmentSelectionFullLabel()}`;
+      if (els.employmentPopover) {
+        els.employmentPopover.querySelectorAll('[data-employment-value]').forEach(input => {
+          input.checked = selectedEmploymentTypes.includes(input.dataset.employmentValue);
+        });
+      }
+    }
+    function setEmploymentEnabled(enabled) {
+      if (els.employmentFilter) els.employmentFilter.disabled = !enabled;
+      if (els.employmentFilterBtn) els.employmentFilterBtn.disabled = !enabled;
+      if (els.employmentPopover) {
+        els.employmentPopover.querySelectorAll('input').forEach(input => { input.disabled = !enabled; });
+        if (!enabled) els.employmentPopover.classList.add('hidden');
+      }
+      if (!enabled) selectedEmploymentTypes = ['all'];
+      syncEmploymentUi();
+    }
+    function handleEmploymentOptionChange(value, checked) {
+      if (value === 'all') {
+        selectedEmploymentTypes = ['all'];
+      } else {
+        const next = new Set(selectedEmploymentTypes.filter(v => v !== 'all'));
+        if (checked) next.add(value); else next.delete(value);
+        selectedEmploymentTypes = next.size ? Array.from(next) : ['all'];
+      }
+      syncEmploymentUi();
+      clearLog();
+      clearComparisonCaches();
+      refreshAll();
+    }
+
+    function updateFilterAvailability() {
+      const hasEmp = !!(appState && appState.hasEmploymentType);
+      const hasIndeed = !!(appState && appState.hasIndeedJob);
+      const hasBoost = !!(appState && appState.hasJobBoost);
+      setEmploymentEnabled(hasEmp);
+      if (els.employmentFilterNote) els.employmentFilterNote.classList.toggle('hidden', !hasEmp);
+      if (els.indeedJobInput) { els.indeedJobInput.disabled = !hasIndeed; if (!hasIndeed) els.indeedJobInput.value = ''; }
+      if (els.indeedJobField) els.indeedJobField.classList.toggle('is-disabled', !hasIndeed);
+      if (els.jobBoostFilter) { els.jobBoostFilter.disabled = !hasBoost; if (!hasBoost) els.jobBoostFilter.value = 'all'; }
+      if (els.jobBoostField) els.jobBoostField.classList.toggle('is-disabled', !hasBoost);
+    }
+    function advancedFilterActiveCount() {
+      let count = 0;
+      if (els.searchMode && els.searchMode.value !== 'AND') count++;
+      if (els.locationMode && els.locationMode.value !== 'OR') count++;
+      if (els.campaignFilter && els.campaignFilter.value !== 'all') count++;
+      if (appState && appState.hasIndeedJob && els.indeedJobInput && String(els.indeedJobInput.value || '').trim()) count++;
+      if (appState && appState.hasJobBoost && els.jobBoostFilter && els.jobBoostFilter.value !== 'all') count++;
+      return count;
+    }
+    function updateAdvancedFilterButton() {
+      const count = advancedFilterActiveCount();
+      if (els.advancedFilterBtn) {
+        els.advancedFilterBtn.classList.toggle('active', count > 0);
+        const label = count > 0 ? `詳細条件 ${count}件` : '詳細条件';
+        const firstText = Array.from(els.advancedFilterBtn.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
+        if (firstText) firstText.nodeValue = label;
+      }
+      if (els.advancedFilterCount) { els.advancedFilterCount.textContent = String(count); els.advancedFilterCount.classList.toggle('hidden', count === 0); }
+    }
+    function openAdvancedFilterDialog() { updateFilterAvailability(); updateAdvancedFilterButton(); if (!els.advancedFilterDialog) return; if (typeof els.advancedFilterDialog.showModal === 'function') els.advancedFilterDialog.showModal(); else els.advancedFilterDialog.setAttribute('open',''); }
+    function closeAdvancedFilterDialog() { if (!els.advancedFilterDialog) return; if (typeof els.advancedFilterDialog.close === 'function') els.advancedFilterDialog.close(); else els.advancedFilterDialog.removeAttribute('open'); }
+    function resetAdvancedFilters() { setSelectValueIfPossible(els.searchMode, 'AND'); setSelectValueIfPossible(els.locationMode, 'OR'); setSelectValueIfPossible(els.campaignFilter, 'all'); setSelectValueIfPossible(els.jobBoostFilter, 'all'); if (els.indeedJobInput) els.indeedJobInput.value = ''; updateAdvancedFilterButton(); }
+
+
     async function ensureCompanyMasterRegistered(db) {
       if (!appState) throw new Error('データが読み込まれていません。');
       if (companyMasterVirtualPath) return companyMasterVirtualPath;
@@ -2748,6 +3683,7 @@
           }]
         },
         options:{
+          font:{ family:COMPANY_CHART_FONT },
           responsive:true,
           maintainAspectRatio:false,
           plugins:{
@@ -2756,7 +3692,7 @@
           },
           scales:{
             x:{ ticks:{ color:'#475569', font:{ family:COMPANY_CHART_FONT, weight:'bold' } }, grid:{ color:'rgba(100,116,139,.12)' } },
-            y:{ beginAtZero:true, ticks:{ color:'#475569', callback:(value) => companyChartValueLabel(value, metricId) }, grid:{ color:'rgba(100,116,139,.20)' }, title:{ display:true, text:metric.label, color:'#0f172a', font:{ family:COMPANY_CHART_FONT, weight:'bold' } } }
+            y:{ beginAtZero:true, ticks:{ color:'#475569', font:{ family:COMPANY_CHART_FONT, weight:'bold' }, callback:(value) => companyChartValueLabel(value, metricId) }, grid:{ color:'rgba(100,116,139,.20)' }, title:{ display:true, text:metric.label, color:'#0f172a', font:{ family:COMPANY_CHART_FONT, weight:'bold' } } }
           }
         }
       });
@@ -2833,6 +3769,7 @@
           ]
         },
         options: {
+          font:{ family:COMPANY_CHART_FONT },
           responsive:true,
           maintainAspectRatio:false,
           interaction:{ mode:'index', intersect:false },
@@ -2851,7 +3788,7 @@
             },
             y:{
               beginAtZero:true,
-              ticks:{ color:'#475569', callback:(value) => companyChartValueLabel(value, metricId) },
+              ticks:{ color:'#475569', font:{ family:COMPANY_CHART_FONT, weight:'bold' }, callback:(value) => companyChartValueLabel(value, metricId) },
               grid:{ color:'rgba(100,116,139,.20)' },
               title:{ display:true, text:metric.label, color:'#0f172a', font:{ family:COMPANY_CHART_FONT, weight:'bold' } }
             }
@@ -3385,7 +4322,7 @@
     }
 
     function freeWordClauseGroup() {
-      const mode = els.searchMode.value === 'AND' ? ' AND ' : ' OR ';
+      const mode = els.searchMode && els.searchMode.value === 'OR' ? ' OR ' : ' AND ';
       const titleWords = splitKeywords(els.freeWordInput.value);
       return titleWords.length ? '(' + titleWords.map(freeWordKeywordClause).join(mode) + ')' : '';
     }
@@ -3414,14 +4351,30 @@
     function baseWhere(extraClauses=[], options={}) {
       const includeFreeWord = options.includeTitle !== false;
       const includeLocation = options.includeLocation !== false;
-      const mode = els.searchMode.value === 'AND' ? ' AND ' : ' OR ';
+      const titleMode = els.searchMode && els.searchMode.value === 'OR' ? ' OR ' : ' AND ';
+      const locationMode = els.locationMode && els.locationMode.value === 'AND' ? ' AND ' : ' OR ';
       const clauses = [];
       const titleWords = splitKeywords(els.freeWordInput.value);
       const locWords = splitKeywords(els.locationInput.value);
-      if (includeFreeWord && titleWords.length) clauses.push('(' + titleWords.map(freeWordKeywordClause).join(mode) + ')');
-      if (includeLocation && locWords.length) clauses.push('(' + locWords.map(kw => `concat(coalesce("都道府県", ''), coalesce("市区町村", '')) LIKE ${sqlLiteral('%' + kw + '%')}`).join(mode) + ')');
-      if (els.campaignFilter.value === 'sa-only') clauses.push(`coalesce("キャンペーン", '') LIKE '%SA-%'`);
-      if (els.campaignFilter.value === 'non-sa-only') clauses.push(`coalesce("キャンペーン", '') NOT LIKE '%SA-%'`);
+      if (includeFreeWord && titleWords.length) clauses.push('(' + titleWords.map(freeWordKeywordClause).join(titleMode) + ')');
+      if (includeLocation && locWords.length) clauses.push('(' + locWords.map(kw => `concat(coalesce("都道府県", ''), coalesce("市区町村", '')) LIKE ${sqlLiteral('%' + kw + '%')}`).join(locationMode) + ')');
+      const employmentValues = activeEmploymentValues();
+      if (employmentValues.length) {
+        const employmentClauses = employmentValues.map(value => value === '__blank__' ? `coalesce("雇用形態", '') = ''` : `"雇用形態" = ${sqlLiteral(value)}`);
+        clauses.push('(' + employmentClauses.join(' OR ') + ')');
+      }
+      if (els.campaignFilter && els.campaignFilter.value === 'sa-only') clauses.push(`coalesce("キャンペーン", '') LIKE '%SA-%'`);
+      if (els.campaignFilter && els.campaignFilter.value === 'non-sa-only') clauses.push(`coalesce("キャンペーン", '') NOT LIKE '%SA-%'`);
+      if (appState && appState.hasIndeedJob && els.indeedJobInput) {
+        const indeedWords = splitKeywords(els.indeedJobInput.value);
+        if (indeedWords.length) clauses.push('(' + indeedWords.map(kw => `coalesce("Indeed職種", '') LIKE ${sqlLiteral('%' + kw + '%')}`).join(' OR ') + ')');
+      }
+      if (appState && appState.hasJobBoost && els.jobBoostFilter && els.jobBoostFilter.value !== 'all') {
+        const boostValue = `trim(coalesce("ジョブブースト適用", ''))`;
+        if (els.jobBoostFilter.value === '__blank__') clauses.push(`${boostValue} = ''`);
+        else if (els.jobBoostFilter.value === 'not-applied') clauses.push(`lower(${boostValue}) IN ('なし','無','false','0','いいえ','no','off')`);
+        else if (els.jobBoostFilter.value === 'applied') clauses.push(`${boostValue} <> '' AND lower(${boostValue}) NOT IN ('なし','無','false','0','いいえ','no','off')`);
+      }
       extraClauses.forEach(c => clauses.push(c));
       return clauses.length ? 'WHERE ' + clauses.join(' AND ') : '';
     }
@@ -3445,17 +4398,47 @@
         months,
         freeWord: String(els.freeWordInput.value || '').trim(),
         location: String(els.locationInput.value || '').trim(),
-        searchMode: els.searchMode.value,
-        campaign: els.campaignFilter.value,
+        searchMode: els.searchMode ? els.searchMode.value : 'AND',
+        locationMode: els.locationMode ? els.locationMode.value : 'OR',
+        employment: appState.hasEmploymentType ? normalizeEmploymentSelection(selectedEmploymentTypes).slice().sort() : ['all'],
+        campaign: els.campaignFilter ? els.campaignFilter.value : 'all',
+        indeedJob: appState.hasIndeedJob && els.indeedJobInput ? String(els.indeedJobInput.value || '').trim() : '',
+        jobBoost: appState.hasJobBoost && els.jobBoostFilter ? els.jobBoostFilter.value : 'all',
         selectedJobs: [...selectedJobTitles].sort(),
         hasAggRelated: !!appState.hasAggRelated
       };
       return JSON.stringify(payload);
     }
 
+    function comparisonConditionKey() {
+      return comparisonCacheKey('__condition__');
+    }
+
     function getComparisonCache(mode=comparisonMode) {
       const key = comparisonCacheKey(mode);
       return key ? comparisonCache.get(key) : null;
+    }
+
+    function getCachedComparisonListResults() {
+      const job = getComparisonCache('job');
+      const prefecture = getComparisonCache('prefecture');
+      const month = getComparisonCache('month');
+      if (!job || !prefecture || !month) return null;
+      return { job, prefecture, month };
+    }
+
+    function renderCachedComparisonIfAvailable() {
+      if (!appState) return false;
+      if (outputView === 'table') {
+        const cachedList = getCachedComparisonListResults();
+        if (!cachedList) return false;
+        renderComparisonList(cachedList);
+        return true;
+      }
+      const cached = getComparisonCache();
+      if (!cached) return false;
+      renderComparisonResult(cached);
+      return true;
     }
 
     function setComparisonCache(result, mode=comparisonMode) {
@@ -3490,6 +4473,65 @@
       }
     }
 
+    function clearComparisonCaches() {
+      comparisonCache.clear();
+      monthGraphDataCache.clear();
+      comparisonPrefetchToken++;
+      if (comparisonPrefetchTimer) {
+        window.clearTimeout(comparisonPrefetchTimer);
+        comparisonPrefetchTimer = null;
+      }
+    }
+
+    function scheduleComparisonPrefetch(options={}) {
+      if (!appState) return;
+      const conditionKey = comparisonConditionKey();
+      if (!conditionKey) return;
+      const includeMonthTrends = options.includeMonthTrends !== false && outputView === 'chart';
+      comparisonPrefetchToken++;
+      const token = comparisonPrefetchToken;
+      if (comparisonPrefetchTimer) window.clearTimeout(comparisonPrefetchTimer);
+      comparisonPrefetchTimer = window.setTimeout(() => {
+        comparisonPrefetchTimer = null;
+        prefetchComparisonCaches(token, conditionKey, { includeMonthTrends });
+      }, options.delayMs || 180);
+    }
+
+    async function prefetchComparisonCaches(token, conditionKey, options={}) {
+      if (token !== comparisonPrefetchToken || conditionKey !== comparisonConditionKey()) return;
+      const modes = ['job', 'prefecture', 'month'];
+      const missingModes = modes.filter(mode => !getComparisonCache(mode));
+      const includeMonthTrends = options.includeMonthTrends !== false;
+      const needsMonthTrend = includeMonthTrends && (!getMonthGraphDataCache('job') || !getMonthGraphDataCache('prefecture'));
+      if (!missingModes.length && !needsMonthTrend) return;
+      try {
+        const months = selectedMonths();
+        if (!months.length) return;
+        const db = await getDb();
+        const conn = await db.connect();
+        try {
+          try { await conn.query('LOAD parquet;'); } catch(e) { /* autoload環境では不要 */ }
+          const paths = await registerMonths(db, months);
+          const source = readExpr(paths);
+          for (const mode of missingModes) {
+            if (token !== comparisonPrefetchToken || conditionKey !== comparisonConditionKey()) return;
+            await getComparisonResultForMode(mode, conn, source);
+          }
+        } finally {
+          await conn.close();
+        }
+        if (token !== comparisonPrefetchToken || conditionKey !== comparisonConditionKey()) return;
+        if (includeMonthTrends) {
+          if (!getMonthGraphDataCache('job')) await fetchMonthJobTrendData();
+          if (token !== comparisonPrefetchToken || conditionKey !== comparisonConditionKey()) return;
+          if (!getMonthGraphDataCache('prefecture')) await fetchMonthPrefTrendData();
+        }
+      } catch (error) {
+        // 先読みは体感速度改善用なので、失敗しても通常操作時に再集計する。
+        console.warn('comparison prefetch skipped', error);
+      }
+    }
+
     function renderComparisonResult(result) {
       if (!result) return;
       if (Object.prototype.hasOwnProperty.call(result, 'latestTotals')) latestTotals = result.latestTotals;
@@ -3501,7 +4543,8 @@
       if (!appState) { restorePreservedScroll(scrollState); return; }
       const months = selectedMonths();
       if (!months.length) { setStatus('対象月なし', 'bad'); restorePreservedScroll(scrollState); return; }
-      els.refreshBtn.disabled = true; setStatus('表示を更新中...', 'warn');
+      els.refreshBtn.disabled = true; updateFilterAvailability(); updateAdvancedFilterButton(); setStatus('表示を更新中...', 'warn');
+      showComparisonBusy('表示を更新中...');
       try {
         const db = await getDb();
         const conn = await db.connect();
@@ -3512,15 +4555,19 @@
         const aggregateSql = `WITH src AS (SELECT * FROM ${source} ${where}) SELECT COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src;`;
         const totals = (await queryRows(conn, aggregateSql))[0] || {};
         latestTotals = totals;
-        const relatedSql = `WITH src AS (SELECT * FROM ${source} ${where}), exploded AS (SELECT trim(candidate) AS related_job, "消化金額", "表示回数", "クリック数", "応募開始数", "応募数" FROM src, UNNEST(string_split(coalesce("関連職種", ''), '|')) AS t(candidate)) SELECT related_job, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM exploded WHERE related_job <> '' GROUP BY related_job ORDER BY count DESC, applies DESC, clicks DESC, related_job ASC LIMIT 500;`;
+        const relatedSourceExpr = appState.hasIndeedJob
+          ? `concat(coalesce("関連職種", ''), CASE WHEN coalesce("Indeed職種", '') <> '' THEN concat('|', "Indeed職種") ELSE '' END)`
+          : `coalesce("関連職種", '')`;
+        const relatedSql = `WITH src AS (SELECT * FROM ${source} ${where}), exploded AS (SELECT trim(candidate) AS related_job, "消化金額", "表示回数", "クリック数", "応募開始数", "応募数" FROM src, UNNEST(string_split(${relatedSourceExpr}, '|')) AS t(candidate)) SELECT related_job, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM exploded WHERE related_job <> '' GROUP BY related_job ORDER BY count DESC, applies DESC, clicks DESC, related_job ASC LIMIT 500;`;
         const relatedRaw = await queryRows(conn, relatedSql);
         renderRelated(relatedRaw.filter(r => isUsefulCandidate(r.related_job)).slice(0,50));
         await renderComparison(conn, source, db);
         await conn.close();
+        scheduleComparisonPrefetch({ includeMonthTrends: true });
         setStatus(`表示中：${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length-1])}`, 'ok');
       } catch (error) {
         console.error(error); log('[ERROR]\n' + (error.stack || error.message)); setStatus('表示エラー', 'bad');
-      } finally { els.refreshBtn.disabled = false; restorePreservedScroll(scrollState); }
+      } finally { els.refreshBtn.disabled = false; hideComparisonBusy(); restorePreservedScroll(scrollState); }
     }
 
     function calcRates(row) {
@@ -3589,14 +4636,125 @@
       }));
     }
 
+    function comparisonAxisTitle(mode) {
+      if (mode === 'month-job') return '職種推移';
+      if (mode === 'prefecture') return '都道府県比較';
+      if (mode === 'month-prefecture') return 'エリア推移';
+      if (mode === 'month-yoy') return '時期比較';
+      if (mode === 'month') return '全体推移';
+      return '職種比較';
+    }
+
+    function comparisonAxisNote(mode) {
+      if (mode === 'month-job') return '選択キーワードや選択職種の月別推移を確認します。';
+      if (mode === 'prefecture') return '各都道府県の応募率・CPAなどを比較します。勤務地入力がある場合は該当都道府県を強調表示します。';
+      if (mode === 'month-prefecture') return '勤務地欄に入力されたエリアごとの月別推移を確認します。';
+      if (mode === 'month-yoy') return '年ごとの月別推移を並べて、時期ごとの傾向を比較します。';
+      if (mode === 'month') return '選択期間内の全体推移を確認します。雇用形態などの基本条件と詳細条件を反映します。';
+      return '選択した関連職種ごとの実績を比較します。職種候補を選ぶと行が追加されます。';
+    }
+
+    function setAnalysisMode(mode) {
+      analysisMode = mode || 'job';
+      if (analysisMode === 'month-job') { comparisonMode = 'month'; monthGraphType = 'job'; }
+      else if (analysisMode === 'month-prefecture') { comparisonMode = 'month'; monthGraphType = 'prefecture'; }
+      else if (analysisMode === 'month-yoy') { comparisonMode = 'month'; monthGraphType = 'yoy'; }
+      else if (analysisMode === 'month') { comparisonMode = 'month'; monthGraphType = 'overall'; }
+      else if (analysisMode === 'prefecture') { comparisonMode = 'prefecture'; }
+      else { analysisMode = 'job'; comparisonMode = 'job'; }
+    }
+
+    function tableHtmlForMode(mode, rows, summaryTotals, options={}) {
+      const prevMode = comparisonMode;
+      comparisonMode = mode;
+      try {
+        const summary = summaryTotals ? [{ label: currentKeywordText(), __summary: true, ...summaryTotals }] : [];
+        const displayRows = sortRowsForTable(summary.concat(rows || []), mode);
+        const colGroup = tableColGroup();
+        const headerHtml = `<tr>${tableHeaders(mode)}</tr>`;
+        const bodyHtml = displayRows.length
+          ? displayRows.map(row => rowHtml(row)).join('')
+          : `<tr><td colspan="${2 + (mode === 'month' ? 1 : 0) + visibleMetricIds.length}">該当データがありません。</td></tr>`;
+        const helper = (!rows || rows.length === 0) && mode === 'job'
+          ? '<div class="empty" style="margin:12px;">上の職種候補をクリックすると、職種比較の行を追加できます。</div>'
+          : '';
+        return `<div class="result-list-table-wrap" data-table-mode="${esc(mode)}"><table class="metric-table" data-table-mode="${esc(mode)}">${colGroup}<thead>${headerHtml}</thead><tbody>${bodyHtml}</tbody></table></div>${helper}`;
+      } finally {
+        comparisonMode = prevMode;
+      }
+    }
+
+    function renderComparisonList(results) {
+      updateViewControls();
+      destroyComparisonChart();
+      lastComparisonListResults = results;
+      lastDisplayRows = [];
+      setCopyRows([]);
+      if (els.comparisonCopyBtn) els.comparisonCopyBtn.disabled = true;
+      if (comparisonScrollSyncCleanup) {
+        comparisonScrollSyncCleanup();
+        comparisonScrollSyncCleanup = null;
+      }
+      if (els.floatingXScroll) els.floatingXScroll.classList.add('hidden');
+      const order = ['job','prefecture','month'];
+      const html = order.map(mode => {
+        const result = results && results[mode] ? results[mode] : { rows:[], summaryTotals:null };
+        const countLabel = `${fmtNum((result.rows || []).length)}行`;
+        return `<section class="result-section" data-result-section="${esc(mode)}">
+          <div class="result-section-head">
+            <div class="result-section-head-main">
+              <h3 class="result-section-title">${esc(comparisonAxisTitle(mode))}</h3>
+              <p class="result-section-note">${esc(comparisonAxisNote(mode))}</p>
+            </div>
+            <div class="result-section-actions">
+              <span class="result-section-badge">${esc(countLabel)}</span>
+              <button class="btn ghost small table-title-copy-btn" type="button" data-copy-result-mode="${esc(mode)}" ${((result.rows || []).length || result.summaryTotals || result.latestTotals) ? '' : 'disabled'}>表をコピー</button>
+            </div>
+          </div>
+          ${tableHtmlForMode(mode, result.rows || [], result.summaryTotals || result.latestTotals || null)}
+        </section>`;
+      }).join('');
+      els.comparisonContent.innerHTML = `<div class="result-list">${html}</div>`;
+      updateToolbarContextSummary();
+      requestAnimationFrame(updateStickyLayout);
+      restorePreservedScroll();
+    }
+
+    async function getComparisonResultForMode(mode, conn, source) {
+      const prevMode = comparisonMode;
+      comparisonMode = mode;
+      try {
+        const cached = getComparisonCache(mode);
+        if (cached) return cached;
+        let result;
+        if (mode === 'job') result = await buildJobComparison(conn, source);
+        else if (mode === 'prefecture') result = await buildPrefComparison(conn, source);
+        else result = await buildMonthComparison(conn, source);
+        result.latestTotals = latestTotals;
+        setComparisonCache(result, mode);
+        return result;
+      } finally {
+        comparisonMode = prevMode;
+      }
+    }
+
     async function renderComparison(conn, source, db) {
       updateComparisonControls();
+      if (!conn || !source) return;
+      if (outputView !== 'chart') {
+        const results = {
+          job: await getComparisonResultForMode('job', conn, source),
+          prefecture: await getComparisonResultForMode('prefecture', conn, source),
+          month: await getComparisonResultForMode('month', conn, source)
+        };
+        renderComparisonList(results);
+        return;
+      }
       const cached = getComparisonCache();
       if (cached) {
         renderComparisonResult(cached);
         return;
       }
-      if (!conn || !source) return;
       let result;
       if (comparisonMode === 'job') result = await buildJobComparison(conn, source);
       else if (comparisonMode === 'prefecture') result = await buildPrefComparison(conn, source);
@@ -3611,15 +4769,15 @@
       if (!appState) { restorePreservedScroll(scrollState); return; }
       const months = selectedMonths();
       if (!months.length) { setStatus('対象月なし', 'bad'); restorePreservedScroll(scrollState); return; }
-      const cached = getComparisonCache();
-      if (cached) {
-        renderComparisonResult(cached);
+      if (renderCachedComparisonIfAvailable()) {
         setStatus(`表示中：${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length-1])}`, 'ok');
+        scheduleComparisonPrefetch({ includeMonthTrends: true, delayMs: 220 });
         restorePreservedScroll(scrollState);
         return;
       }
       els.refreshBtn.disabled = true;
       setStatus('比較表を更新中...', 'warn');
+      showComparisonBusy('比較表を更新中...');
       try {
         const db = await getDb();
         const conn = await db.connect();
@@ -3628,11 +4786,13 @@
         const source = readExpr(paths);
         await renderComparison(conn, source, db);
         await conn.close();
+        scheduleComparisonPrefetch({ includeMonthTrends: true });
         setStatus(`表示中：${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length-1])}`, 'ok');
       } catch (error) {
         console.error(error); log('[ERROR]\n' + (error.stack || error.message)); setStatus('表示エラー', 'bad');
       } finally {
         els.refreshBtn.disabled = false;
+        hideComparisonBusy();
         restorePreservedScroll(scrollState);
       }
     }
@@ -3644,24 +4804,73 @@
       const body = els.comparisonContent ? els.comparisonContent.querySelector('.table-wrap') : null;
       const freeze = els.comparisonContent ? els.comparisonContent.querySelector('.comparison-freeze-pane') : null;
       const chart = els.comparisonContent ? els.comparisonContent.querySelector('.chart-scroll') : null;
+      const listWrap = els.comparisonContent ? els.comparisonContent.querySelector('.result-list-table-wrap') : null;
       const floating = els.floatingXScroll;
-      return (chart && chart.scrollLeft) || (body && body.scrollLeft) || (freeze && freeze.scrollLeft) || (floating && floating.scrollLeft) || 0;
+      return (chart && chart.scrollLeft) || (body && body.scrollLeft) || (freeze && freeze.scrollLeft) || (listWrap && listWrap.scrollLeft) || (floating && floating.scrollLeft) || 0;
+    }
+
+    function tableHorizontalScrollElements() {
+      if (!els.comparisonContent) return [];
+      return Array.from(els.comparisonContent.querySelectorAll('.result-list-table-wrap, .comparison-freeze-pane, .comparison-card .table-wrap, .detail-table-section .table-wrap, .chart-scroll'));
+    }
+
+    function tableHorizontalScrollIdentity(el, index=0) {
+      const section = el.closest('[data-result-section]');
+      const sectionMode = section ? section.dataset.resultSection || '' : '';
+      const mode = el.dataset.tableMode || (el.closest('[data-table-mode]') ? el.closest('[data-table-mode]').dataset.tableMode : '') || '';
+      let kind = 'body';
+      if (el.classList.contains('result-list-table-wrap')) kind = 'list';
+      else if (el.classList.contains('comparison-freeze-pane')) kind = 'freeze';
+      else if (el.classList.contains('chart-scroll')) kind = 'chart';
+      else if (el.classList.contains('table-wrap')) kind = 'body';
+      const group = sectionMode || mode || 'default';
+      return { key:`${kind}:${group}:${index}`, kind, group, mode, sectionMode, index };
+    }
+
+    function captureTableHorizontalScrollState() {
+      return tableHorizontalScrollElements().map((el, index) => ({
+        ...tableHorizontalScrollIdentity(el, index),
+        left: Number(el.scrollLeft || 0)
+      }));
+    }
+
+    function restoreTableHorizontalScrollState(entries) {
+      if (!entries || !entries.length) return;
+      const targets = tableHorizontalScrollElements().map((el, index) => ({
+        el,
+        ...tableHorizontalScrollIdentity(el, index)
+      }));
+      targets.forEach(target => {
+        const entry = entries.find(item => item.key === target.key)
+          || entries.find(item => item.kind === target.kind && item.group === target.group)
+          || entries.find(item => item.kind === target.kind && item.mode && item.mode === target.mode);
+        if (entry) clampScrollLeft(target.el, entry.left);
+      });
+      updateFloatingHorizontalScroll();
+      schedulePageStickyTableHeader();
     }
 
     function captureScrollState() {
       const body = els.comparisonContent ? els.comparisonContent.querySelector('.table-wrap') : null;
       const freeze = els.comparisonContent ? els.comparisonContent.querySelector('.comparison-freeze-pane') : null;
       const chart = els.comparisonContent ? els.comparisonContent.querySelector('.chart-scroll') : null;
+      const listWrap = els.comparisonContent ? els.comparisonContent.querySelector('.result-list-table-wrap') : null;
       const floating = els.floatingXScroll;
+      const comparisonCard = comparisonCardElement();
+      const windowY = window.scrollY || window.pageYOffset || 0;
+      const comparisonTop = comparisonCard ? comparisonCard.getBoundingClientRect().top + windowY : null;
       const left = comparisonScrollLeftFallback();
       return {
         windowX: window.scrollX || window.pageXOffset || 0,
-        windowY: window.scrollY || window.pageYOffset || 0,
+        windowY,
+        comparisonRelativeY: comparisonTop !== null && windowY >= comparisonTop - 120 ? windowY - comparisonTop : null,
         comparisonLeft: left,
         tableLeft: body ? body.scrollLeft : left,
         freezeLeft: freeze ? freeze.scrollLeft : left,
         chartLeft: chart ? chart.scrollLeft : left,
-        floatingLeft: floating ? floating.scrollLeft : left
+        listLeft: listWrap ? listWrap.scrollLeft : left,
+        floatingLeft: floating ? floating.scrollLeft : left,
+        tableHorizontal: captureTableHorizontalScrollState()
       };
     }
 
@@ -3682,20 +4891,30 @@
       if (!state) return;
       const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
       const maxX = Math.max(0, document.documentElement.scrollWidth - window.innerWidth);
+      let targetY = Number(state.windowY || 0);
+      const comparisonCard = comparisonCardElement();
+      if (comparisonCard && state.comparisonRelativeY !== null && state.comparisonRelativeY !== undefined) {
+        const cardTop = comparisonCard.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0);
+        targetY = cardTop + Number(state.comparisonRelativeY || 0);
+      }
       window.scrollTo({
         left: Math.max(0, Math.min(Number(state.windowX || 0), maxX)),
-        top: Math.max(0, Math.min(Number(state.windowY || 0), maxY)),
+        top: Math.max(0, Math.min(targetY, maxY)),
         behavior: 'auto'
       });
       const body = els.comparisonContent ? els.comparisonContent.querySelector('.table-wrap') : null;
       const freeze = els.comparisonContent ? els.comparisonContent.querySelector('.comparison-freeze-pane') : null;
       const chart = els.comparisonContent ? els.comparisonContent.querySelector('.chart-scroll') : null;
+      const listWrap = els.comparisonContent ? els.comparisonContent.querySelector('.result-list-table-wrap') : null;
       const left = Number(state.comparisonLeft || 0);
       clampScrollLeft(body, state.tableLeft ?? left);
       clampScrollLeft(freeze, state.freezeLeft ?? left);
       clampScrollLeft(chart, state.chartLeft ?? left);
+      clampScrollLeft(listWrap, state.listLeft ?? left);
+      restoreTableHorizontalScrollState(state.tableHorizontal);
       clampScrollLeft(els.floatingXScroll, state.floatingLeft ?? left);
       updateFloatingHorizontalScroll();
+      schedulePageStickyTableHeader();
     }
 
     function restorePreservedScroll(state=null) {
@@ -3792,10 +5011,7 @@
         els.chartLeftMetric.innerHTML = metricOptions;
         els.chartLeftMetric.value = chartLeftMetric;
       }
-      if (els.chartRightMetric) {
-        els.chartRightMetric.innerHTML = `<option value="none">ー</option>${metricOptions}`;
-        els.chartRightMetric.value = chartRightMetric;
-      }
+      chartRightMetric = 'none';
       updateChartStyleButtons();
     }
 
@@ -3882,61 +5098,88 @@
     }
 
     function updateChartStyleButtons() {
-      document.querySelectorAll('[data-axis-controls]').forEach(group => {
-        const axis = group.dataset.axisControls;
-        const disabled = axis === 'right' && (!chartRightMetric || chartRightMetric === 'none');
-        group.classList.toggle('disabled', disabled);
-      });
-      document.querySelectorAll('.chart-icon-btn[data-axis]').forEach(btn => {
-        const axis = btn.dataset.axis;
-        const style = btn.dataset.style;
-        const type = axis === 'right' ? chartRightType : chartLeftType;
-        const labelsOn = axis === 'right' ? chartRightLabels : chartLeftLabels;
-        const capOn = axisCapMode(axis) !== 'auto';
-        btn.classList.toggle('active', style !== 'label' && style !== 'cap' && style === type);
-        btn.classList.toggle('label-active', style === 'label' && labelsOn);
-        btn.classList.toggle('cap-active', style === 'cap' && capOn);
-        btn.setAttribute('aria-pressed', style === 'label' ? String(labelsOn) : (style === 'cap' ? String(capOn) : String(style === type)));
-      });
+      chartRightMetric = 'none';
+      chartLeftType = comparisonMode === 'month' ? 'line' : 'bar';
+      if (els.chartLabelToggle) {
+        els.chartLabelToggle.classList.toggle('active', !!chartLeftLabels);
+        els.chartLabelToggle.classList.toggle('label-active', !!chartLeftLabels);
+        els.chartLabelToggle.setAttribute('aria-pressed', String(!!chartLeftLabels));
+      }
     }
 
     function setChartAxisStyle(axis, style, anchorBtn=null) {
-      if (axis === 'right' && (!chartRightMetric || chartRightMetric === 'none')) return;
-      if (style === 'cap') {
-        toggleAxisCapPopover(axis, anchorBtn || document.querySelector(`.chart-icon-btn[data-axis="${axis}"][data-style="cap"]`));
-        updateChartStyleButtons();
-        return;
-      }
       hideAxisCapPopover();
       if (style === 'label') {
-        if (axis === 'right') chartRightLabels = !chartRightLabels;
-        else chartLeftLabels = !chartLeftLabels;
-      } else if (style === 'bar' || style === 'line') {
-        if (axis === 'right') chartRightType = style;
-        else chartLeftType = style;
+        chartLeftLabels = !chartLeftLabels;
+        updateChartStyleButtons();
+        repaintCurrentTable(true);
       }
-      updateChartStyleButtons();
-      repaintCurrentTable(true);
     }
 
     function updateViewControls() {
       document.querySelectorAll('.view-tab').forEach(btn => btn.classList.toggle('active', btn.dataset.view === outputView));
+      document.querySelectorAll('.tab[data-mode]').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === analysisMode));
       const card = els.comparisonContent ? els.comparisonContent.closest('.comparison-card') : null;
       if (card) {
         card.classList.toggle('chart-view', outputView === 'chart');
         card.classList.toggle('table-view', outputView !== 'chart');
+        card.classList.toggle('list-view', outputView !== 'chart');
+        card.classList.toggle('detail-view', outputView === 'chart');
       }
       if (els.chartControls) els.chartControls.classList.toggle('hidden', outputView !== 'chart');
+      updateToolbarContextSummary();
+      if (els.comparisonCopyBtn) els.comparisonCopyBtn.classList.toggle('hidden', outputView !== 'chart');
       if (els.floatingXScroll && outputView === 'chart') els.floatingXScroll.classList.add('hidden');
-      renderChartCustomLegend(comparisonChart);
       requestAnimationFrame(updateStickyLayout);
       restorePreservedScroll();
     }
 
-    function tableHeaders() {
-      const base = ['<th>検索キーワード</th>', '<th>勤務地</th>'];
-      if (comparisonMode === 'month') base.push('<th>集計月</th>');
-      return base.join('') + visibleMetricIds.map(id => `<th>${METRIC_MAP[id].header}</th>`).join('');
+    function tableColumnDefsForMode(mode=comparisonMode) {
+      const defs = [
+        { key:'keyword', label:'検索キーワード', header:'検索キーワード', type:'text', firstDir:'asc' },
+        { key:'location', label:'勤務地', header:'勤務地', type:'text', firstDir:'asc' }
+      ];
+      if (mode === 'month') defs.push({ key:'period', label:'集計月', header:'集計月', type:'period', firstDir:'desc' });
+      visibleMetricIds.forEach(id => {
+        const meta = METRIC_MAP[id];
+        if (!meta) return;
+        defs.push({
+          key:id,
+          label:meta.label,
+          header:meta.header,
+          type:'metric',
+          firstDir:LOWER_IS_BETTER_METRICS.has(id) ? 'asc' : 'desc'
+        });
+      });
+      return defs;
+    }
+
+    function getTableSortState(mode=comparisonMode) {
+      const state = tableSortStates.get(mode);
+      if (!state || !state.key || !state.dir) return null;
+      const exists = tableColumnDefsForMode(mode).some(def => def.key === state.key);
+      return exists ? state : null;
+    }
+
+    function sortDirectionLabel(dir) {
+      return dir === 'asc' ? '昇順' : dir === 'desc' ? '降順' : 'デフォルト';
+    }
+
+    function tableHeaderCell(def, mode=comparisonMode) {
+      const state = getTableSortState(mode);
+      const active = state && state.key === def.key;
+      const dir = active ? state.dir : '';
+      const indicator = active ? (dir === 'asc' ? '▲' : '▼') : '↕';
+      const ariaSort = active ? (dir === 'asc' ? 'ascending' : 'descending') : 'none';
+      const cls = ['sortable-table-head', active ? 'is-sorted' : '', def.type === 'metric' ? 'metric-head' : ''].filter(Boolean).join(' ');
+      const title = active
+        ? `${def.label}：${sortDirectionLabel(dir)}。クリックで次の並びへ切り替えます。`
+        : `${def.label}で並べ替え`;
+      return `<th class="${esc(cls)}" data-sort-key="${esc(def.key)}" data-sort-type="${esc(def.type)}" data-table-mode="${esc(mode)}" aria-sort="${esc(ariaSort)}" title="${esc(title)}"><span class="th-inner"><span class="th-label">${def.header}</span><span class="sort-indicator" aria-hidden="true">${esc(indicator)}</span></span></th>`;
+    }
+
+    function tableHeaders(mode=comparisonMode) {
+      return tableColumnDefsForMode(mode).map(def => tableHeaderCell(def, mode)).join('');
     }
 
     function metricValueForDisplay(row, id) {
@@ -3971,8 +5214,120 @@
       return '';
     }
 
+    function metricNumericValueForSort(row, id) {
+      const r = calcRates(row);
+      if (id === 'count') return Number(row.count || 0);
+      if (id === 'cost') return Number(row.cost || 0);
+      if (id === 'impressions') return Number(row.impressions || 0);
+      if (id === 'clicks') return Number(row.clicks || 0);
+      if (id === 'apply_starts') return Number(row.apply_starts || 0);
+      if (id === 'applies') return Number(row.applies || 0);
+      if (id === 'ctr') return r.ctr;
+      if (id === 'applyStartRate') return r.applyStartRate;
+      if (id === 'cvr') return r.cvr;
+      if (id === 'cpc') return r.cpc;
+      if (id === 'cpa') return r.cpa;
+      return null;
+    }
+
+    function parseMonthSortValue(value) {
+      const s = String(value ?? '').trim();
+      if (!s || s === '-') return null;
+      const compact = s.match(/(20\d{2})(0[1-9]|1[0-2])/);
+      if (compact) return Number(`${compact[1]}${compact[2]}`);
+      const full = s.match(/(20\d{2})\D+([1-9]|0[1-9]|1[0-2])(?:\D|$)/);
+      if (full) return Number(`${full[1]}${String(full[2]).padStart(2,'0')}`);
+      const short = s.match(/(\d{2})年\s*([1-9]|0[1-9]|1[0-2])月/);
+      if (short) return Number(`20${short[1]}${String(short[2]).padStart(2,'0')}`);
+      const n = Number(s.replace(/[^0-9]/g, ''));
+      return Number.isFinite(n) && n >= 200001 && n <= 209912 ? n : null;
+    }
+
+    function tableSortValueInfo(row, def, mode=comparisonMode) {
+      if (!row) return { missing:true, value:null, type:def.type };
+      if (def.type === 'metric') {
+        const value = metricNumericValueForSort(row, def.key);
+        return { missing: value === null || value === undefined || !Number.isFinite(Number(value)), value:Number(value), type:'metric' };
+      }
+      const prevMode = comparisonMode;
+      comparisonMode = mode;
+      try {
+        const keyLoc = tableKeyLocation(row);
+        if (def.key === 'period') {
+          const value = parseMonthSortValue(row.label || keyLoc.periodCopy || keyLoc.periodDisplay);
+          return { missing:value === null, value, type:'period' };
+        }
+        const raw = def.key === 'location' ? keyLoc.location : keyLoc.keyword;
+        const value = String(raw ?? '').replace(/[（）()]/g, '').trim();
+        return { missing:!value || value === '-', value:value.toLocaleLowerCase('ja-JP'), type:'text' };
+      } finally {
+        comparisonMode = prevMode;
+      }
+    }
+
+    function compareTableSortValues(a, b, def, dir, mode) {
+      const av = tableSortValueInfo(a.row, def, mode);
+      const bv = tableSortValueInfo(b.row, def, mode);
+      if (av.missing !== bv.missing) return av.missing ? 1 : -1;
+      if (av.missing && bv.missing) return a.index - b.index;
+      let cmp = 0;
+      if (def.type === 'text') cmp = String(av.value).localeCompare(String(bv.value), 'ja-JP', { numeric:true, sensitivity:'base' });
+      else cmp = Number(av.value) - Number(bv.value);
+      if (cmp === 0) return a.index - b.index;
+      return dir === 'asc' ? cmp : -cmp;
+    }
+
+    function sortRowsForTable(rows, mode=comparisonMode) {
+      const sourceRows = Array.isArray(rows) ? rows : [];
+      const state = getTableSortState(mode);
+      if (!state) return sourceRows;
+      const def = tableColumnDefsForMode(mode).find(item => item.key === state.key);
+      if (!def) return sourceRows;
+      const fixedRows = [];
+      const sortableRows = [];
+      sourceRows.forEach((row, index) => {
+        const item = { row, index };
+        if (row && row.__summary) fixedRows.push(item);
+        else sortableRows.push(item);
+      });
+      sortableRows.sort((a, b) => compareTableSortValues(a, b, def, state.dir, mode));
+      return fixedRows.map(item => item.row).concat(sortableRows.map(item => item.row));
+    }
+
+    function cycleTableSort(mode, key) {
+      const safeMode = mode || comparisonMode || 'job';
+      const def = tableColumnDefsForMode(safeMode).find(item => item.key === key);
+      if (!def) return false;
+      const current = tableSortStates.get(safeMode);
+      const first = def.firstDir || 'asc';
+      const second = first === 'asc' ? 'desc' : 'asc';
+      if (!current || current.key !== key || !current.dir) {
+        tableSortStates.set(safeMode, { key, dir:first });
+      } else if (current.dir === first) {
+        tableSortStates.set(safeMode, { key, dir:second });
+      } else {
+        tableSortStates.delete(safeMode);
+      }
+      pageStickyTableSourceKey = '';
+      return true;
+    }
+
+    function repaintTablesAfterSort(mode) {
+      if (outputView === 'chart') {
+        repaintCurrentTable(true);
+        return;
+      }
+      if (lastComparisonListResults) {
+        const scrollState = startScrollPreservation();
+        renderComparisonList(lastComparisonListResults);
+        requestAnimationFrame(() => restorePreservedScroll(scrollState));
+        return;
+      }
+      repaintCurrentTable(true);
+    }
+
     function metricCells(row) {
-      return visibleMetricIds.map(id => `<td>${esc(metricValueForDisplay(row, id))}</td>`).join('');
+      return visibleMetricIds.map(id => `<td class="metric-cell">${esc(metricValueForDisplay(row, id))}</td>`).join('');
     }
 
     function currentSearchModeOperator() {
@@ -4004,6 +5359,14 @@
 
     function currentKeywordText() {
       return keywordSegmentsToPlain(freeKeywordSegments());
+    }
+
+    function hasJobAxisInput() {
+      return splitKeywords(els.freeWordInput.value).length > 0 || selectedJobTitles.length > 0;
+    }
+
+    function jobAxisDefaultLabel() {
+      return hasJobAxisInput() ? currentKeywordText() : '（指定なし）';
     }
 
     function currentKeywordHtml() {
@@ -4216,10 +5579,14 @@
         };
       }
       if (row.__summary) {
+        if (comparisonMode === 'job' && !hasJobAxisInput()) {
+          return { keyword: '（指定なし）', keywordHtml: '<span class="keyword-inline"><span class="keyword-term">（指定なし）</span></span>', location: currentLocationText() };
+        }
         return { keyword: currentKeywordText(), keywordHtml: currentKeywordHtml(), location: currentLocationText() };
       }
       if (comparisonMode === 'job') {
-        return { keyword: row.label || 'キーワードなし', keywordHtml: row.label ? `<span class="keyword-inline"><span class="keyword-term">${esc(row.label)}</span></span>` : currentKeywordHtml(), location: currentLocationText() };
+        const label = row.label || (hasJobAxisInput() ? 'キーワードなし' : '（指定なし）');
+        return { keyword: label, keywordHtml: `<span class="keyword-inline"><span class="keyword-term">${esc(label)}</span></span>`, location: currentLocationText() };
       }
       return { keyword: row.label || currentKeywordText(), keywordHtml: row.label ? `<span class="keyword-inline"><span class="keyword-term">${esc(row.label)}</span></span>` : currentKeywordHtml(), location: currentLocationText() };
     }
@@ -4514,6 +5881,7 @@
       return {
         type: isLine ? 'line' : 'bar',
         label: METRIC_MAP[metricId].label,
+        metricId,
         data,
         yAxisID,
         axisCap,
@@ -4547,7 +5915,7 @@
         chart.data.datasets.forEach((dataset, datasetIndex) => {
           const meta = chart.getDatasetMeta(datasetIndex);
           if (!meta || meta.hidden) return;
-          const metricId = dataset.yAxisID === 'yRight' ? chartRightMetric : chartLeftMetric;
+          const metricId = dataset.metricId || (dataset.yAxisID === 'yRight' ? chartRightMetric : chartLeftMetric);
           const axisCap = dataset.axisCap;
           meta.data.forEach((element, index) => {
             const rawValue = dataset.data[index];
@@ -4556,13 +5924,33 @@
             if (!dataset.showDataLabels && !isCapped) return;
             const pos = element.tooltipPosition ? element.tooltipPosition() : { x: element.x, y: element.y };
             const label = isCapped ? (dataset.showDataLabels ? `↑ ${chartValueLabel(rawValue, metricId)}` : '↑') : chartValueLabel(rawValue, metricId);
-            ctx.font = '700 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'bottom';
+            ctx.font = `600 11px ${NORMAL_CHART_FONT}`;
             const borderColor = Array.isArray(dataset.borderColor) ? dataset.borderColor[index] : dataset.borderColor;
             ctx.fillStyle = borderColor || '#334155';
-            const y = isCapped ? (chartArea.top + 18 + datasetIndex * 14) : Math.max(chartArea.top + 12, pos.y - 7);
-            ctx.fillText(label, pos.x, y);
+            const isHorizontalBar = chart.options && chart.options.indexAxis === 'y' && dataset.type === 'bar';
+            if (isHorizontalBar) {
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              const x = Math.min(chartArea.right - 4, Math.max(chartArea.left + 4, pos.x + 7));
+              ctx.fillText(label, x, pos.y);
+            } else {
+              ctx.textBaseline = 'bottom';
+              const y = isCapped ? (chartArea.top + 18 + datasetIndex * 14) : Math.max(chartArea.top + 12, pos.y - 7);
+              const labelWidth = ctx.measureText(label).width;
+              const safeLeft = chartArea.left + 8;
+              const safeRight = chartArea.right - 8;
+              let x = pos.x;
+              if (x - labelWidth / 2 < safeLeft) {
+                ctx.textAlign = 'left';
+                x = safeLeft;
+              } else if (x + labelWidth / 2 > safeRight) {
+                ctx.textAlign = 'right';
+                x = safeRight;
+              } else {
+                ctx.textAlign = 'center';
+              }
+              ctx.fillText(label, x, y);
+            }
           });
         });
         ctx.restore();
@@ -4607,9 +5995,10 @@
     function rowsForCurrentChart() {
       if (comparisonMode === 'job') {
         const hasFreeKeyword = splitKeywords(els.freeWordInput.value).length > 0;
+        const noJobInput = !hasJobAxisInput();
         return lastDisplayRows.filter(row => {
           if (!row.__summary) return true;
-          return hasFreeKeyword;
+          return hasFreeKeyword || noJobInput;
         });
       }
       if (comparisonMode === 'prefecture') {
@@ -4622,13 +6011,7 @@
     }
 
     function monthTrendTypeControlsHtml() {
-      const items = [
-        { id:'overall', label:'全体' },
-        { id:'yoy', label:'昨年比' },
-        { id:'job', label:'職種別' },
-        { id:'prefecture', label:'都道府県別' }
-      ];
-      return `<span class="month-trend-toggle" aria-label="月別推移タイプ">${items.map(item => `<button class="month-trend-btn ${monthGraphType === item.id ? 'active' : ''}" data-month-trend-type="${esc(item.id)}" type="button">${esc(item.label)}</button>`).join('')}</span>`;
+      return '';
     }
 
     function movingAverageWindowSize() {
@@ -4637,45 +6020,112 @@
     }
 
     function monthMovingAverageControlHtml() {
-      if (comparisonMode !== 'month' || monthGraphType === 'yoy') return '';
-      const options = [
-        { value:'none', label:'なし' },
-        { value:'3', label:'3ヶ月平均' },
-        { value:'6', label:'6ヶ月平均' },
-        { value:'12', label:'12ヶ月平均' }
-      ];
-      return `<label class="month-average-control" title="左軸の指標に対して移動平均線を追加します">平均線：<select id="monthMovingAverageSelect">${options.map(opt => `<option value="${esc(opt.value)}" ${movingAverageWindow === opt.value ? 'selected' : ''}>${esc(opt.label)}</option>`).join('')}</select></label>`;
+      return '';
+    }
+
+    function filterValueLabel(selectEl, fallback='すべて') {
+      if (!selectEl) return fallback;
+      const opt = selectEl.selectedOptions && selectEl.selectedOptions[0];
+      return opt ? opt.textContent.trim() : (selectEl.value || fallback);
+    }
+
+    function seriesChipHtml(label, index, titlePrefix='') {
+      const palette = MONTH_YOY_COLORS[index % MONTH_YOY_COLORS.length];
+      const color = palette.border || '#64748b';
+      const bg = palette.background || 'rgba(100,116,139,.18)';
+      const title = titlePrefix ? `${titlePrefix}：${label}` : label;
+      return `<span class="chart-context-chip chart-context-series" title="${esc(title)}"><span class="chart-context-series-dot" style="--series-color:${esc(color)};--series-bg:${esc(bg)};"></span><span>${esc(label)}</span></span>`;
+    }
+
+    function trendSeriesContextChips(type) {
+      try {
+        if (type === 'job') {
+          const result = monthJobTrendDefinitions();
+          const defs = result && Array.isArray(result.defs) ? result.defs : [];
+          if (defs.length <= 1) return '';
+          return defs.map((def, idx) => seriesChipHtml(def.label || `系列${idx + 1}`, idx, '職種推移系列')).join('');
+        }
+        if (type === 'area') {
+          const result = monthPrefTrendDefinitions();
+          const defs = result && Array.isArray(result.defs) ? result.defs : [];
+          if (defs.length <= 1) return '';
+          return defs.map((def, idx) => seriesChipHtml(def.label || `系列${idx + 1}`, idx, 'エリア推移系列')).join('');
+        }
+      } catch (e) {
+        return '';
+      }
+      return '';
+    }
+
+    function monthYoYSeriesContextChips() {
+      try {
+        const rows = rowsForCurrentChart();
+        const years = monthYoYYears(rows);
+        if (!years.length) return '';
+        return years.map((year, idx) => seriesChipHtml(`${year}年`, idx, '時期比較系列')).join('');
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function toolbarContextChipsHtml() {
+      const chips = [];
+      const jobTrendSeriesChips = outputView === 'chart' && analysisMode === 'month-job' ? trendSeriesContextChips('job') : '';
+      const areaTrendSeriesChips = outputView === 'chart' && analysisMode === 'month-prefecture' ? trendSeriesContextChips('area') : '';
+      const monthYoYSeriesChips = outputView === 'chart' && analysisMode === 'month-yoy' ? monthYoYSeriesContextChips() : '';
+      const useKeywordChip = outputView !== 'chart' || comparisonMode !== 'job';
+      if (jobTrendSeriesChips) {
+        chips.push(jobTrendSeriesChips);
+      } else if (useKeywordChip) {
+        const displaySegments = chartContextDisplayKeywordSegments(180);
+        const fullText = keywordSegmentsToPlain(chartContextFullKeywordSegments());
+        chips.push(`<span class="chart-context-chip" title="${esc(fullText)}">${keywordSegmentsToHtml(displaySegments)}</span>`);
+      }
+
+      if (areaTrendSeriesChips) {
+        chips.push(areaTrendSeriesChips);
+      } else {
+        const locationText = currentLocationText();
+        chips.push(`<span class="chart-context-chip chart-context-location" title="${esc(locationText)}">勤務地：${esc(locationText)}</span>`);
+      }
+      if (monthYoYSeriesChips) {
+        chips.push(monthYoYSeriesChips);
+      }
+
+      const employmentValues = activeEmploymentValues();
+      if (employmentValues.length) {
+        const empLabel = employmentSelectionFullLabel(employmentValues);
+        chips.push(`<span class="chart-context-chip" title="雇用形態：${esc(empLabel)}">雇用形態：${esc(empLabel)}</span>`);
+      }
+      if (els.campaignFilter && els.campaignFilter.value !== 'all') {
+        chips.push(`<span class="chart-context-chip" title="SA-条件：${esc(filterValueLabel(els.campaignFilter))}">SA-：${esc(filterValueLabel(els.campaignFilter))}</span>`);
+      }
+      if (appState && appState.hasIndeedJob && els.indeedJobInput && String(els.indeedJobInput.value || '').trim()) {
+        const v = String(els.indeedJobInput.value || '').trim();
+        chips.push(`<span class="chart-context-chip" title="Indeed職種：${esc(v)}">Indeed職種：${esc(v)}</span>`);
+      }
+      if (appState && appState.hasJobBoost && els.jobBoostFilter && els.jobBoostFilter.value !== 'all') {
+        chips.push(`<span class="chart-context-chip" title="ジョブブースト：${esc(filterValueLabel(els.jobBoostFilter))}">ブースト：${esc(filterValueLabel(els.jobBoostFilter))}</span>`);
+      }
+
+
+      return chips.join('');
     }
 
     function chartContextHtml() {
-      if (comparisonMode !== 'prefecture' && comparisonMode !== 'month') return '';
-      const displaySegments = chartContextDisplayKeywordSegments(90);
-      const fullText = keywordSegmentsToPlain(chartContextFullKeywordSegments());
-      if (comparisonMode === 'month') {
-        const locationText = currentLocationText();
-        let prefChip = '';
-        if (monthGraphType === 'prefecture') {
-          const prefInfo = monthPrefTrendDefinitions();
-          const prefTitle = prefInfo.totalLabels.length ? prefInfo.totalLabels.join('、') : '未選択';
-          const prefText = prefInfo.defs.length
-            ? `表示都道府県：${prefInfo.defs.map(d => d.label).join('、')}${prefInfo.omitted > 0 ? ` 他${prefInfo.omitted}件` : ''}`
-            : '表示都道府県：未選択';
-          prefChip = `<span class="chart-context-chip chart-context-location" title="${esc(prefTitle)}">${esc(prefText)}</span>`;
-        }
-        const locationChip = monthGraphType === 'prefecture'
-          ? ''
-          : `<span class="chart-context-chip chart-context-location" title="${esc(locationText)}">勤務地：${esc(locationText)}</span>`;
-        return `<div class="chart-context">${monthTrendTypeControlsHtml()}${monthMovingAverageControlHtml()}<span class="chart-context-label">集計対象：</span><span class="chart-context-chip" title="${esc(fullText)}">${keywordSegmentsToHtml(displaySegments)}</span>${locationChip}${prefChip}</div>`;
-      }
-      const highlightedPrefs = Array.from(detectLocationPrefectures());
-      const locationText = highlightedPrefs.length ? `　勤務地ハイライト：${highlightedPrefs.join('、')}` : '';
-      return `<div class="chart-context"><span class="chart-context-label">集計対象：</span><span class="chart-context-chip" title="${esc(fullText)}">${keywordSegmentsToHtml(displaySegments)}</span>${locationText ? `<span class="chart-context-chip chart-context-location" title="${esc(locationText.trim())}">${esc(locationText.trim())}</span>` : ''}</div>`;
+      const chips = toolbarContextChipsHtml();
+      if (!chips) return '';
+      return `<div class="chart-context"><span class="chart-context-label">集計対象：</span>${chips}</div>`;
+    }
+
+    function updateToolbarContextSummary() {
+      if (!els.comparisonContextSummary) return;
+      els.comparisonContextSummary.innerHTML = chartContextHtml();
     }
 
     function monthEmptyChartPanelHtml(message) {
       return `
         <div class="chart-panel">
-          ${chartContextHtml()}
           <div class="empty" style="margin-top:14px;">${esc(message)}</div>
         </div>`;
     }
@@ -4688,35 +6138,100 @@
       return value || '#64748b';
     }
 
-    function renderChartCustomLegend(chart) {
-      const wrap = document.getElementById('chartCustomLegend');
-      if (!wrap) return;
-      if (!chart || !chart.data || !Array.isArray(chart.data.datasets) || !chart.data.datasets.length) {
-        wrap.innerHTML = '';
+
+    function removeComparisonStickyYAxis() {
+      if (!els.comparisonContent) return;
+      const axis = els.comparisonContent.querySelector('.chart-sticky-y-axis');
+      if (axis) axis.remove();
+      const scroll = els.comparisonContent.querySelector('.chart-scroll.sticky-y-axis-enabled');
+      if (scroll) scroll.style.removeProperty('--sticky-y-axis-width');
+    }
+
+    function syncComparisonStickyYAxisVisibility(scroll) {
+      if (!scroll) return;
+      const axis = scroll.querySelector('.chart-sticky-y-axis');
+      if (!axis) return;
+      const start = 18;
+      const end = 78;
+      const raw = Number(scroll.scrollLeft || 0);
+      const progress = Math.max(0, Math.min(1, (raw - start) / Math.max(1, end - start)));
+      if (progress <= 0.01) {
+        axis.classList.remove('is-visible');
+        axis.style.opacity = '0';
+        axis.style.transform = 'translateX(-8px)';
+      } else {
+        axis.classList.add('is-visible');
+        axis.style.opacity = progress.toFixed(3);
+        axis.style.transform = `translateX(${Math.round((1 - progress) * -8)}px)`;
+      }
+    }
+
+    function bindComparisonStickyYAxisScroll(scroll) {
+      if (!scroll || scroll.__stickyYAxisScrollBound) return;
+      scroll.__stickyYAxisScrollBound = true;
+      scroll.addEventListener('scroll', () => syncComparisonStickyYAxisVisibility(scroll), { passive:true });
+    }
+
+    function updateComparisonStickyYAxis(chart=comparisonChart) {
+      if (!els.comparisonContent) return;
+      const scroll = els.comparisonContent.querySelector('.chart-scroll.sticky-y-axis-enabled');
+      if (!scroll) return;
+      if (!chart || !chart.canvas || !chart.scales || !chart.scales.yLeft) {
+        removeComparisonStickyYAxis();
         return;
       }
-      const items = chart.data.datasets.map((dataset, idx) => {
-        const axis = dataset.yAxisID === 'yRight' ? 'right' : 'left';
-        const axisLabel = axis === 'right' ? '右' : '左';
-        const color = chartLegendColorValue(dataset.borderColor || dataset.backgroundColor);
-        const typeClass = dataset.type === 'bar' ? 'bar' : 'line';
-        const hidden = !chart.isDatasetVisible(idx);
-        const dash = Array.isArray(dataset.borderDash) && dataset.borderDash.length ? 'border-style:dashed;' : '';
-        const markerStyle = dataset.type === 'bar'
-          ? `background:${esc(String(color))};border:1px solid ${esc(String(color))};`
-          : `background:${esc(String(color))};${dash}`;
-        return `<button class="chart-legend-item ${hidden ? 'off' : ''}" type="button" data-chart-legend-index="${idx}" title="クリックで表示/非表示を切り替え"><span class="chart-legend-marker ${typeClass}" style="${markerStyle}"></span><span class="chart-legend-axis ${axis}">${axisLabel}</span><span>${esc(dataset.label || '')}</span></button>`;
+      let axis = scroll.querySelector('.chart-sticky-y-axis');
+      if (!axis) {
+        axis = document.createElement('div');
+        axis.className = 'chart-sticky-y-axis';
+        axis.setAttribute('aria-hidden', 'true');
+        scroll.insertBefore(axis, scroll.firstElementChild);
+      }
+      bindComparisonStickyYAxisScroll(scroll);
+      const yScale = chart.scales.yLeft;
+      const canvas = chart.canvas;
+      const wrap = canvas.closest('.chart-canvas-wrap') || scroll.querySelector('.chart-canvas-wrap');
+      const wrapHeight = (wrap && wrap.clientHeight) || chart.height || 460;
+      const canvasTop = Number(canvas.offsetTop || 0);
+      const axisWidth = Math.max(102, Math.min(136, Math.round((yScale.width || 72) + 18)));
+      scroll.style.setProperty('--sticky-y-axis-width', `${axisWidth}px`);
+      axis.style.width = `${axisWidth}px`;
+      axis.style.flexBasis = `${axisWidth}px`;
+      const rawTop = canvasTop + (Number.isFinite(yScale.top) ? yScale.top : (chart.chartArea ? chart.chartArea.top : 0));
+      const rawBottom = canvasTop + (Number.isFinite(yScale.bottom) ? yScale.bottom : (chart.chartArea ? chart.chartArea.bottom : wrapHeight));
+      const top = Math.max(0, Math.round(rawTop));
+      const bottomLimit = Math.max(top + 1, Math.round(wrapHeight - 8));
+      const bottom = Math.max(top + 1, Math.min(bottomLimit, Math.round(rawBottom)));
+      const axisHeight = Math.max(1, bottom - top);
+      axis.style.height = `${axisHeight}px`;
+      axis.style.marginTop = `${top}px`;
+      const title = (METRIC_MAP[chartLeftMetric] && METRIC_MAP[chartLeftMetric].label) ? METRIC_MAP[chartLeftMetric].label : '';
+      const hasTitle = !!title;
+      const lineTop = 0;
+      const lineBottom = axisHeight;
+      const titleText = hasTitle ? `<div class="chart-sticky-y-title" title="${esc(title)}">${esc(title)}</div>` : '';
+      const ticksHtml = (yScale.ticks || []).map(tick => {
+        const value = Object.prototype.hasOwnProperty.call(tick, 'value') ? tick.value : tick;
+        const rawY = Math.round((canvasTop + yScale.getPixelForValue(value)) - top);
+        if (!Number.isFinite(rawY) || rawY < -28 || rawY > axisHeight + 28) return '';
+        const y = Math.max(0, Math.min(axisHeight, rawY));
+        const label = tick && tick.label !== undefined ? tick.label : chartAxisTickLabel(value, chartLeftMetric);
+        return `<span class="chart-sticky-y-tick" style="top:${y}px;">${esc(label)}</span>`;
       }).join('');
-      wrap.innerHTML = `<div class="chart-custom-legend">${items}</div>`;
-      wrap.querySelectorAll('[data-chart-legend-index]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const idx = Number(btn.dataset.chartLegendIndex);
-          if (!Number.isFinite(idx)) return;
-          chart.setDatasetVisibility(idx, !chart.isDatasetVisible(idx));
-          chart.update();
-          renderChartCustomLegend(chart);
-        });
-      });
+      axis.innerHTML = `
+        ${titleText}
+        <div class="chart-sticky-y-line" style="top:${lineTop}px;height:${Math.max(1, lineBottom - lineTop)}px;"></div>
+        ${ticksHtml}`;
+      syncComparisonStickyYAxisVisibility(scroll);
+    }
+
+    function scheduleComparisonStickyYAxisUpdate() {
+      requestAnimationFrame(() => updateComparisonStickyYAxis(comparisonChart));
+    }
+
+    function renderChartCustomLegend(chart) {
+      const wrap = document.getElementById('chartCustomLegend');
+      if (wrap) wrap.innerHTML = '';
     }
 
     function destroyComparisonChart() {
@@ -4724,6 +6239,7 @@
         comparisonChart.destroy();
         comparisonChart = null;
       }
+      removeComparisonStickyYAxis();
     }
 
     const MONTH_YOY_LABELS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
@@ -4736,13 +6252,48 @@
       { border:'rgba(100,116,139,.96)', background:'rgba(100,116,139,.26)' }
     ];
 
-    function monthYearPartsFromRow(row) {
-      const key = String(row && row.label || '');
-      if (!/^\d{6}$/.test(key)) return null;
-      const year = Number(key.slice(0,4));
-      const month = Number(key.slice(4,6));
+    function parseMonthKeyParts(value) {
+      if (value === null || value === undefined) return null;
+      const raw = String(value).trim();
+      if (!raw) return null;
+      const text = raw.replace(/\u200e|\u200f/g, '').replace(/０/g, '0').replace(/１/g, '1').replace(/２/g, '2').replace(/３/g, '3').replace(/４/g, '4').replace(/５/g, '5').replace(/６/g, '6').replace(/７/g, '7').replace(/８/g, '8').replace(/９/g, '9');
+      const compact = text.replace(/[^0-9]/g, '');
+      let year = null;
+      let month = null;
+
+      if (/^\d{6}$/.test(compact)) {
+        year = Number(compact.slice(0, 4));
+        month = Number(compact.slice(4, 6));
+      } else {
+        const jp = text.match(/(\d{4})\s*年\s*(\d{1,2})\s*月/);
+        const sep = text.match(/(\d{4})\s*[\/\-.]\s*(\d{1,2})(?:\s*[\/\-.]\s*\d{1,2})?/);
+        const loose = text.match(/(20\d{2})\D+(\d{1,2})(?:\D|$)/);
+        const m = jp || sep || loose;
+        if (m) {
+          year = Number(m[1]);
+          month = Number(m[2]);
+        }
+      }
+
       if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) return null;
       return { year, month };
+    }
+
+    function monthYearPartsFromRow(row) {
+      if (!row) return null;
+      const candidates = [
+        row.label,
+        row.period_copy,
+        row.period_display,
+        row.month_key,
+        row.集計年月キー,
+        row['集計年月キー']
+      ];
+      for (const value of candidates) {
+        const parts = parseMonthKeyParts(value);
+        if (parts) return parts;
+      }
+      return null;
     }
 
     function monthYoYYears(rows) {
@@ -4772,6 +6323,7 @@
       return {
         type: isLine ? 'line' : 'bar',
         label: `${year}年 ${METRIC_MAP[metricId].label}`,
+        metricId,
         data,
         yAxisID,
         axisCap,
@@ -4821,6 +6373,7 @@
       return {
         type:'line',
         label:`${label} ${n}ヶ月平均`,
+        metricId,
         data,
         yAxisID:'yLeft',
         axisCap,
@@ -4847,9 +6400,31 @@
     }
 
 
+    function locationAreaTerms() {
+      const seen = new Set();
+      return splitKeywords(els.locationInput.value || '')
+        .map(term => String(term || '').trim())
+        .filter(term => {
+          if (!term) return false;
+          const key = normalizeMatchText(term);
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+    }
+
+    function locationAreaClause(term) {
+      const raw = String(term || '').trim();
+      return `concat(coalesce("都道府県", ''), coalesce("市区町村", '')) LIKE ${sqlLiteral('%' + raw + '%')}`;
+    }
+
     function monthPrefTrendDefinitions() {
-      const totalLabels = Array.from(detectLocationPrefectures()).sort((a, b) => (PREFECTURE_ORDER[a] ?? 999) - (PREFECTURE_ORDER[b] ?? 999));
-      const defs = totalLabels.slice(0, MAX_MONTH_PREF_TREND_SERIES).map((pref, idx) => ({ ord: idx, label: pref }));
+      const totalLabels = locationAreaTerms();
+      if (!totalLabels.length) {
+        const defs = [{ ord:0, label:'全国', clause:'1=1' }];
+        return { defs, omitted:0, total:1, totalLabels:['全国'] };
+      }
+      const defs = totalLabels.slice(0, MAX_MONTH_PREF_TREND_SERIES).map((area, idx) => ({ ord: idx, label: area, clause: locationAreaClause(area) }));
       return { defs, omitted: Math.max(0, totalLabels.length - defs.length), total: totalLabels.length, totalLabels };
     }
 
@@ -4867,11 +6442,10 @@
         try { await conn.query('LOAD parquet;'); } catch(e) { /* autoload環境では不要 */ }
         const paths = await registerMonths(db, months);
         const source = readExpr(paths);
-        const where = monthTrendWhere();
-        const prefValues = defs.map(d => sqlLiteral(d.label)).join(', ');
-        const sql = `
-          WITH src AS (SELECT * FROM ${source} ${where})
-          SELECT "都道府県" AS series,
+        const base = unionFreeAndSelectedWhere({ includeLocation:false });
+        const selects = defs.map(def => `
+          SELECT ${def.ord} AS ord,
+                 ${sqlLiteral(def.label)} AS series,
                  CAST("集計年月キー" AS VARCHAR) AS label,
                  COUNT(*) AS count,
                  COALESCE(SUM("消化金額"),0) AS cost,
@@ -4880,10 +6454,10 @@
                  COALESCE(SUM("応募開始数"),0) AS apply_starts,
                  COALESCE(SUM("応募数"),0) AS applies
           FROM src
-          WHERE "都道府県" IN (${prefValues})
-          GROUP BY series, label
-          ORDER BY series ASC, label ASC;
-        `;
+          WHERE ${def.clause}
+          GROUP BY label
+        `).join(' UNION ALL ');
+        const sql = `WITH src AS (SELECT * FROM ${source} ${base}) ${selects} ORDER BY ord ASC, label ASC;`;
         const rows = await queryRows(conn, sql);
         const result = { defs, omitted, total, totalLabels, rows, months };
         setMonthGraphDataCache('prefecture', result);
@@ -4903,9 +6477,8 @@
       const defs = result && Array.isArray(result.defs) ? result.defs : [];
       if (!defs.length) {
         destroyComparisonChart();
-        els.comparisonContent.innerHTML = monthEmptyChartPanelHtml('都道府県別推移に表示できる都道府県がありません。勤務地欄に「東京 大阪」のように比較したい都道府県を入力してください。');
-        renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
+        els.comparisonContent.innerHTML = monthEmptyChartPanelHtml('エリア推移に表示できるデータがありません。');
+        requestAnimationFrame(updateStickyLayout);
       restorePreservedScroll();
         return;
       }
@@ -4914,7 +6487,7 @@
       const rowMap = monthPrefTrendRowMap(result.rows || []);
       const leftValues = [];
       const rightValues = [];
-      const useRight = chartRightMetric && chartRightMetric !== 'none' && chartRightMetric !== chartLeftMetric;
+      const useRight = false;
       defs.forEach(def => {
         months.forEach(month => {
           const row = rowMap.get(`${def.label}::${month}`);
@@ -4931,7 +6504,7 @@
       defs.forEach((def, idx) => {
         const rowItems = months.map(month => rowMap.get(`${def.label}::${month}`) || null);
         const leftData = rowItems.map(row => row ? chartMetricValue(row, chartLeftMetric) : null);
-        datasets.push(monthSeriesDatasetConfig('left', chartLeftMetric, def.label, leftData, chartLeftType, chartLeftLabels, idx, leftCap));
+        datasets.push(monthSeriesDatasetConfig('left', chartLeftMetric, def.label, leftData, 'line', chartLeftLabels, idx, leftCap));
         if (maWindow) {
           const maData = rollingMetricDataFromRows(rowItems, chartLeftMetric, maWindow);
           if (hasMovingAverageData(maData)) datasets.push(movingAverageDatasetConfig(chartLeftMetric, def.label, maData, idx, leftCap));
@@ -4946,25 +6519,22 @@
           datasets.push(monthSeriesDatasetConfig('right', chartRightMetric, def.label, rightData, chartRightType, chartRightLabels, idx, rightCap));
         });
       }
-      const omittedNote = result.omitted > 0 ? ` 選択都道府県が多いため、先頭${MAX_MONTH_PREF_TREND_SERIES}件のみ表示しています（他${result.omitted}件）。` : '';
+      const omittedNote = result.omitted > 0 ? ` 入力エリアが多いため、先頭${MAX_MONTH_PREF_TREND_SERIES}件のみ表示しています（他${result.omitted}件）。` : '';
       destroyComparisonChart();
       els.comparisonContent.innerHTML = `
         <div class="chart-panel">
-          ${chartContextHtml()}
           ${chartCapContextHtml(capMessages)}
-          <div id="chartCustomLegend" class="chart-custom-legend-wrap"></div>
-          <div class="chart-scroll">
+          <div class="chart-scroll sticky-y-axis-enabled">
             <div class="chart-canvas-wrap" style="min-width:${minWidth}px;">
               <canvas id="comparisonChartCanvas"></canvas>
             </div>
           </div>
-          <div class="chart-note">※都道府県別推移では、勤務地欄に入力された都道府県を月別の系列として表示します。表示できる系列は最大${MAX_MONTH_PREF_TREND_SERIES}件です。右軸を使う場合は、右軸系列を点線で表示します。${esc(movingAverageNoteText())}${esc(omittedNote)}</div>
+          <div class="chart-note">※エリア推移では、勤務地欄に入力されたエリア語句ごとに月別の系列として表示します。勤務地未入力の場合は全国として表示します。表示できる系列は最大${MAX_MONTH_PREF_TREND_SERIES}件です。${esc(movingAverageNoteText())}${esc(omittedNote)}</div>
         </div>`;
       const canvas = document.getElementById('comparisonChartCanvas');
       if (!canvas || !window.Chart) {
         els.comparisonContent.innerHTML = '<div class="empty">グラフライブラリを読み込めませんでした。</div>';
-        renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
+        requestAnimationFrame(updateStickyLayout);
       restorePreservedScroll();
         return;
       }
@@ -4978,31 +6548,18 @@
           interaction:{ mode:'index', intersect:false },
           plugins:{
             legend:{ display:false },
-            tooltip:{
-              itemSort(a, b) {
-                const axisA = a.dataset.yAxisID === 'yRight' ? 1 : 0;
-                const axisB = b.dataset.yAxisID === 'yRight' ? 1 : 0;
-                if (axisA !== axisB) return axisA - axisB;
-                return a.datasetIndex - b.datasetIndex;
-              },
-              callbacks:{
-                label(context) {
-                  const metricId = context.dataset.yAxisID === 'yRight' ? chartRightMetric : chartLeftMetric;
-                  return `${context.dataset.label}: ${chartValueLabel(context.parsed.y, metricId)}`;
-                }
-              }
-            }
+            tooltip:{ enabled:true }
           },
           scales:{
             x:{
               grid:{ display:false },
-              ticks:{ maxRotation:45, minRotation:0, autoSkip:false, color:'#57534e', font:{ weight:'bold' } }
+              ticks:{ maxRotation:45, minRotation:0, autoSkip:false, color:'#57534e', font:{ weight:500 } }
             },
             yLeft:{
               beginAtZero:true,
               max:leftCap || undefined,
               position:'left',
-              title:{ display:true, text:METRIC_MAP[chartLeftMetric].label, font:{ weight:'bold' } },
+              title:{ display:true, text:METRIC_MAP[chartLeftMetric].label, font:{ weight:500 } },
               ticks:{ callback:(value) => chartAxisTickLabel(value, chartLeftMetric) }
             },
             yRight:{
@@ -5010,7 +6567,7 @@
               max:rightCap || undefined,
               position:'right',
               display:!!useRight,
-              title:{ display:!!useRight, text:useRight ? METRIC_MAP[chartRightMetric].label : '', font:{ weight:'bold' } },
+              title:{ display:!!useRight, text:useRight ? METRIC_MAP[chartRightMetric].label : '', font:{ weight:500 } },
               grid:{ drawOnChartArea:false },
               ticks:{ callback:(value) => chartAxisTickLabel(value, chartRightMetric) }
             }
@@ -5018,16 +6575,14 @@
         }
       });
       renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
+      appendDetailTableBelowChart();
+      requestAnimationFrame(() => { updateComparisonStickyYAxis(comparisonChart); updateStickyLayout(); });
       restorePreservedScroll();
     }
 
     async function repaintMonthPrefTrendChartAsync(token) {
-      destroyComparisonChart();
-      els.comparisonContent.innerHTML = `<div class="chart-panel"><div class="empty">都道府県別推移グラフを集計中...</div></div>`;
-      renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
-      restorePreservedScroll();
+      const hasCachedData = !!getMonthGraphDataCache('prefecture');
+      if (!hasCachedData) showComparisonBusy('エリア推移を集計中...');
       try {
         const data = await fetchMonthPrefTrendData();
         if (token !== monthGraphRenderToken) return;
@@ -5035,10 +6590,11 @@
       } catch (error) {
         console.error(error);
         if (token !== monthGraphRenderToken) return;
-        els.comparisonContent.innerHTML = '<div class="empty">都道府県別推移グラフの集計中にエラーが発生しました。</div>';
-        renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
-      restorePreservedScroll();
+        els.comparisonContent.innerHTML = '<div class="empty">エリア推移グラフの集計中にエラーが発生しました。</div>';
+        requestAnimationFrame(updateStickyLayout);
+        restorePreservedScroll();
+      } finally {
+        if (!hasCachedData) hideComparisonBusy();
       }
     }
 
@@ -5052,6 +6608,10 @@
         if (defs.length >= MAX_MONTH_JOB_TREND_SERIES) return;
         defs.push({ ord: defs.length, label: job, source:'selectedJob', clause: relatedJobExactClause(job) });
       });
+      if (!defs.length) {
+        defs.push({ ord:0, label:'（指定なし）', source:'all', clause:'1=1' });
+        return { defs, omitted:0, total:1 };
+      }
       const total = (freeClause ? 1 : 0) + selectedJobTitles.length;
       return { defs, omitted: Math.max(0, total - defs.length), total };
     }
@@ -5103,6 +6663,7 @@
       return {
         type: isLine ? 'line' : 'bar',
         label: useRight ? `${seriesLabel} ${METRIC_MAP[metricId].label}` : seriesLabel,
+        metricId,
         data,
         yAxisID,
         axisCap,
@@ -5133,9 +6694,8 @@
       const defs = result && Array.isArray(result.defs) ? result.defs : [];
       if (!defs.length) {
         destroyComparisonChart();
-        els.comparisonContent.innerHTML = monthEmptyChartPanelHtml('職種別推移に表示できる系列がありません。フリーワードを入力するか、関連職種を選択してください。');
-        renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
+        els.comparisonContent.innerHTML = monthEmptyChartPanelHtml('職種別推移に表示できるデータがありません。');
+        requestAnimationFrame(updateStickyLayout);
       restorePreservedScroll();
         return;
       }
@@ -5144,7 +6704,7 @@
       const rowMap = monthJobTrendRowMap(result.rows || []);
       const leftValues = [];
       const rightValues = [];
-      const useRight = chartRightMetric && chartRightMetric !== 'none' && chartRightMetric !== chartLeftMetric;
+      const useRight = false;
       defs.forEach(def => {
         months.forEach(month => {
           const row = rowMap.get(`${def.label}::${month}`);
@@ -5161,7 +6721,7 @@
       defs.forEach((def, idx) => {
         const rowItems = months.map(month => rowMap.get(`${def.label}::${month}`) || null);
         const leftData = rowItems.map(row => row ? chartMetricValue(row, chartLeftMetric) : null);
-        datasets.push(monthSeriesDatasetConfig('left', chartLeftMetric, def.label, leftData, chartLeftType, chartLeftLabels, idx, leftCap));
+        datasets.push(monthSeriesDatasetConfig('left', chartLeftMetric, def.label, leftData, 'line', chartLeftLabels, idx, leftCap));
         if (maWindow) {
           const maData = rollingMetricDataFromRows(rowItems, chartLeftMetric, maWindow);
           if (hasMovingAverageData(maData)) datasets.push(movingAverageDatasetConfig(chartLeftMetric, def.label, maData, idx, leftCap));
@@ -5180,21 +6740,18 @@
       destroyComparisonChart();
       els.comparisonContent.innerHTML = `
         <div class="chart-panel">
-          ${chartContextHtml()}
           ${chartCapContextHtml(capMessages)}
-          <div id="chartCustomLegend" class="chart-custom-legend-wrap"></div>
-          <div class="chart-scroll">
+          <div class="chart-scroll sticky-y-axis-enabled">
             <div class="chart-canvas-wrap" style="min-width:${minWidth}px;">
               <canvas id="comparisonChartCanvas"></canvas>
             </div>
           </div>
-          <div class="chart-note">※職種別推移では、フリーワードと選択職種を月別の系列として表示します。表示できる系列は最大${MAX_MONTH_JOB_TREND_SERIES}件です。右軸を使う場合は、右軸系列を点線で表示します。${esc(movingAverageNoteText())}${esc(omittedNote)}</div>
+          <div class="chart-note">※職種別推移では、フリーワードと選択職種を月別の系列として表示します。表示できる系列は最大${MAX_MONTH_JOB_TREND_SERIES}件です。${esc(movingAverageNoteText())}${esc(omittedNote)}</div>
         </div>`;
       const canvas = document.getElementById('comparisonChartCanvas');
       if (!canvas || !window.Chart) {
         els.comparisonContent.innerHTML = '<div class="empty">グラフライブラリを読み込めませんでした。</div>';
-        renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
+        requestAnimationFrame(updateStickyLayout);
       restorePreservedScroll();
         return;
       }
@@ -5208,31 +6765,18 @@
           interaction:{ mode:'index', intersect:false },
           plugins:{
             legend:{ display:false },
-            tooltip:{
-              itemSort(a, b) {
-                const axisA = a.dataset.yAxisID === 'yRight' ? 1 : 0;
-                const axisB = b.dataset.yAxisID === 'yRight' ? 1 : 0;
-                if (axisA !== axisB) return axisA - axisB;
-                return a.datasetIndex - b.datasetIndex;
-              },
-              callbacks:{
-                label(context) {
-                  const metricId = context.dataset.yAxisID === 'yRight' ? chartRightMetric : chartLeftMetric;
-                  return `${context.dataset.label}: ${chartValueLabel(context.parsed.y, metricId)}`;
-                }
-              }
-            }
+            tooltip:{ enabled:true }
           },
           scales:{
             x:{
               grid:{ display:false },
-              ticks:{ maxRotation:45, minRotation:0, autoSkip:false, color:'#57534e', font:{ weight:'bold' } }
+              ticks:{ maxRotation:45, minRotation:0, autoSkip:false, color:'#57534e', font:{ weight:500 } }
             },
             yLeft:{
               beginAtZero:true,
               max:leftCap || undefined,
               position:'left',
-              title:{ display:true, text:METRIC_MAP[chartLeftMetric].label, font:{ weight:'bold' } },
+              title:{ display:true, text:METRIC_MAP[chartLeftMetric].label, font:{ weight:500 } },
               ticks:{ callback:(value) => chartAxisTickLabel(value, chartLeftMetric) }
             },
             yRight:{
@@ -5240,7 +6784,7 @@
               max:rightCap || undefined,
               position:'right',
               display:!!useRight,
-              title:{ display:!!useRight, text:useRight ? METRIC_MAP[chartRightMetric].label : '', font:{ weight:'bold' } },
+              title:{ display:!!useRight, text:useRight ? METRIC_MAP[chartRightMetric].label : '', font:{ weight:500 } },
               grid:{ drawOnChartArea:false },
               ticks:{ callback:(value) => chartAxisTickLabel(value, chartRightMetric) }
             }
@@ -5248,16 +6792,14 @@
         }
       });
       renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
+      appendDetailTableBelowChart();
+      requestAnimationFrame(() => { updateComparisonStickyYAxis(comparisonChart); updateStickyLayout(); });
       restorePreservedScroll();
     }
 
     async function repaintMonthJobTrendChartAsync(token) {
-      destroyComparisonChart();
-      els.comparisonContent.innerHTML = `<div class="chart-panel"><div class="empty">職種別推移グラフを集計中...</div></div>`;
-      renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
-      restorePreservedScroll();
+      const hasCachedData = !!getMonthGraphDataCache('job');
+      if (!hasCachedData) showComparisonBusy('職種推移を集計中...');
       try {
         const data = await fetchMonthJobTrendData();
         if (token !== monthGraphRenderToken) return;
@@ -5266,9 +6808,10 @@
         console.error(error);
         if (token !== monthGraphRenderToken) return;
         els.comparisonContent.innerHTML = '<div class="empty">職種別推移グラフの集計中にエラーが発生しました。</div>';
-        renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
-      restorePreservedScroll();
+        requestAnimationFrame(updateStickyLayout);
+        restorePreservedScroll();
+      } finally {
+        if (!hasCachedData) hideComparisonBusy();
       }
     }
 
@@ -5276,15 +6819,14 @@
       const years = monthYoYYears(chartRows);
       if (!years.length) {
         destroyComparisonChart();
-        els.comparisonContent.innerHTML = '<div class="empty">昨年比グラフに表示できる月別データがありません。</div>';
-        renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
+        els.comparisonContent.innerHTML = '<div class="empty">時期比較グラフに表示できる月別データがありません。月ラベルを年・月として解釈できない可能性があります。</div>';
+        requestAnimationFrame(updateStickyLayout);
       restorePreservedScroll();
         return;
       }
       const rowMap = monthYoYRowMap(chartRows);
       const leftValues = monthYoYValues(chartRows, chartLeftMetric);
-      const useRight = chartRightMetric && chartRightMetric !== 'none' && chartRightMetric !== chartLeftMetric;
+      const useRight = false;
       const rightValues = useRight ? monthYoYValues(chartRows, chartRightMetric) : [];
       const leftCap = resolveAxisCap('left', leftValues);
       const rightCap = useRight ? resolveAxisCap('right', rightValues) : null;
@@ -5297,7 +6839,7 @@
           const row = rowMap.get(`${year}-${idx + 1}`);
           return row ? chartMetricValue(row, chartLeftMetric) : null;
         });
-        datasets.push(monthYoYDatasetConfig('left', chartLeftMetric, year, data, chartLeftType, chartLeftLabels, yearIndex, leftCap));
+        datasets.push(monthYoYDatasetConfig('left', chartLeftMetric, year, data, 'line', chartLeftLabels, yearIndex, leftCap));
       });
       if (useRight) {
         years.forEach((year, yearIndex) => {
@@ -5311,21 +6853,18 @@
       destroyComparisonChart();
       els.comparisonContent.innerHTML = `
         <div class="chart-panel">
-          ${chartContextHtml()}
           ${chartCapContextHtml(capMessages)}
-          <div id="chartCustomLegend" class="chart-custom-legend-wrap"></div>
-          <div class="chart-scroll">
+          <div class="chart-scroll sticky-y-axis-enabled">
             <div class="chart-canvas-wrap" style="min-width:${minWidth}px;">
               <canvas id="comparisonChartCanvas"></canvas>
             </div>
           </div>
-          <div class="chart-note">※昨年比グラフでは、x軸を1月〜12月にそろえ、年ごとの同月推移を重ねて表示します。選択期間に含まれない月は線・棒を表示しません。右軸を使う場合は、右軸系列を点線で表示します。</div>
+          <div class="chart-note">※時期比較グラフでは、x軸を1月〜12月にそろえ、年ごとの同月推移を重ねて表示します。選択期間に含まれない月は線・棒を表示しません。</div>
         </div>`;
       const canvas = document.getElementById('comparisonChartCanvas');
       if (!canvas || !window.Chart) {
         els.comparisonContent.innerHTML = '<div class="empty">グラフライブラリを読み込めませんでした。</div>';
-        renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
+        requestAnimationFrame(updateStickyLayout);
       restorePreservedScroll();
         return;
       }
@@ -5339,31 +6878,18 @@
           interaction:{ mode:'index', intersect:false },
           plugins:{
             legend:{ display:false },
-            tooltip:{
-              itemSort(a, b) {
-                const axisA = a.dataset.yAxisID === 'yRight' ? 1 : 0;
-                const axisB = b.dataset.yAxisID === 'yRight' ? 1 : 0;
-                if (axisA !== axisB) return axisA - axisB;
-                return a.datasetIndex - b.datasetIndex;
-              },
-              callbacks:{
-                label(context) {
-                  const metricId = context.dataset.yAxisID === 'yRight' ? chartRightMetric : chartLeftMetric;
-                  return `${context.dataset.label}: ${chartValueLabel(context.parsed.y, metricId)}`;
-                }
-              }
-            }
+            tooltip:{ enabled:true }
           },
           scales:{
             x:{
               grid:{ display:false },
-              ticks:{ maxRotation:0, minRotation:0, autoSkip:false, color:'#57534e', font:{ weight:'bold' } }
+              ticks:{ maxRotation:0, minRotation:0, autoSkip:false, color:'#57534e', font:{ weight:500 } }
             },
             yLeft:{
               beginAtZero:true,
               max:leftCap || undefined,
               position:'left',
-              title:{ display:true, text:METRIC_MAP[chartLeftMetric].label, font:{ weight:'bold' } },
+              title:{ display:true, text:METRIC_MAP[chartLeftMetric].label, font:{ weight:500 } },
               ticks:{ callback:(value) => chartAxisTickLabel(value, chartLeftMetric) }
             },
             yRight:{
@@ -5371,7 +6897,7 @@
               max:rightCap || undefined,
               position:'right',
               display:!!useRight,
-              title:{ display:!!useRight, text:useRight ? METRIC_MAP[chartRightMetric].label : '', font:{ weight:'bold' } },
+              title:{ display:!!useRight, text:useRight ? METRIC_MAP[chartRightMetric].label : '', font:{ weight:500 } },
               grid:{ drawOnChartArea:false },
               ticks:{ callback:(value) => chartAxisTickLabel(value, chartRightMetric) }
             }
@@ -5379,8 +6905,30 @@
         }
       });
       renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
+      appendDetailTableBelowChart();
+      requestAnimationFrame(() => { updateComparisonStickyYAxis(comparisonChart); updateStickyLayout(); });
       restorePreservedScroll();
+    }
+
+    function detailTableHtml() {
+      if (!lastDisplayRows || !lastDisplayRows.length) return '';
+      return `<div class="detail-table-section">
+        <div class="detail-table-head">
+          <div class="detail-table-head-main">
+            <h3 class="detail-table-title">${esc(comparisonAxisTitle(analysisMode))}表</h3>
+            <p class="detail-table-note">上のグラフと同じ条件・同じ分析軸の数値表です。</p>
+          </div>
+          <button class="btn ghost small table-title-copy-btn" type="button" data-copy-current-table="1" ${lastDisplayRows.length ? '' : 'disabled'}>表をコピー</button>
+        </div>
+        ${tableHtmlForMode(comparisonMode, (lastDisplayRows[0] && lastDisplayRows[0].__summary) ? lastDisplayRows.slice(1) : lastDisplayRows, (lastDisplayRows[0] && lastDisplayRows[0].__summary) ? lastDisplayRows[0] : null)}
+      </div>`;
+    }
+
+    function appendDetailTableBelowChart() {
+      if (outputView !== 'chart' || !els.comparisonContent) return;
+      if (els.comparisonContent.querySelector('.detail-table-section')) return;
+      const html = detailTableHtml();
+      if (html) els.comparisonContent.insertAdjacentHTML('beforeend', html);
     }
 
     function repaintCurrentChart() {
@@ -5391,6 +6939,7 @@
         comparisonScrollSyncCleanup();
         comparisonScrollSyncCleanup = null;
       }
+      chartRightMetric = 'none';
       if (comparisonMode === 'month' && monthGraphType === 'job') {
         const token = ++monthGraphRenderToken;
         repaintMonthJobTrendChartAsync(token);
@@ -5410,8 +6959,8 @@
             ? '<div class="empty">グラフに表示できる月別データがありません。</div>'
             : '<div class="empty">グラフに表示できる比較行がありません。フリーワードを入力するか、上の職種候補をクリックしてください。</div>';
         renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
-      restorePreservedScroll();
+        requestAnimationFrame(updateStickyLayout);
+        restorePreservedScroll();
         return;
       }
       if (comparisonMode === 'month' && monthGraphType === 'yoy') {
@@ -5420,26 +6969,21 @@
       }
       const labels = chartRows.map(row => chartRowLabel(row));
       const highlightedLabels = comparisonMode === 'prefecture' ? new Set(Array.from(detectLocationPrefectures()).filter(pref => labels.includes(pref))) : new Set();
-      const leftData = chartRows.map(row => chartMetricValue(row, chartLeftMetric));
-      const useRight = chartRightMetric && chartRightMetric !== 'none' && chartRightMetric !== chartLeftMetric;
-      const rightData = useRight ? chartRows.map(row => chartMetricValue(row, chartRightMetric)) : [];
-      const leftCap = resolveAxisCap('left', leftData);
-      const rightCap = useRight ? resolveAxisCap('right', rightData) : null;
-      const capMessages = [chartAxisCapLabel('left', leftCap, chartLeftMetric), useRight ? chartAxisCapLabel('right', rightCap, chartRightMetric) : ''].filter(Boolean);
-      const minWidth = Math.max(860, labels.length * (comparisonMode === 'prefecture' ? 58 : comparisonMode === 'month' ? 74 : 86));
+      const values = chartRows.map(row => chartMetricValue(row, chartLeftMetric));
+      const isHorizontal = comparisonMode !== 'month';
+      const chartType = isHorizontal ? 'bar' : 'line';
+      const minWidth = isHorizontal ? 760 : Math.max(860, labels.length * 74);
+      const chartHeight = isHorizontal ? Math.max(380, Math.min(980, labels.length * 34 + 140)) : 460;
       const noteText = comparisonMode === 'prefecture'
-        ? '※都道府県比較グラフでは、全国行は表示対象から外しています。勤務地入力に該当する都道府県は、棒・点・軸ラベルを強調表示します。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。軸上限を超える値は「↑」で示します。'
+        ? '※都道府県比較グラフでは、全国行は表示対象から外しています。勤務地入力に該当する都道府県は、棒と軸ラベルを強調表示します。CPA・CPCなど計算できない値はグラフ上では描画しません。'
         : comparisonMode === 'month'
-          ? '※月別推移グラフでは、期間総計行は表示対象から外し、選択期間内の各月を時系列順に表示します。推移タイプは「全体」「昨年比」「職種別」「都道府県別」を切り替えられます。' + movingAverageNoteText()
-          : '※職種比較グラフでは、キーワードなしの全体行は表示対象から外しています。CPA・CPCなど計算できない値は右側に寄せ、グラフ上では描画しません。棒・線・123・↕ボタンで各軸の表示を切り替えられます。';
+          ? '※全体推移グラフでは、期間総計行は表示対象から外し、選択期間内の各月を時系列順に折れ線で表示します。'
+          : '※職種比較グラフでは、選択した指標を横棒で表示します。条件指定がない場合は「（指定なし）」として全体を表示します。CPA・CPCなど計算できない値はグラフ上では描画しません。';
       destroyComparisonChart();
       els.comparisonContent.innerHTML = `
         <div class="chart-panel">
-          ${chartContextHtml()}
-          ${chartCapContextHtml(capMessages)}
-          <div id="chartCustomLegend" class="chart-custom-legend-wrap"></div>
-          <div class="chart-scroll">
-            <div class="chart-canvas-wrap" style="min-width:${minWidth}px;">
+          <div class="chart-scroll ${isHorizontal ? '' : 'sticky-y-axis-enabled'}">
+            <div class="chart-canvas-wrap" style="min-width:${minWidth}px;height:${chartHeight}px;">
               <canvas id="comparisonChartCanvas"></canvas>
             </div>
           </div>
@@ -5449,78 +6993,69 @@
       if (!canvas || !window.Chart) {
         els.comparisonContent.innerHTML = '<div class="empty">グラフライブラリを読み込めませんでした。</div>';
         renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
-      restorePreservedScroll();
+        requestAnimationFrame(updateStickyLayout);
+        restorePreservedScroll();
         return;
       }
-      const datasets = [chartDatasetConfig('left', chartLeftMetric, leftData, chartLeftType, chartLeftLabels, labels, highlightedLabels, leftCap)];
-      if (comparisonMode === 'month') {
-        const maWindow = movingAverageWindowSize();
-        if (maWindow) {
-          const maData = rollingMetricDataFromRows(chartRows, chartLeftMetric, maWindow);
-          if (hasMovingAverageData(maData)) datasets.push(movingAverageDatasetConfig(chartLeftMetric, METRIC_MAP[chartLeftMetric].label, maData, 0, leftCap));
-        }
-      }
-      if (useRight) {
-        datasets.push(chartDatasetConfig('right', chartRightMetric, rightData, chartRightType, chartRightLabels, labels, highlightedLabels, rightCap));
-      }
+      const colors = chartDatasetColor('left');
+      const highlightFlags = labels.map(label => highlightedLabels.has(label));
+      const hasHighlights = highlightedLabels && highlightedLabels.size > 0;
+      const dataset = isHorizontal ? {
+        type:'bar',
+        label:METRIC_MAP[chartLeftMetric].label,
+        metricId:chartLeftMetric,
+        data:values,
+        backgroundColor: hasHighlights ? highlightFlags.map(flag => flag ? 'rgba(245,158,11,.95)' : 'rgba(249,115,22,.48)') : colors.background,
+        borderColor: hasHighlights ? highlightFlags.map(flag => flag ? 'rgba(180,83,9,1)' : 'rgba(194,65,12,.38)') : colors.border,
+        borderWidth: hasHighlights ? highlightFlags.map(flag => flag ? 3 : 1) : 1,
+        borderRadius:8,
+        showDataLabels:!!chartLeftLabels
+      } : chartDatasetConfig('left', chartLeftMetric, values, 'line', chartLeftLabels, labels, highlightedLabels, null);
       comparisonChart = new window.Chart(canvas, {
-        data: { labels, datasets },
+        type: chartType,
+        data: { labels, datasets:[dataset] },
         plugins:[chartDataLabelPlugin],
         options: {
+          indexAxis: isHorizontal ? 'y' : 'x',
           responsive:true,
           maintainAspectRatio:false,
           animation:false,
           interaction:{ mode:'index', intersect:false },
           plugins:{
             legend:{ display:false },
-            tooltip:{
-              itemSort(a, b) {
-                const axisA = a.dataset.yAxisID === 'yRight' ? 1 : 0;
-                const axisB = b.dataset.yAxisID === 'yRight' ? 1 : 0;
-                if (axisA !== axisB) return axisA - axisB;
-                return a.datasetIndex - b.datasetIndex;
-              },
-              callbacks:{
-                label(context) {
-                  const metricId = context.dataset.yAxisID === 'yRight' ? chartRightMetric : chartLeftMetric;
-                  return `${context.dataset.label}: ${chartValueLabel(context.parsed.y, metricId)}`;
-                }
-              }
-            }
+            tooltip:{ enabled:!isHorizontal }
           },
-          scales:{
+          scales: isHorizontal ? {
             x:{
+              beginAtZero:true,
+              title:{ display:true, text:METRIC_MAP[chartLeftMetric].label, font:{ weight:500 } },
+              ticks:{ callback:(value) => chartAxisTickLabel(value, chartLeftMetric) }
+            },
+            y:{
               grid:{ display:false },
               ticks:{
-                maxRotation:45,
-                minRotation:0,
                 autoSkip:false,
                 color:(ctx) => highlightedLabels.has(labels[ctx.index]) ? '#b45309' : '#57534e',
-                font:(ctx) => ({ weight: highlightedLabels.has(labels[ctx.index]) ? '950' : 'bold' })
+                font:(ctx) => ({ weight: highlightedLabels.has(labels[ctx.index]) ? 700 : 500 })
               }
+            }
+          } : {
+            x:{
+              grid:{ display:false },
+              ticks:{ maxRotation:45, minRotation:0, autoSkip:false, color:'#57534e', font:{ weight:500 } }
             },
             yLeft:{
               beginAtZero:true,
-              max:leftCap || undefined,
               position:'left',
-              title:{ display:true, text:METRIC_MAP[chartLeftMetric].label, font:{ weight:'bold' } },
+              title:{ display:true, text:METRIC_MAP[chartLeftMetric].label, font:{ weight:500 } },
               ticks:{ callback:(value) => chartAxisTickLabel(value, chartLeftMetric) }
-            },
-            yRight:{
-              beginAtZero:true,
-              max:rightCap || undefined,
-              position:'right',
-              display:!!useRight,
-              title:{ display:!!useRight, text:useRight ? METRIC_MAP[chartRightMetric].label : '', font:{ weight:'bold' } },
-              grid:{ drawOnChartArea:false },
-              ticks:{ callback:(value) => chartAxisTickLabel(value, chartRightMetric) }
             }
           }
         }
       });
       renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
+      appendDetailTableBelowChart();
+      requestAnimationFrame(() => { updateComparisonStickyYAxis(comparisonChart); updateStickyLayout(); });
       restorePreservedScroll();
     }
 
@@ -5532,54 +7067,89 @@
         restorePreservedScroll(scrollState);
         return;
       }
+      if (lastComparisonListResults) {
+        renderComparisonList(lastComparisonListResults);
+        restorePreservedScroll(scrollState);
+        return;
+      }
       destroyComparisonChart();
-      setCopyRows(lastDisplayRows);
+      const sortedDisplayRows = sortRowsForTable(lastDisplayRows, comparisonMode);
+      setCopyRows(sortedDisplayRows);
       if (!lastDisplayRows.length) {
         els.comparisonContent.innerHTML = '<div class="empty">該当データがありません。</div>';
         if (els.floatingXScroll) els.floatingXScroll.classList.add('hidden');
-        renderChartCustomLegend(comparisonChart);
-      requestAnimationFrame(updateStickyLayout);
+        requestAnimationFrame(updateStickyLayout);
       restorePreservedScroll();
         return;
       }
       const colGroup = tableColGroup();
-      const headerHtml = `<tr>${tableHeaders()}</tr>`;
-      const summaryRow = lastDisplayRows[0] && lastDisplayRows[0].__summary ? lastDisplayRows[0] : null;
-      const bodyRows = summaryRow ? lastDisplayRows.slice(1) : lastDisplayRows;
+      const headerHtml = `<tr>${tableHeaders(comparisonMode)}</tr>`;
+      const summaryRow = sortedDisplayRows[0] && sortedDisplayRows[0].__summary ? sortedDisplayRows[0] : null;
+      const bodyRows = summaryRow ? sortedDisplayRows.slice(1) : sortedDisplayRows;
       const freezeHtml = summaryRow
-        ? `<div class="comparison-freeze-pane"><table class="metric-table">${colGroup}<thead>${headerHtml}</thead><tbody>${rowHtml(summaryRow)}</tbody></table></div>`
-        : `<div class="comparison-freeze-pane"><table class="metric-table">${colGroup}<thead>${headerHtml}</thead></table></div>`;
+        ? `<div class="comparison-freeze-pane" data-table-mode="${esc(comparisonMode)}"><table class="metric-table" data-table-mode="${esc(comparisonMode)}">${colGroup}<thead>${headerHtml}</thead><tbody>${rowHtml(summaryRow)}</tbody></table></div>`
+        : `<div class="comparison-freeze-pane" data-table-mode="${esc(comparisonMode)}"><table class="metric-table" data-table-mode="${esc(comparisonMode)}">${colGroup}<thead>${headerHtml}</thead></table></div>`;
       const bodyHtml = bodyRows.length
         ? bodyRows.map(row => rowHtml(row)).join('')
         : '';
-      els.comparisonContent.innerHTML = `${freezeHtml}<div class="table-wrap"><table class="metric-table">${colGroup}<tbody>${bodyHtml}</tbody></table></div>${lastTableHelper}`;
+      els.comparisonContent.innerHTML = `${freezeHtml}<div class="table-wrap" data-table-mode="${esc(comparisonMode)}"><table class="metric-table" data-table-mode="${esc(comparisonMode)}">${colGroup}<tbody>${bodyHtml}</tbody></table></div>${lastTableHelper}`;
       requestAnimationFrame(() => { updateStickyLayout(); syncComparisonHorizontalScroll(); restorePreservedScroll(scrollState); });
     }
 
     function renderTable(labelName, rows, options={}) {
       const summaryTotals = Object.prototype.hasOwnProperty.call(options, 'summaryTotals') ? options.summaryTotals : latestTotals;
-      const summary = summaryTotals ? [{ label: currentKeywordText(), __summary: true, ...summaryTotals }] : [];
+      const summaryLabel = comparisonMode === 'job' ? jobAxisDefaultLabel() : currentKeywordText();
+      const summary = summaryTotals ? [{ label: summaryLabel, __summary: true, ...summaryTotals }] : [];
       const displayRows = summary.concat(rows || []);
       lastDisplayRows = displayRows;
-      lastTableHelper = (!rows || rows.length === 0) && comparisonMode === 'job'
+      lastTableHelper = (!rows || rows.length === 0) && comparisonMode === 'job' && hasJobAxisInput()
         ? '<div class="empty" style="margin-top:12px;">上の職種候補をクリックすると、比較行を追加できます。</div>'
         : '';
       repaintCurrentTable();
     }
 
+    function displayRowsForResult(result, mode=comparisonMode) {
+      if (!result) return [];
+      const summaryTotals = result.summaryTotals || result.latestTotals || null;
+      const summaryLabel = mode === 'job' ? jobAxisDefaultLabel() : currentKeywordText();
+      const summary = summaryTotals ? [{ label: summaryLabel, __summary: true, ...summaryTotals }] : [];
+      return summary.concat(result.rows || []);
+    }
+
+    function copyRowsForMode(displayRows, mode) {
+      if (!displayRows || !displayRows.length) return;
+      const prevMode = comparisonMode;
+      comparisonMode = mode || comparisonMode;
+      try {
+        const sortedRows = sortRowsForTable(displayRows, comparisonMode);
+        const rows = sortedRows.map(row => {
+          const keyLoc = tableKeyLocation(row);
+          return { ...keyLoc, ...row, ...calcRates(row) };
+        });
+        const headers = ['検索キーワード','勤務地'];
+        if (comparisonMode === 'month') headers.push('集計月');
+        headers.push(...visibleMetricIds.map(id => `${METRIC_MAP[id].label}（${METRIC_MAP[id].unit}）`));
+        const lines = [headers.join('\t')];
+        rows.forEach(row => {
+          const values = [row.keyword, row.location];
+          if (comparisonMode === 'month') values.push(row.periodCopy || row.periodDisplay || '');
+          values.push(...visibleMetricIds.map(id => metricValueForCopy(row, id)));
+          lines.push(values.join('\t'));
+        });
+        navigator.clipboard.writeText(lines.join('\n')).catch(() => {});
+      } finally {
+        comparisonMode = prevMode;
+      }
+    }
+
     function copyTable() {
-      if (!lastCopyRows.length) return;
-      const headers = ['検索キーワード','勤務地'];
-      if (comparisonMode === 'month') headers.push('集計月');
-      headers.push(...visibleMetricIds.map(id => `${METRIC_MAP[id].label}（${METRIC_MAP[id].unit}）`));
-      const lines = [headers.join('\t')];
-      lastCopyRows.forEach(row => {
-        const values = [row.keyword, row.location];
-        if (comparisonMode === 'month') values.push(row.periodCopy || row.periodDisplay || '');
-        values.push(...visibleMetricIds.map(id => metricValueForCopy(row, id)));
-        lines.push(values.join('\t'));
-      });
-      navigator.clipboard.writeText(lines.join('\n')).catch(() => {});
+      copyRowsForMode(lastDisplayRows, comparisonMode);
+    }
+
+    function copyResultSection(mode) {
+      if (!lastComparisonListResults || !mode) return;
+      const result = lastComparisonListResults[mode];
+      copyRowsForMode(displayRowsForResult(result, mode), mode);
     }
 
     function commitTextSearchIfNeeded() {
@@ -5588,6 +7158,30 @@
       clearLog();
       refreshAll();
     }
+
+    document.addEventListener('click', (e) => {
+      const sortHead = e.target.closest('th[data-sort-key]');
+      if (sortHead && !document.body.classList.contains('company-mode-active')) {
+        const mode = sortHead.dataset.tableMode || (sortHead.closest('[data-table-mode]') ? sortHead.closest('[data-table-mode]').dataset.tableMode : comparisonMode);
+        const key = sortHead.dataset.sortKey;
+        if (cycleTableSort(mode, key)) {
+          e.preventDefault();
+          repaintTablesAfterSort(mode);
+        }
+        return;
+      }
+      const sectionCopyBtn = e.target.closest('[data-copy-result-mode]');
+      if (sectionCopyBtn) {
+        e.preventDefault();
+        copyResultSection(sectionCopyBtn.dataset.copyResultMode);
+        return;
+      }
+      const currentCopyBtn = e.target.closest('[data-copy-current-table]');
+      if (currentCopyBtn) {
+        e.preventDefault();
+        copyTable();
+      }
+    });
 
     els.folderSelectBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -5622,7 +7216,33 @@
       input.addEventListener('blur', () => setTimeout(commitTextSearchIfNeeded, 0));
       input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commitTextSearchIfNeeded(); input.blur(); } });
     });
-    [els.searchMode, els.campaignFilter, els.compareAFrom, els.compareATo, els.compareBFrom, els.compareBTo].filter(Boolean).forEach(el => el.addEventListener('change', () => { clearLog(); refreshAll(); }));
+    if (els.employmentFilterBtn) {
+      els.employmentFilterBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (els.employmentFilterBtn.disabled || !els.employmentPopover) return;
+        els.employmentPopover.classList.toggle('hidden');
+      });
+    }
+    if (els.employmentPopover) {
+      els.employmentPopover.addEventListener('click', e => e.stopPropagation());
+      els.employmentPopover.querySelectorAll('[data-employment-value]').forEach(input => {
+        input.addEventListener('change', () => handleEmploymentOptionChange(input.dataset.employmentValue, input.checked));
+      });
+    }
+    document.addEventListener('click', (e) => {
+      if (!els.employmentPopover || !els.employmentFilterBtn) return;
+      if (els.employmentPopover.contains(e.target) || els.employmentFilterBtn.contains(e.target)) return;
+      els.employmentPopover.classList.add('hidden');
+    });
+    [els.compareAFrom, els.compareATo, els.compareBFrom, els.compareBTo].filter(Boolean).forEach(el => el.addEventListener('change', () => { clearLog(); refreshAll(); }));
+    if (els.advancedFilterBtn) els.advancedFilterBtn.addEventListener('click', openAdvancedFilterDialog);
+    if (els.advancedFilterClose) els.advancedFilterClose.addEventListener('click', closeAdvancedFilterDialog);
+    if (els.advancedFilterApply) els.advancedFilterApply.addEventListener('click', () => { closeAdvancedFilterDialog(); updateAdvancedFilterButton(); clearLog(); clearComparisonCaches(); refreshAll(); });
+    if (els.advancedFilterReset) els.advancedFilterReset.addEventListener('click', () => { resetAdvancedFilters(); closeAdvancedFilterDialog(); clearLog(); clearComparisonCaches(); refreshAll(); });
+    if (els.advancedFilterDialog) {
+      els.advancedFilterDialog.addEventListener('click', e => { if (e.target === els.advancedFilterDialog) closeAdvancedFilterDialog(); else e.stopPropagation(); });
+      els.advancedFilterDialog.addEventListener('cancel', e => { e.preventDefault(); closeAdvancedFilterDialog(); });
+    }
     els.periodRangeBtn.addEventListener('click', (e) => { e.stopPropagation(); openPeriodModal(); });
     els.periodModalClose.addEventListener('click', closePeriodModal);
     els.periodModalAll.addEventListener('click', chooseAllPeriod);
@@ -5638,7 +7258,7 @@
     document.querySelectorAll('.view-tab').forEach(btn => btn.addEventListener('click', () => {
       outputView = btn.dataset.view === 'chart' ? 'chart' : 'table';
       updateViewControls();
-      repaintCurrentTable(true);
+      refreshComparisonOnly();
     }));
     document.addEventListener('click', e => {
       const btn = e.target.closest('[data-month-trend-type]');
@@ -5658,6 +7278,7 @@
     });
     if (els.chartLeftMetric) els.chartLeftMetric.addEventListener('change', () => { chartLeftMetric = els.chartLeftMetric.value || 'cpa'; hideAxisCapPopover(); updateChartStyleButtons(); repaintCurrentTable(true); });
     if (els.chartRightMetric) els.chartRightMetric.addEventListener('change', () => { chartRightMetric = els.chartRightMetric.value || 'none'; if (chartRightMetric === 'none') hideAxisCapPopover(); updateChartStyleButtons(); repaintCurrentTable(true); });
+    if (els.chartLabelToggle) els.chartLabelToggle.addEventListener('click', (e) => { e.stopPropagation(); setChartAxisStyle('left', 'label', els.chartLabelToggle); });
     document.querySelectorAll('.chart-icon-btn[data-axis]').forEach(btn => {
       btn.addEventListener('click', (e) => { e.stopPropagation(); setChartAxisStyle(btn.dataset.axis, btn.dataset.style, btn); });
     });
@@ -5666,8 +7287,8 @@
       if (els.chartAxisPopover.contains(e.target) || e.target.closest('.chart-icon-btn[data-style="cap"]')) return;
       hideAxisCapPopover();
     });
-    document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); comparisonMode = tab.dataset.mode; updateComparisonControls(); textDirty = false; clearLog(); refreshComparisonOnly(); }));
-    window.addEventListener('resize', () => requestAnimationFrame(updateStickyLayout));
+    document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { setAnalysisMode(tab.dataset.mode); updateViewControls(); updateComparisonControls(); textDirty = false; clearLog(); refreshComparisonOnly(); }));
+    window.addEventListener('resize', () => requestAnimationFrame(() => { updateComparisonStickyYAxis(comparisonChart); updateStickyLayout(); }));
     window.addEventListener('scroll', () => requestAnimationFrame(updateStickyLayout), { passive:true });
     if (els.modeSettingsBtn) els.modeSettingsBtn.addEventListener('click', openModeSwitchDialog);
     if (els.modeSwitchCloseBtn) els.modeSwitchCloseBtn.addEventListener('click', closeModeSwitchDialog);
@@ -5742,6 +7363,163 @@
         return;
       }
     });
+
+
+    // Step17: page-level sticky table header clone.
+    // Keeps vertical scrolling on the outer page only, while preserving horizontal
+    // table scrolling and showing only the header while a table is in view.
+    let pageStickyTableHeaderEl = null;
+    let pageStickyTableInnerEl = null;
+    let pageStickyTableSourceKey = '';
+    let pageStickyTableRaf = 0;
+
+    function readCssPxVar(name) {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue(name);
+      const value = parseFloat(raw);
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    function pageTableStickyTop() {
+      return Math.max(0, readCssPxVar('--search-sticky-offset') + readCssPxVar('--comparison-toolbar-offset'));
+    }
+
+    function ensurePageStickyTableHeader() {
+      if (pageStickyTableHeaderEl && pageStickyTableInnerEl) return;
+      pageStickyTableHeaderEl = document.createElement('div');
+      pageStickyTableHeaderEl.className = 'page-sticky-table-header';
+      pageStickyTableHeaderEl.setAttribute('aria-hidden', 'false');
+      pageStickyTableInnerEl = document.createElement('div');
+      pageStickyTableInnerEl.className = 'page-sticky-table-header-inner';
+      pageStickyTableHeaderEl.appendChild(pageStickyTableInnerEl);
+      document.body.appendChild(pageStickyTableHeaderEl);
+    }
+
+    function hidePageStickyTableHeader() {
+      if (!pageStickyTableHeaderEl) return;
+      pageStickyTableHeaderEl.classList.remove('is-visible');
+      pageStickyTableSourceKey = '';
+    }
+
+    function buildPageStickyHeaderCandidates() {
+      const candidates = [];
+      if (document.body.classList.contains('company-mode-active')) return candidates;
+
+      document.querySelectorAll('.result-list-table-wrap').forEach((wrap, index) => {
+        const table = wrap.querySelector('table.metric-table');
+        const thead = table ? table.querySelector('thead') : null;
+        if (!table || !thead) return;
+        candidates.push({
+          key: `list-${index}-${table.scrollWidth}-${table.offsetWidth}-${wrap.clientWidth}-${wrap.scrollWidth}-${thead.innerHTML.length}`,
+          wrap,
+          table,
+          headerTable: table,
+          thead,
+          colGroup: table.querySelector('colgroup'),
+          topEl: wrap,
+          bottomEl: wrap,
+        });
+      });
+
+      document.querySelectorAll('.comparison-card .table-wrap, .detail-table-section .table-wrap').forEach((wrap, index) => {
+        const table = wrap.querySelector('table.metric-table');
+        const parent = wrap.parentElement;
+        const freeze = (wrap.previousElementSibling && wrap.previousElementSibling.classList && wrap.previousElementSibling.classList.contains('comparison-freeze-pane'))
+          ? wrap.previousElementSibling
+          : (parent ? parent.querySelector(':scope > .comparison-freeze-pane') : null);
+        const headerTable = freeze ? freeze.querySelector('table.metric-table') : null;
+        const thead = headerTable ? headerTable.querySelector('thead') : null;
+        if (!table || !headerTable || !thead) return;
+        candidates.push({
+          key: `detail-${index}-${table.scrollWidth}-${table.offsetWidth}-${headerTable.scrollWidth}-${headerTable.offsetWidth}-${wrap.clientWidth}-${wrap.scrollWidth}-${thead.innerHTML.length}`,
+          wrap,
+          table,
+          headerTable,
+          thead,
+          colGroup: headerTable.querySelector('colgroup'),
+          topEl: freeze || wrap,
+          bottomEl: wrap,
+        });
+      });
+
+      return candidates;
+    }
+
+    function renderPageStickyTableHeader(candidate, stickyTop) {
+      ensurePageStickyTableHeader();
+      if (!pageStickyTableHeaderEl || !pageStickyTableInnerEl) return;
+
+      const wrapRect = candidate.wrap.getBoundingClientRect();
+      const wrapClientLeft = candidate.wrap.clientLeft || 0;
+      const visibleLeft = Math.max(0, wrapRect.left + wrapClientLeft);
+      const visibleClientWidth = Math.max(0, candidate.wrap.clientWidth || Math.floor(wrapRect.width));
+      const tableWidth = Math.ceil(Math.max(
+        candidate.wrap.scrollWidth || 0,
+        candidate.table ? candidate.table.scrollWidth : 0,
+        candidate.headerTable ? candidate.headerTable.scrollWidth : 0,
+        visibleClientWidth
+      ));
+
+      if (candidate.key !== pageStickyTableSourceKey) {
+        const colGroupHtml = candidate.colGroup ? candidate.colGroup.outerHTML : '';
+        pageStickyTableInnerEl.innerHTML = `<table class="metric-table">${colGroupHtml}<thead>${candidate.thead.innerHTML}</thead></table>`;
+        pageStickyTableSourceKey = candidate.key;
+      }
+
+      const visibleRight = Math.min(
+        window.innerWidth,
+        visibleLeft + visibleClientWidth
+      );
+      const visibleWidth = Math.max(0, Math.ceil(visibleRight - visibleLeft));
+
+      pageStickyTableHeaderEl.style.top = `${stickyTop}px`;
+      pageStickyTableHeaderEl.style.left = `${visibleLeft}px`;
+      pageStickyTableHeaderEl.style.width = `${visibleWidth}px`;
+      pageStickyTableInnerEl.style.width = `${tableWidth}px`;
+      const clonedTable = pageStickyTableInnerEl.querySelector('table.metric-table');
+      if (clonedTable) clonedTable.style.width = `${tableWidth}px`;
+      pageStickyTableInnerEl.style.transform = `translateX(${-candidate.wrap.scrollLeft}px)`;
+      pageStickyTableHeaderEl.classList.add('is-visible');
+    }
+
+    function updatePageStickyTableHeader() {
+      pageStickyTableRaf = 0;
+      const stickyTop = pageTableStickyTop();
+      const probeY = stickyTop + 1;
+      const candidates = buildPageStickyHeaderCandidates();
+
+      for (const candidate of candidates) {
+        const topRect = candidate.topEl.getBoundingClientRect();
+        const bottomRect = candidate.bottomEl.getBoundingClientRect();
+        const headerHeight = Math.max(34, candidate.thead.getBoundingClientRect().height || 34);
+        const shouldShow = topRect.top < probeY && bottomRect.bottom > probeY + headerHeight;
+        if (!shouldShow) continue;
+        renderPageStickyTableHeader(candidate, stickyTop);
+        return;
+      }
+
+      hidePageStickyTableHeader();
+    }
+
+    function schedulePageStickyTableHeader() {
+      if (pageStickyTableRaf) return;
+      pageStickyTableRaf = requestAnimationFrame(updatePageStickyTableHeader);
+    }
+
+    function initPageStickyTableHeaders() {
+      ensurePageStickyTableHeader();
+      window.addEventListener('scroll', schedulePageStickyTableHeader, { passive:true });
+      window.addEventListener('resize', schedulePageStickyTableHeader);
+      document.addEventListener('scroll', event => {
+        const target = event.target;
+        if (target && target.closest && target.closest('.result-list-table-wrap, .table-wrap')) {
+          schedulePageStickyTableHeader();
+        }
+      }, true);
+      document.addEventListener('click', () => requestAnimationFrame(schedulePageStickyTableHeader), true);
+      requestAnimationFrame(schedulePageStickyTableHeader);
+    }
+
+    initPageStickyTableHeaders();
     renderChartMetricSelectors();
     updateViewControls();
     updateColumnMenuLabel();
