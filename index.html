@@ -86,8 +86,8 @@
     @media (max-width:700px) { .toast { width:calc(100vw - 24px); } }
     .field { display:grid; gap:6px; min-width:180px; flex:1; }
     .field.sm { flex:0 0 150px; min-width:140px; } .field.md { flex:0 0 210px; min-width:180px; }
-    .field.period-field { flex:0 0 270px; min-width:255px; }
-    .field.employment-field { flex:0 0 220px; min-width:200px; }
+    .field.period-field { flex:0 0 254px; min-width:244px; }
+    .field.employment-field { flex:0 0 236px; min-width:220px; }
     .search-filters-placeholder { display:none; height:0; }
     .search-filters-shell {
       position:sticky; top:0; z-index:240;
@@ -133,6 +133,13 @@
     .advanced-filter-btn.active { border-color:#0ea5e9; background:linear-gradient(180deg,#e0f2fe,#bae6fd); color:#075985; box-shadow:0 5px 0 #38bdf8; }
     .advanced-filter-count { min-width:22px; height:22px; display:inline-grid; place-items:center; padding:0 7px; border-radius:999px; background:#fff; border:1px solid rgba(154,52,18,.18); font-size:11px; line-height:1; }
     .filter-footnote { margin-top:6px; font-size:11px; color:#78716c; font-weight:800; line-height:1.45; }
+    .employment-label-row { white-space:nowrap; gap:7px; }
+    .employment-inline-note {
+      display:inline-flex; align-items:center; min-width:0;
+      color:#78716c; font-size:11px; line-height:1; font-weight:500; letter-spacing:.01em;
+      white-space:nowrap; opacity:.86;
+    }
+    .employment-inline-note.hidden { display:none!important; }
     .advanced-dialog { width:min(760px, calc(100vw - 28px)); max-height:min(86dvh, 760px); border:0; border-radius:28px; padding:0; background:transparent; color:#44403c; }
     .advanced-dialog:not([open]) { display:none; }
     .advanced-dialog::backdrop { background:rgba(28,25,23,.34); backdrop-filter:blur(3px); }
@@ -593,7 +600,91 @@
 
     .chart-controls { position:relative; display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:5px 8px; border-radius:16px; background:#fff7ed; border:1px solid #fed7aa; }
     .chart-control { display:flex; align-items:center; gap:5px; font-size:12px; font-weight:950; color:#7c2d12; }
+
+    /* Step50: show the analysis hierarchy as mode -> axis -> displayed metric. */
+    .analysis-axis-group {
+      display:flex;
+      align-items:center;
+      gap:6px;
+      min-width:0;
+      padding:3px 5px 3px 10px;
+      border:1px solid #dbe4ee;
+      border-radius:20px;
+      background:linear-gradient(180deg,#f8fafc,#f1f5f9);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+    }
+    .analysis-axis-label {
+      flex:0 0 auto;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:0 3px 0 1px;
+      color:#64748b;
+      font-size:11px;
+      font-weight:600;
+      letter-spacing:.04em;
+      line-height:1;
+      white-space:nowrap;
+    }
+    .analysis-axis-label::before {
+      content:"";
+      width:6px;
+      height:6px;
+      border-radius:999px;
+      background:#38bdf8;
+      box-shadow:0 0 0 3px #e0f2fe;
+    }
+    .analysis-axis-group .analysis-tabs {
+      padding:2px;
+      border:0;
+      background:transparent;
+      box-shadow:none;
+    }
+    .analysis-axis-group .tab {
+      padding:8px 13px;
+    }
     .chart-control select { width:auto; min-width:104px; padding:7px 28px 7px 10px; border-radius:12px; border-width:2px; background-color:#fff; font-size:12px; }
+
+    .metric-select-wrap { position:relative; min-width:122px; }
+    .metric-select-btn {
+      width:100%; min-height:34px; display:flex; align-items:center; justify-content:space-between; gap:10px;
+      border:2px solid #fdba74; border-radius:13px; padding:7px 11px 7px 12px;
+      background:linear-gradient(180deg,#ffffff,#fff7ed); color:#431407;
+      font-family:inherit; font-size:12px; font-weight:700; line-height:1; cursor:pointer;
+      box-shadow:0 3px 0 #fed7aa, inset 0 1px 0 rgba(255,255,255,.92);
+      transition:transform .1s ease, box-shadow .1s ease, border-color .12s ease, background .12s ease;
+    }
+    .metric-select-btn::after { content:'▾'; flex:0 0 auto; color:#9a3412; font-size:10px; transform:translateY(-1px); transition:transform .14s ease; }
+    .metric-select-btn:hover { border-color:#fb923c; background:linear-gradient(180deg,#ffffff,#ffedd5); transform:translateY(-1px); box-shadow:0 4px 0 #fed7aa, inset 0 1px 0 rgba(255,255,255,.95); }
+    .metric-select-btn:focus { outline:none; border-color:#38bdf8; box-shadow:0 0 0 4px rgba(14,165,233,.16), 0 3px 0 #fed7aa; }
+    .metric-select-btn[aria-expanded="true"] { border-color:#fb923c; background:linear-gradient(180deg,#fff7ed,#ffedd5); box-shadow:0 2px 0 #fdba74, 0 8px 18px -16px rgba(154,52,18,.55); }
+    .metric-select-btn[aria-expanded="true"]::after { transform:translateY(-1px) rotate(180deg); }
+    .metric-select-popover {
+      position:absolute; left:0; top:calc(100% + 8px); z-index:1300;
+      width:190px; max-height:360px; overflow:auto; padding:7px;
+      border:3px solid #fed7aa; border-radius:18px;
+      background:rgba(255,255,255,.98); box-shadow:0 18px 42px rgba(120,53,15,.20), inset 0 1px 0 rgba(255,255,255,.92);
+      backdrop-filter:blur(8px);
+    }
+    .metric-select-popover::before {
+      content:""; position:absolute; left:22px; top:-8px; width:13px; height:13px;
+      background:#fff; border-left:3px solid #fed7aa; border-top:3px solid #fed7aa;
+      transform:rotate(45deg); border-radius:3px 0 0 0;
+    }
+    .metric-select-option {
+      position:relative; width:100%; display:flex; align-items:center; gap:8px;
+      border:0; border-radius:12px; padding:8px 9px; background:transparent;
+      color:#44403c; font-family:inherit; font-size:13px; font-weight:500; text-align:left; cursor:pointer;
+      transition:background .12s ease, color .12s ease, transform .08s ease;
+    }
+    .metric-select-option:hover { background:#fff7ed; color:#9a3412; }
+    .metric-select-option:active { transform:translateY(1px); }
+    .metric-select-option.active { background:linear-gradient(180deg,#fb923c,#f97316); color:#fff; font-weight:700; box-shadow:0 3px 0 #c2410c; }
+    .metric-select-check { width:14px; flex:0 0 14px; color:currentColor; font-size:11px; line-height:1; opacity:0; }
+    .metric-select-option.active .metric-select-check { opacity:1; }
+    .metric-select-popover::-webkit-scrollbar { width:12px; }
+    .metric-select-popover::-webkit-scrollbar-track { background:#fff7ed; border-radius:999px; }
+    .metric-select-popover::-webkit-scrollbar-thumb { background:#fdba74; border-radius:999px; border:3px solid #fff7ed; }
     .chart-style-mini { display:inline-flex; align-items:center; gap:2px; padding:2px; border-radius:10px; background:#ffedd5; border:1px solid #fed7aa; }
     .chart-icon-btn { width:25px; height:25px; border:0; border-radius:8px; background:transparent; color:#9a3412; font-family:inherit; font-size:11px; font-weight:950; line-height:1; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:.12s; }
     .chart-icon-btn:hover { background:rgba(255,255,255,.72); color:#7c2d12; }
@@ -765,9 +856,41 @@
     @media (max-width:980px) { .toolbar-context-summary { order:3; flex-basis:100%; } }
 
     .comparison-card.chart-view .view-toggle { order:1; flex:0 0 auto; }
-    .comparison-card.chart-view .chart-controls { order:2; flex:0 0 auto; }
-    .comparison-card.chart-view .table-head-actions { order:3; flex:1 1 auto; justify-content:flex-start; min-width:0; }
+    .comparison-card.chart-view .table-head-actions {
+      order:2;
+      flex:1 1 auto;
+      justify-content:flex-start;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .comparison-card.chart-view .analysis-axis-group {
+      order:1;
+      flex:0 1 auto;
+      min-width:0;
+    }
+    .comparison-card.chart-view .chart-controls {
+      order:2;
+      flex:0 0 auto;
+    }
+    .comparison-card.chart-view .table-operation-actions {
+      order:3;
+      flex:0 0 auto;
+      margin-left:auto;
+    }
+    .comparison-card.table-view .analysis-axis-group,
+    .comparison-card.list-view .analysis-axis-group {
+      display:none !important;
+    }
     .comparison-card.chart-view .toolbar-context-summary { order:4; flex:1 1 100%; padding:2px 4px 0; }
+    @media (max-width:1280px) {
+      .comparison-card.chart-view .analysis-axis-group {
+        flex:1 1 100%;
+      }
+      .comparison-card.chart-view .chart-controls {
+        margin-left:0;
+      }
+    }
     .table-operation-actions #comparisonCopyBtn { display:none !important; }
     .result-section-head-main { min-width:0; flex:1 1 auto; }
     .result-section-actions { flex:0 0 auto; display:flex; align-items:center; justify-content:flex-end; gap:8px; }
@@ -793,6 +916,28 @@
     .axis-cap-help { margin:8px 6px 0; color:#78716c; font-size:11px; font-weight:800; line-height:1.45; }
 
     .mode-title-row { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    .title-action-buttons { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
+    .top-action-btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:42px;
+      padding:10px 15px; border-radius:15px; border:3px solid #fff;
+      font-family:inherit; font-size:13px; font-weight:600; letter-spacing:.01em; white-space:nowrap;
+      cursor:pointer; transition:transform .10s ease, filter .12s ease, box-shadow .10s ease, opacity .12s ease;
+    }
+    .top-action-btn:hover { filter:brightness(1.025); transform:translateY(-1px); }
+    .top-action-btn:active { transform:translateY(3px); box-shadow:none; }
+    .top-action-btn:disabled { opacity:.52; cursor:not-allowed; transform:none; filter:none; }
+    .top-action-btn.csv {
+      background:linear-gradient(180deg,#ecfdf5,#d1fae5); color:#047857;
+      box-shadow:0 5px 0 #6ee7b7, 0 10px 18px -14px rgba(5,150,105,.55);
+    }
+    .top-action-btn.company {
+      background:linear-gradient(180deg,#38bdf8,#0ea5e9); color:#fff;
+      box-shadow:0 5px 0 #0369a1, 0 10px 18px -14px rgba(14,116,144,.65);
+    }
+    @media (max-width:760px) {
+      .mode-title-row { align-items:flex-start; flex-direction:column; }
+      .title-action-buttons { width:100%; justify-content:flex-start; }
+    }
     .mode-settings-btn { display:inline-flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:15px; border:3px solid #fff; background:linear-gradient(180deg,#fafaf9,#e7e5e4); color:#57534e; cursor:pointer; font-size:18px; font-weight:950; box-shadow:0 5px 0 #d6d3d1; transition:.12s; }
     .mode-settings-btn:hover { filter:brightness(1.03); transform:translateY(-1px); }
     .mode-switch-dialog { width:min(560px, calc(100vw - 28px)); border:0; padding:0; border-radius:28px; background:linear-gradient(135deg,#fff7ed,#ffffff); color:#44403c; box-shadow:0 28px 90px rgba(67,20,7,.28); }
@@ -1962,6 +2107,255 @@
 
 
 
+
+    /* Step48: sticky related-job editor and selection modal */
+    .related-jobs-section { min-width:0; }
+    .related-title {
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .related-title-icon {
+      display:inline-grid;
+      place-items:center;
+      width:25px;
+      height:25px;
+      flex:0 0 25px;
+      border-radius:9px;
+      border:1px solid #fed7aa;
+      background:linear-gradient(180deg,#fff7ed,#ffedd5);
+      color:#c2410c;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+    }
+    .related-title-icon svg,
+    .related-jobs-quick-btn svg {
+      width:15px;
+      height:15px;
+      display:block;
+      fill:none;
+      stroke:currentColor;
+      stroke-width:1.9;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+    .related-jobs-quick-btn {
+      position:relative;
+      display:inline-grid;
+      place-items:center;
+      flex:0 0 auto;
+      width:0;
+      height:28px;
+      margin:0 -5px 0 -4px;
+      padding:0;
+      border:0;
+      border-radius:10px;
+      background:linear-gradient(180deg,#fff7ed,#ffedd5);
+      color:#c2410c;
+      box-shadow:0 2px 0 #fdba74, inset 0 1px 0 rgba(255,255,255,.92);
+      opacity:0;
+      overflow:hidden;
+      pointer-events:none;
+      transform:translateX(-5px) scale(.94);
+      transition:width .16s ease, margin .16s ease, opacity .14s ease, transform .16s ease, filter .12s ease;
+      cursor:pointer;
+    }
+    .related-jobs-quick-btn.is-visible {
+      width:30px;
+      margin:0 1px 0 0;
+      opacity:1;
+      overflow:visible;
+      pointer-events:auto;
+      transform:translateX(0) scale(1);
+    }
+    .related-jobs-quick-btn.is-visible:hover {
+      filter:brightness(.985);
+      transform:translateY(-1px);
+    }
+    .related-jobs-quick-btn.is-visible:active {
+      transform:translateY(2px);
+      box-shadow:0 0 0 #fdba74, inset 0 1px 0 rgba(255,255,255,.92);
+    }
+    .related-jobs-count {
+      position:absolute;
+      right:-6px;
+      top:-6px;
+      display:grid;
+      place-items:center;
+      min-width:16px;
+      height:16px;
+      padding:0 4px;
+      border-radius:999px;
+      border:2px solid #fff;
+      background:#0ea5e9;
+      color:#fff;
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      font-size:9px;
+      font-weight:900;
+      line-height:1;
+      box-shadow:0 2px 5px rgba(3,105,161,.22);
+    }
+    .related-jobs-dialog {
+      width:min(720px, calc(100vw - 28px));
+      max-height:min(86dvh, 760px);
+      padding:0;
+      border:0;
+      border-radius:28px;
+      background:transparent;
+      color:#44403c;
+    }
+    .related-jobs-dialog:not([open]) { display:none; }
+    .related-jobs-dialog::backdrop {
+      background:rgba(28,25,23,.34);
+      backdrop-filter:blur(3px);
+    }
+    .related-jobs-dialog-box {
+      display:grid;
+      grid-template-rows:auto auto minmax(0,1fr) auto;
+      max-height:min(86dvh, 760px);
+      padding:20px;
+      border:4px solid #fff;
+      border-radius:28px;
+      background:linear-gradient(180deg,#ffffff,#fff7ed 125%);
+      box-shadow:0 28px 80px rgba(120,53,15,.22);
+    }
+    .related-jobs-dialog-head {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:14px;
+    }
+    .related-jobs-dialog-heading {
+      display:flex;
+      align-items:center;
+      gap:9px;
+      color:#292524;
+      font-size:20px;
+      font-weight:700;
+    }
+    .related-jobs-dialog-note {
+      margin-top:5px;
+      color:#78716c;
+      font-size:12px;
+      font-weight:400;
+      line-height:1.65;
+    }
+    .related-jobs-dialog-head-actions,
+    .related-jobs-dialog-footer {
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .related-jobs-current {
+      margin-bottom:12px;
+      padding:12px 13px;
+      border:2px solid #ffedd5;
+      border-radius:18px;
+      background:#fff;
+    }
+    .related-jobs-current-head,
+    .related-jobs-candidate-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
+      color:#57534e;
+      font-size:12px;
+      font-weight:600;
+    }
+    .related-jobs-current-count {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:25px;
+      height:20px;
+      padding:0 7px;
+      border-radius:999px;
+      background:#e0f2fe;
+      color:#0369a1;
+      font-size:11px;
+      font-weight:700;
+    }
+    .related-jobs-current-list {
+      display:flex;
+      flex-wrap:wrap;
+      gap:7px;
+      min-height:30px;
+    }
+    .related-jobs-current-empty {
+      color:#a8a29e;
+      font-size:12px;
+      font-weight:400;
+      line-height:30px;
+    }
+    .related-jobs-selected-chip {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border:1px solid #fdba74;
+      border-radius:999px;
+      padding:6px 9px;
+      background:#fff7ed;
+      color:#9a3412;
+      font-family:inherit;
+      font-size:12px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .related-jobs-selected-chip::after {
+      content:'×';
+      color:#f97316;
+      font-size:13px;
+      line-height:1;
+    }
+    .related-jobs-candidates {
+      min-height:0;
+      overflow:auto;
+      padding:12px 4px 12px 0;
+      border-top:2px dashed #ffedd5;
+      border-bottom:2px dashed #ffedd5;
+    }
+    .related-jobs-candidate-grid {
+      display:flex;
+      flex-wrap:wrap;
+      align-content:flex-start;
+      gap:8px;
+    }
+    .related-jobs-candidate-chip {
+      border:1px solid #fed7aa;
+      border-radius:999px;
+      padding:8px 11px;
+      background:#fff;
+      color:#7c2d12;
+      font-family:inherit;
+      font-size:13px;
+      font-weight:500;
+      cursor:pointer;
+      transition:background .12s ease, border-color .12s ease, color .12s ease, transform .08s ease, box-shadow .12s ease;
+    }
+    .related-jobs-candidate-chip:hover {
+      border-color:#fb923c;
+      background:#fff7ed;
+      transform:translateY(-1px);
+    }
+    .related-jobs-candidate-chip.active {
+      border-color:#fb923c;
+      background:linear-gradient(180deg,#fb923c,#f97316);
+      color:#fff;
+      box-shadow:0 3px 0 #c2410c;
+      font-weight:600;
+    }
+    .related-jobs-dialog-footer { padding-top:14px; }
+    @media (max-width:640px) {
+      .related-jobs-dialog-head { display:grid; }
+      .related-jobs-dialog-head-actions { justify-content:flex-start; }
+      .related-jobs-dialog-footer { justify-content:stretch; }
+      .related-jobs-dialog-footer .btn { flex:1 1 auto; }
+    }
+
     /* Step39: LINE Seed JP weight tuning for normal mode
        Keep the rounded LINE Seed look, but reduce boldness in compact Japanese text. */
     body:not(.company-mode-active) {
@@ -2023,7 +2417,9 @@
     body:not(.company-mode-active) .preset-btn,
     body:not(.company-mode-active) .axis-cap-option,
     body:not(.company-mode-active) .mode-settings-btn,
-    body:not(.company-mode-active) .multi-filter-option {
+    body:not(.company-mode-active) .multi-filter-option,
+    body:not(.company-mode-active) .metric-select-btn,
+    body:not(.company-mode-active) .metric-select-option {
       font-weight:600;
       letter-spacing:.01em;
     }
@@ -2031,7 +2427,8 @@
     body:not(.company-mode-active) .tab.active,
     body:not(.company-mode-active) .view-tab.active,
     body:not(.company-mode-active) .chip.selected,
-    body:not(.company-mode-active) .chart-label-switch.active {
+    body:not(.company-mode-active) .chart-label-switch.active,
+    body:not(.company-mode-active) .metric-select-option.active {
       font-weight:700;
     }
     body:not(.company-mode-active) .chip,
@@ -2079,6 +2476,352 @@
       letter-spacing:.015em;
     }
 
+  
+    /* Step51: folder loading guide — shared folder vs local copy */
+    .intro-card {
+      max-width:1180px;
+      margin:min(7vh,64px) auto 0;
+      padding:30px;
+    }
+    .intro-content { max-width:none; width:100%; }
+    .intro-content > h1 { justify-content:center; text-align:center; }
+    .intro-content > .main-subtitle {
+      margin:9px auto 0;
+      max-width:760px;
+      text-align:center;
+    }
+    .load-method-heading {
+      margin:26px 0 13px;
+      text-align:center;
+    }
+    .load-method-heading-title {
+      color:#292524;
+      font-size:17px;
+      font-weight:600;
+      letter-spacing:.01em;
+    }
+    .load-method-heading-note {
+      margin-top:5px;
+      color:#78716c;
+      font-size:12px;
+      font-weight:400;
+    }
+    .load-method-grid {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+    }
+    .load-method-card {
+      position:relative;
+      width:100%;
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      align-items:stretch;
+      gap:10px;
+      padding:20px;
+      border:2px solid #e7e5e4;
+      border-radius:24px;
+      background:linear-gradient(180deg,#ffffff,#fafaf9);
+      color:#44403c;
+      font-family:inherit;
+      text-align:left;
+      cursor:pointer;
+      box-shadow:0 10px 24px -18px rgba(68,64,60,.34), inset 0 1px 0 rgba(255,255,255,.94);
+      transition:transform .14s ease, border-color .14s ease, box-shadow .14s ease, background .14s ease;
+    }
+    .load-method-card:hover {
+      transform:translateY(-2px);
+      border-color:#fdba74;
+      box-shadow:0 16px 30px -20px rgba(154,52,18,.38), inset 0 1px 0 rgba(255,255,255,.96);
+    }
+    .load-method-card.local:hover { border-color:#7dd3fc; }
+    .load-method-card.active.shared {
+      border-color:#fb923c;
+      background:linear-gradient(180deg,#fff7ed,#ffffff);
+      box-shadow:0 0 0 4px rgba(251,146,60,.15), 0 18px 34px -22px rgba(154,52,18,.38);
+    }
+    .load-method-card.active.local {
+      border-color:#0ea5e9;
+      background:linear-gradient(180deg,#f0f9ff,#ffffff);
+      box-shadow:0 0 0 4px rgba(14,165,233,.14), 0 18px 34px -22px rgba(3,105,161,.34);
+    }
+    .load-method-card-top {
+      display:flex;
+      align-items:center;
+      gap:9px;
+    }
+    .load-method-icon {
+      display:grid;
+      place-items:center;
+      width:36px;
+      height:36px;
+      flex:0 0 36px;
+      border-radius:13px;
+      background:#fff7ed;
+      border:1px solid #fed7aa;
+      color:#c2410c;
+      font-size:18px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+    }
+    .load-method-card.local .load-method-icon {
+      background:#ecfeff;
+      border-color:#bae6fd;
+      color:#0369a1;
+    }
+    .load-method-kicker {
+      display:inline-flex;
+      align-items:center;
+      min-height:24px;
+      padding:0 9px;
+      border-radius:999px;
+      background:#ffedd5;
+      color:#9a3412;
+      font-size:11px;
+      font-weight:600;
+      letter-spacing:.035em;
+    }
+    .load-method-kicker.recommended {
+      background:#e0f2fe;
+      color:#075985;
+    }
+    .load-method-title {
+      color:#292524;
+      font-size:20px;
+      font-weight:650;
+      line-height:1.35;
+    }
+    .load-method-description {
+      min-height:45px;
+      color:#57534e;
+      font-size:13px;
+      font-weight:400;
+      line-height:1.7;
+    }
+    .load-method-points {
+      display:grid;
+      gap:5px;
+      padding:12px 13px;
+      border-radius:16px;
+      background:rgba(245,245,244,.72);
+      color:#57534e;
+      font-size:12px;
+      font-weight:500;
+      line-height:1.5;
+    }
+    .load-method-card.local .load-method-points { background:rgba(240,249,255,.78); }
+    .load-method-footer {
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-top:auto;
+      padding-top:2px;
+    }
+    .load-method-period {
+      display:inline-flex;
+      align-items:center;
+      min-height:25px;
+      padding:0 9px;
+      border-radius:999px;
+      background:#fef3c7;
+      color:#92400e;
+      font-size:11px;
+      font-weight:600;
+    }
+    .load-method-card.local .load-method-period {
+      background:#dbeafe;
+      color:#1d4ed8;
+    }
+    .load-method-select-text {
+      color:#c2410c;
+      font-size:12px;
+      font-weight:600;
+    }
+    .load-method-card.local .load-method-select-text { color:#0369a1; }
+
+    .load-method-detail {
+      margin-top:17px;
+      animation:loadMethodReveal .18s ease-out;
+    }
+    @keyframes loadMethodReveal {
+      from { opacity:0; transform:translateY(-5px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+    .load-method-panel {
+      padding:20px;
+      border:2px solid #fed7aa;
+      border-radius:24px;
+      background:linear-gradient(180deg,#fffaf5,#ffffff);
+      box-shadow:0 14px 30px -24px rgba(154,52,18,.35);
+    }
+    .load-method-panel.local {
+      border-color:#bae6fd;
+      background:linear-gradient(180deg,#f0f9ff,#ffffff);
+      box-shadow:0 14px 30px -24px rgba(3,105,161,.32);
+    }
+    .load-method-panel-head {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:14px;
+    }
+    .load-method-panel-title {
+      color:#292524;
+      font-size:17px;
+      font-weight:650;
+    }
+    .load-method-panel-note {
+      margin-top:5px;
+      color:#78716c;
+      font-size:12px;
+      font-weight:400;
+      line-height:1.65;
+    }
+    .load-method-speed-badge {
+      flex:0 0 auto;
+      display:inline-flex;
+      align-items:center;
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      background:#ffedd5;
+      color:#9a3412;
+      font-size:11px;
+      font-weight:600;
+      white-space:nowrap;
+    }
+    .load-method-speed-badge.local {
+      background:#e0f2fe;
+      color:#075985;
+    }
+    .load-method-steps {
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px;
+    }
+    .load-method-panel.local .load-method-steps {
+      grid-template-columns:repeat(4,minmax(0,1fr));
+    }
+    .load-method-step {
+      display:flex;
+      align-items:flex-start;
+      gap:9px;
+      min-width:0;
+      padding:11px;
+      border-radius:16px;
+      background:#ffffff;
+      border:1px solid #f1f5f9;
+    }
+    .load-method-step > span {
+      display:grid;
+      place-items:center;
+      width:23px;
+      height:23px;
+      flex:0 0 23px;
+      border-radius:999px;
+      background:#f97316;
+      color:#fff;
+      font-size:11px;
+      font-weight:700;
+    }
+    .load-method-panel.local .load-method-step > span { background:#0ea5e9; }
+    .load-method-step p {
+      margin:0;
+      color:#57534e;
+      font-size:12px;
+      font-weight:400;
+      line-height:1.65;
+    }
+    .load-method-path-box,
+    .local-location-guide {
+      margin-top:13px;
+      padding:13px 14px;
+      border-radius:17px;
+      background:#fff;
+      border:1px solid #fed7aa;
+    }
+    .local-location-guide { border-color:#bae6fd; }
+    .load-method-path-label,
+    .local-location-title {
+      display:block;
+      margin-bottom:7px;
+      color:#9a3412;
+      font-size:12px;
+      font-weight:600;
+    }
+    .local-location-title { color:#075985; }
+    .load-method-path-box code,
+    .local-location-guide code {
+      display:block;
+      padding:8px 10px;
+      border-radius:12px;
+      background:#f8fafc;
+      color:#334155;
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;
+      font-size:11px;
+      line-height:1.5;
+      word-break:break-all;
+    }
+    .local-location-text,
+    .local-location-caution {
+      color:#57534e;
+      font-size:12px;
+      font-weight:400;
+      line-height:1.65;
+    }
+    .local-location-text { margin-bottom:8px; }
+    .local-location-caution {
+      margin-top:8px;
+      color:#78716c;
+    }
+    .direct-load-shortcut {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-top:18px;
+      padding:15px 17px;
+      border-top:1px dashed #d6d3d1;
+      border-bottom:1px dashed #d6d3d1;
+      background:rgba(250,250,249,.55);
+    }
+    .direct-load-title {
+      color:#44403c;
+      font-size:13px;
+      font-weight:600;
+    }
+    .direct-load-note {
+      margin-top:4px;
+      color:#78716c;
+      font-size:11px;
+      font-weight:400;
+      line-height:1.55;
+    }
+    @media (max-width:900px) {
+      .intro-card { margin:18px auto 0; padding:22px; }
+      .load-method-grid { grid-template-columns:1fr; }
+      .load-method-description { min-height:0; }
+      .load-method-steps,
+      .load-method-panel.local .load-method-steps { grid-template-columns:1fr 1fr; }
+    }
+    @media (max-width:620px) {
+      .intro-card { padding:18px; border-radius:24px; }
+      .load-method-card { padding:16px; }
+      .load-method-panel { padding:15px; }
+      .load-method-panel-head,
+      .direct-load-shortcut {
+        display:grid;
+      }
+      .load-method-speed-badge { justify-self:start; }
+      .load-method-steps,
+      .load-method-panel.local .load-method-steps { grid-template-columns:1fr; }
+      .folder-cta-area .btn,
+      .direct-load-shortcut .btn { width:100%; }
+    }
+
   </style>
 </head>
 <body>
@@ -2087,16 +2830,110 @@
       <div class="header intro-header">
         <div class="intro-content">
           <h1>天市×indeedPLUS運用実績</h1>
-          <p class="main-subtitle">社内共有フォルダの運用データを読み込んで表示します。</p>
-          <div class="folder-guide" aria-label="データフォルダ選択の説明">
-            <div class="folder-guide-line"><span class="mark">①</span><span>下のボタンを押すと、必要なフォルダパスがコピーされ、フォルダ選択画面が開きます。</span></div>
-            <div class="folder-guide-line"><span class="mark">②</span><span>フォルダ選択画面が開いたら、コピーされたパスをそのまま貼り付けて Enter を押してください。</span></div>
-            <div class="folder-guide-line"><span class="mark">📁</span><span>選択するフォルダ：<span class="folder-path-inline">K:\天市事業\public\1049\共有情報\tenichiプラス\indeedマージレポート\output_dataset</span></span></div>
+          <p class="main-subtitle">データの読み込み方法を選択してください。どちらも同じ運用データを使用します。</p>
+
+          <div class="load-method-heading">
+            <div class="load-method-heading-title">利用頻度と集計速度に合わせて選べます</div>
+            <div class="load-method-heading-note">方法を選ぶと、その下に読み込み手順が表示されます。</div>
           </div>
-          <div class="folder-cta-area">
-            <button id="folderSelectBtn" class="btn" type="button">📋 フォルダパスをコピーして選択画面を開く</button>
-            <input id="folderInput" type="file" webkitdirectory directory multiple />
+
+          <div class="load-method-grid" aria-label="データの読み込み方法">
+            <button id="sharedLoadCard" class="load-method-card shared" type="button" aria-pressed="false" aria-controls="sharedMethodPanel">
+              <span class="load-method-card-top">
+                <span class="load-method-icon" aria-hidden="true">☁</span>
+                <span class="load-method-kicker">手軽さ優先</span>
+              </span>
+              <span class="load-method-title">共有フォルダから読み込む</span>
+              <span class="load-method-description">月1回程度の利用や、直近の状況を手早く確認したい方に向いています。</span>
+              <span class="load-method-points">
+                <span>✓ 共有フォルダの最新データを利用</span>
+                <span>✓ データ更新を自分で管理しなくてよい</span>
+                <span>△ 長期間の集計はやや時間がかかる</span>
+              </span>
+              <span class="load-method-footer">
+                <span class="load-method-period">初期表示：最新3か月</span>
+                <span class="load-method-select-text">この方法を選ぶ →</span>
+              </span>
+            </button>
+
+            <button id="localLoadCard" class="load-method-card local" type="button" aria-pressed="false" aria-controls="localMethodPanel">
+              <span class="load-method-card-top">
+                <span class="load-method-icon" aria-hidden="true">⚡</span>
+                <span class="load-method-kicker recommended">快適さ優先</span>
+              </span>
+              <span class="load-method-title">ローカルコピーから読み込む</span>
+              <span class="load-method-description">月に何度か利用する方や、長期間のデータを分析したい方に向いています。</span>
+              <span class="load-method-points">
+                <span>✓ 集計や画面切替が速い</span>
+                <span>✓ 長期間の分析に向いている</span>
+                <span>△ 月1回程度、最新版への更新を推奨</span>
+              </span>
+              <span class="load-method-footer">
+                <span class="load-method-period">初期表示：最新12か月</span>
+                <span class="load-method-select-text">この方法を選ぶ →</span>
+              </span>
+            </button>
           </div>
+
+          <div id="loadMethodDetail" class="load-method-detail hidden" aria-live="polite">
+            <section id="sharedMethodPanel" class="load-method-panel shared hidden" aria-label="共有フォルダから読み込む手順">
+              <div class="load-method-panel-head">
+                <div>
+                  <div class="load-method-panel-title">☁ 共有フォルダから読み込む</div>
+                  <div class="load-method-panel-note">初期集計期間は処理を軽くするため最新3か月です。読み込み後に自由に変更できます。</div>
+                </div>
+                <span class="load-method-speed-badge">最新データを手軽に確認</span>
+              </div>
+              <div class="load-method-steps">
+                <div class="load-method-step"><span>1</span><p>下のボタンを押します。共有フォルダのパスがコピーされ、フォルダ選択画面が開きます。</p></div>
+                <div class="load-method-step"><span>2</span><p>フォルダ選択画面のアドレス欄へ、コピーされたパスを貼り付けて Enter を押します。</p></div>
+                <div class="load-method-step"><span>3</span><p><strong>output_dataset</strong> フォルダを選択します。</p></div>
+              </div>
+              <div class="load-method-path-box">
+                <span class="load-method-path-label">選択する共有フォルダ</span>
+                <code>K:\天市事業\public\1049\共有情報\tenichiプラス\indeedマージレポート\output_dataset</code>
+              </div>
+              <div class="folder-cta-area">
+                <button id="folderSelectBtn" class="btn" type="button">📋 パスをコピーして選択画面を開く</button>
+              </div>
+            </section>
+
+            <section id="localMethodPanel" class="load-method-panel local hidden" aria-label="ローカルコピーから読み込む手順">
+              <div class="load-method-panel-head">
+                <div>
+                  <div class="load-method-panel-title">⚡ ローカルコピーから読み込む</div>
+                  <div class="load-method-panel-note">PC本体へ保存したコピーを読み込むため、集計や分析軸の切替が軽快になります。</div>
+                </div>
+                <span class="load-method-speed-badge local">長期分析・頻繁な利用向け</span>
+              </div>
+              <div class="load-method-steps">
+                <div class="load-method-step"><span>1</span><p>共有フォルダにある <strong>output_dataset</strong> をコピーします。</p></div>
+                <div class="load-method-step"><span>2</span><p>PC本体のユーザーフォルダに <strong>indeed分析用</strong> フォルダを作り、その中へ貼り付けます。</p></div>
+                <div class="load-method-step"><span>3</span><p>下の「ローカルの output_dataset を選択」から、コピーしたフォルダを読み込みます。</p></div>
+                <div class="load-method-step"><span>4</span><p>翌月以降は、月1回程度を目安に共有フォルダの最新版へ差し替えてください。</p></div>
+              </div>
+              <div class="local-location-guide">
+                <div class="local-location-title">おすすめの保存場所</div>
+                <div class="local-location-text">エクスプローラーで「PC」→「ローカル ディスク（C:）」→「ユーザー」→「自分のユーザー名」と進み、その中に <strong>indeed分析用</strong> フォルダを作成します。</div>
+                <code>C:\Users\［ユーザー名］\indeed分析用\output_dataset</code>
+                <div class="local-location-caution">共有ドライブやネットワークフォルダではなく、PC本体への保存を推奨します。OneDrive配下では同期状況により速度が変わることがあります。</div>
+              </div>
+              <div class="folder-cta-area">
+                <button id="localCopySourceBtn" class="btn ghost" type="button">📋 コピー元の共有パスをコピー</button>
+                <button id="localFolderSelectBtn" class="btn secondary" type="button">📁 ローカルの output_dataset を選択</button>
+              </div>
+            </section>
+          </div>
+
+          <div class="direct-load-shortcut">
+            <div>
+              <div class="direct-load-title">保存場所が分かっている方</div>
+              <div class="direct-load-note">説明を開かず、目的の output_dataset を直接選択できます。初期表示は最新12か月です。</div>
+            </div>
+            <button id="directFolderSelectBtn" class="btn ghost" type="button">📁 フォルダを直接選択</button>
+          </div>
+
+          <input id="folderInput" type="file" webkitdirectory directory multiple />
         </div>
         <div class="toolbar top-hidden-toolbar">
           <button id="refreshBtn" class="btn secondary top-only-control" type="button" disabled>表示を更新</button>
@@ -2111,7 +2948,10 @@
       <div class="card span-12 app-title-card" id="appTitleCard">
         <div class="analysis-title-row mode-title-row">
           <h1>天市×indeedPLUS運用実績</h1>
-          <button id="modeSettingsBtn" class="mode-settings-btn" type="button" title="モード切替">⚙</button>
+          <div class="title-action-buttons" aria-label="データ出力とモード切替">
+            <button id="filteredCsvDownloadBtn" class="top-action-btn csv" type="button" title="現在の条件に一致する明細を、Excelで確認しやすい列順・派生指標付きのUTF-8 BOM付きCSVで保存します">⬇ 絞り込みCSV出力</button>
+            <button id="companyModeDirectBtn" class="top-action-btn company" type="button">🏢 個社分析モードへ</button>
+          </div>
         </div>
       </div>
       <div id="searchFiltersShell" class="span-12 search-filters-shell" aria-label="検索条件入力エリア"></div>
@@ -2127,7 +2967,7 @@
             <input id="locationInput" type="text" placeholder="例：東京 新宿" />
           </div>
           <div class="field md employment-field">
-            <label class="label" for="employmentFilterBtn">雇用形態</label>
+            <label class="label employment-label-row" for="employmentFilterBtn">雇用形態 <span id="employmentFilterNote" class="employment-inline-note hidden">2026年6月以降に対応</span></label>
             <div id="employmentMulti" class="employment-multi">
               <button id="employmentFilterBtn" class="multi-filter-btn" type="button"><span id="employmentFilterBtnText" class="multi-filter-btn-text">すべて</span></button>
               <div id="employmentPopover" class="multi-filter-popover hidden" role="group" aria-label="雇用形態を選択">
@@ -2150,7 +2990,6 @@
               <option value="業務委託">業務委託</option>
               <option value="__blank__">未取得・空白</option>
             </select>
-            <div id="employmentFilterNote" class="filter-footnote hidden">2026年6月以降のデータで利用できます。</div>
           </div>
           <div class="field md period-field">
             <label class="label" for="periodRangeBtn">集計期間</label>
@@ -2223,36 +3062,53 @@
           </div>
         </dialog>
 
-        <div class="related-head">
-          <div>
-            <h2 style="margin-bottom:4px;">関連する職種</h2>
-            <p class="muted" style="margin:0;font-size:13px;">クリックすると比較表に追加できます。数値は下の比較表で確認できます。</p>
+        <div id="relatedJobsSection" class="related-jobs-section">
+          <div class="related-head">
+            <div>
+              <h2 class="related-title" style="margin-bottom:4px;">
+                <span class="related-title-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M4 5.5h7.1l6.9 6.9-5.6 5.6L5.5 11.1V5.5Z"></path><circle cx="8.3" cy="8.8" r="1.1"></circle><path d="m14.3 17.2 4.8-4.8 1.5 1.5-4.8 4.8-2.2.7.7-2.2Z"></path></svg>
+                </span>
+                関連する職種
+              </h2>
+              <p class="muted" style="margin:0;font-size:13px;">クリックすると比較表に追加できます。数値は下の比較表で確認できます。</p>
+            </div>
+            <button id="clearSelectedBtn" class="btn ghost small" type="button">選択をクリア</button>
           </div>
-          <button id="clearSelectedBtn" class="btn ghost small" type="button">選択をクリア</button>
+          <div id="selectedJobs" class="chips" style="display:none;"></div>
+          <div id="relatedJobs" class="chips"></div>
         </div>
-        <div id="selectedJobs" class="chips" style="display:none;"></div>
-        <div id="relatedJobs" class="chips"></div>
       </div>
 
       <div class="card span-12 comparison-card table-view">
         <div id="comparisonToolbar" class="header comparison-toolbar">
           <div class="view-toggle" aria-label="表示形式">
             <button class="view-tab active" data-view="table" type="button">表一覧</button>
-            <button class="view-tab" data-view="chart" type="button">個別指標</button>
-          </div>
-          <div id="chartControls" class="chart-controls hidden" aria-label="グラフ表示設定">
-            <label class="chart-control chart-metric-control">指標
-              <select id="chartLeftMetric"></select>
-            </label>
+            <button class="view-tab" data-view="chart" type="button">軸別分析</button>
           </div>
           <div class="table-head-actions">
-            <div class="tabs analysis-tabs" aria-label="分析軸">
-              <button class="tab active" data-mode="job" type="button">職種比較</button>
-              <button class="tab" data-mode="month-job" type="button">職種推移</button>
-              <button class="tab" data-mode="prefecture" type="button">都道府県比較</button>
-              <button class="tab" data-mode="month-prefecture" type="button">エリア推移</button>
-              <button class="tab" data-mode="month-yoy" type="button">時期比較</button>
-              <button class="tab" data-mode="month" type="button">全体推移</button>
+            <div class="analysis-axis-group" aria-label="軸別分析の分析軸">
+              <span class="analysis-axis-label">分析軸</span>
+              <div class="tabs analysis-tabs" aria-label="分析軸">
+                <button class="tab active" data-mode="job" type="button">職種比較</button>
+                <button class="tab" data-mode="month-job" type="button">職種推移</button>
+                <button class="tab" data-mode="prefecture" type="button">都道府県比較</button>
+                <button class="tab" data-mode="month-prefecture" type="button">エリア推移</button>
+                <button class="tab" data-mode="month-yoy" type="button">時期比較</button>
+                <button class="tab" data-mode="month" type="button">全体推移</button>
+              </div>
+            </div>
+            <div id="chartControls" class="chart-controls hidden" aria-label="グラフ表示設定">
+              <div class="chart-control chart-metric-control">
+                <span class="chart-control-title">表示指標</span>
+                <div id="chartMetricSelectWrap" class="metric-select-wrap">
+                  <button id="chartMetricBtn" class="metric-select-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span id="chartMetricBtnText">CPA</span>
+                  </button>
+                  <div id="chartMetricPopover" class="metric-select-popover hidden" role="listbox" aria-label="表示指標を選択"></div>
+                  <select id="chartLeftMetric" class="hidden-control" aria-hidden="true" tabindex="-1"></select>
+                </div>
+              </div>
             </div>
             <div class="table-operation-actions">
               <button id="chartLabelToggle" class="chart-label-switch chart-label-toggle-tab active chart-label-toolbar" data-axis="left" data-style="label" type="button" title="データラベルを表示/非表示" aria-pressed="true">
@@ -2350,17 +3206,49 @@
     </div>
   </dialog>
 
+  <dialog id="relatedJobsDialog" class="related-jobs-dialog" aria-label="関連職種を選択">
+    <div class="related-jobs-dialog-box">
+      <div class="related-jobs-dialog-head">
+        <div>
+          <div class="related-jobs-dialog-heading">
+            <span class="related-title-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 5.5h7.1l6.9 6.9-5.6 5.6L5.5 11.1V5.5Z"></path><circle cx="8.3" cy="8.8" r="1.1"></circle><path d="m14.3 17.2 4.8-4.8 1.5 1.5-4.8 4.8-2.2.7.7-2.2Z"></path></svg>
+            </span>
+            関連職種を選択
+          </div>
+          <div class="related-jobs-dialog-note">候補を複数選択し、「適用して閉じる」を押すと一度だけ再集計します。</div>
+        </div>
+        <div class="related-jobs-dialog-head-actions">
+          <button id="relatedJobsModalClear" class="btn ghost small" type="button">すべて解除</button>
+          <button id="relatedJobsModalClose" class="btn ghost small" type="button">閉じる</button>
+        </div>
+      </div>
+      <div class="related-jobs-current">
+        <div class="related-jobs-current-head"><span>選択中</span><span id="relatedJobsModalCount" class="related-jobs-current-count">0</span></div>
+        <div id="relatedJobsModalSelected" class="related-jobs-current-list"></div>
+      </div>
+      <div class="related-jobs-candidates">
+        <div class="related-jobs-candidate-head"><span>関連職種候補</span><span>複数選択できます</span></div>
+        <div id="relatedJobsModalCandidates" class="related-jobs-candidate-grid"></div>
+      </div>
+      <div class="related-jobs-dialog-footer">
+        <button id="relatedJobsModalCancel" class="btn ghost small" type="button">キャンセル</button>
+        <button id="relatedJobsModalApply" class="btn secondary small" type="button">適用して閉じる</button>
+      </div>
+    </div>
+  </dialog>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <script type="module">
     import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm/+esm";
 
     const els = {
-      folderInput: document.getElementById('folderInput'), folderSelectBtn: document.getElementById('folderSelectBtn'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), comparisonCopyBtn: document.getElementById('comparisonCopyBtn'), mainStatus: document.getElementById('mainStatus'), toast: document.getElementById('toast'),
+      folderInput: document.getElementById('folderInput'), folderSelectBtn: document.getElementById('folderSelectBtn'), sharedLoadCard: document.getElementById('sharedLoadCard'), localLoadCard: document.getElementById('localLoadCard'), loadMethodDetail: document.getElementById('loadMethodDetail'), sharedMethodPanel: document.getElementById('sharedMethodPanel'), localMethodPanel: document.getElementById('localMethodPanel'), localCopySourceBtn: document.getElementById('localCopySourceBtn'), localFolderSelectBtn: document.getElementById('localFolderSelectBtn'), directFolderSelectBtn: document.getElementById('directFolderSelectBtn'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), comparisonCopyBtn: document.getElementById('comparisonCopyBtn'), mainStatus: document.getElementById('mainStatus'), toast: document.getElementById('toast'),
       datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), searchFiltersShell: document.getElementById('searchFiltersShell'), searchFilters: document.getElementById('searchFilters'), searchFiltersPlaceholder: document.getElementById('searchFiltersPlaceholder'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'), employmentFilter: document.getElementById('employmentFilter'), employmentFilterBtn: document.getElementById('employmentFilterBtn'), employmentFilterBtnText: document.getElementById('employmentFilterBtnText'), employmentPopover: document.getElementById('employmentPopover'), employmentFilterNote: document.getElementById('employmentFilterNote'), advancedFilterBtn: document.getElementById('advancedFilterBtn'), advancedFilterCount: document.getElementById('advancedFilterCount'), advancedFilterDialog: document.getElementById('advancedFilterDialog'), advancedFilterClose: document.getElementById('advancedFilterClose'), advancedFilterApply: document.getElementById('advancedFilterApply'), advancedFilterReset: document.getElementById('advancedFilterReset'), locationMode: document.getElementById('locationMode'), indeedJobInput: document.getElementById('indeedJobInput'), jobBoostFilter: document.getElementById('jobBoostFilter'), indeedJobField: document.getElementById('indeedJobField'), jobBoostField: document.getElementById('jobBoostField'),
       searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalAll: document.getElementById('periodModalAll'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
-      relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'),
-      comparisonToolbar: document.getElementById('comparisonToolbar'), comparisonContextSummary: document.getElementById('comparisonContextSummary'), comparisonContent: document.getElementById('comparisonContent'), comparisonLoadingOverlay: document.getElementById('comparisonLoadingOverlay'), comparisonLoadingText: document.getElementById('comparisonLoadingText'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), columnMenuBtn: document.getElementById('columnMenuBtn'), columnPopover: document.getElementById('columnPopover'), chartControls: document.getElementById('chartControls'), chartLeftMetric: document.getElementById('chartLeftMetric'), chartLabelToggle: document.getElementById('chartLabelToggle'), chartRightMetric: null, chartAxisPopover: null, floatingXScroll: document.getElementById('floatingXScroll'), floatingXScrollInner: document.getElementById('floatingXScrollInner'), log: document.getElementById('log'),
-      modeSettingsBtn: document.getElementById('modeSettingsBtn'), modeSwitchDialog: document.getElementById('modeSwitchDialog'), modeSwitchCloseBtn: document.getElementById('modeSwitchCloseBtn'), openCompanyModeBtn: document.getElementById('openCompanyModeBtn'), companyModeArea: document.getElementById('companyModeArea'), backToMarketModeBtn: document.getElementById('backToMarketModeBtn'), companySearchInput: document.getElementById('companySearchInput'), companySearchBtn: document.getElementById('companySearchBtn'), companySearchStatus: document.getElementById('companySearchStatus'), companyResults: document.getElementById('companyResults'), companySelectedPanel: document.getElementById('companySelectedPanel'), companyFilterPanel: document.getElementById('companyFilterPanel'), companySummaryPanel: document.getElementById('companySummaryPanel'), companyPeriodModal: document.getElementById('companyPeriodModal'), companyPeriodModalClose: document.getElementById('companyPeriodModalClose'), companyPeriodModalAll: document.getElementById('companyPeriodModalAll'), companyPeriodModalNote: document.getElementById('companyPeriodModalNote'), companyPeriodMonthGrid: document.getElementById('companyPeriodMonthGrid'), companyBadgeModal: document.getElementById('companyBadgeModal'), companyBadgeModalTitle: document.getElementById('companyBadgeModalTitle'), companyBadgeModalNote: document.getElementById('companyBadgeModalNote'), companyBadgeModalClose: document.getElementById('companyBadgeModalClose'), companyBadgeModalClear: document.getElementById('companyBadgeModalClear'), companyBadgeGrid: document.getElementById('companyBadgeGrid')
+      relatedJobsSection: document.getElementById('relatedJobsSection'), relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'), relatedJobsDialog: document.getElementById('relatedJobsDialog'), relatedJobsModalClose: document.getElementById('relatedJobsModalClose'), relatedJobsModalClear: document.getElementById('relatedJobsModalClear'), relatedJobsModalCancel: document.getElementById('relatedJobsModalCancel'), relatedJobsModalApply: document.getElementById('relatedJobsModalApply'), relatedJobsModalCount: document.getElementById('relatedJobsModalCount'), relatedJobsModalSelected: document.getElementById('relatedJobsModalSelected'), relatedJobsModalCandidates: document.getElementById('relatedJobsModalCandidates'),
+      comparisonToolbar: document.getElementById('comparisonToolbar'), comparisonContextSummary: document.getElementById('comparisonContextSummary'), comparisonContent: document.getElementById('comparisonContent'), comparisonLoadingOverlay: document.getElementById('comparisonLoadingOverlay'), comparisonLoadingText: document.getElementById('comparisonLoadingText'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), columnMenuBtn: document.getElementById('columnMenuBtn'), columnPopover: document.getElementById('columnPopover'), chartControls: document.getElementById('chartControls'), chartLeftMetric: document.getElementById('chartLeftMetric'), chartMetricBtn: document.getElementById('chartMetricBtn'), chartMetricBtnText: document.getElementById('chartMetricBtnText'), chartMetricPopover: document.getElementById('chartMetricPopover'), chartMetricSelectWrap: document.getElementById('chartMetricSelectWrap'), chartLabelToggle: document.getElementById('chartLabelToggle'), chartRightMetric: null, chartAxisPopover: null, floatingXScroll: document.getElementById('floatingXScroll'), floatingXScrollInner: document.getElementById('floatingXScrollInner'), log: document.getElementById('log'),
+      modeSettingsBtn: document.getElementById('modeSettingsBtn'), filteredCsvDownloadBtn: document.getElementById('filteredCsvDownloadBtn'), companyModeDirectBtn: document.getElementById('companyModeDirectBtn'), modeSwitchDialog: document.getElementById('modeSwitchDialog'), modeSwitchCloseBtn: document.getElementById('modeSwitchCloseBtn'), openCompanyModeBtn: document.getElementById('openCompanyModeBtn'), companyModeArea: document.getElementById('companyModeArea'), backToMarketModeBtn: document.getElementById('backToMarketModeBtn'), companySearchInput: document.getElementById('companySearchInput'), companySearchBtn: document.getElementById('companySearchBtn'), companySearchStatus: document.getElementById('companySearchStatus'), companyResults: document.getElementById('companyResults'), companySelectedPanel: document.getElementById('companySelectedPanel'), companyFilterPanel: document.getElementById('companyFilterPanel'), companySummaryPanel: document.getElementById('companySummaryPanel'), companyPeriodModal: document.getElementById('companyPeriodModal'), companyPeriodModalClose: document.getElementById('companyPeriodModalClose'), companyPeriodModalAll: document.getElementById('companyPeriodModalAll'), companyPeriodModalNote: document.getElementById('companyPeriodModalNote'), companyPeriodMonthGrid: document.getElementById('companyPeriodMonthGrid'), companyBadgeModal: document.getElementById('companyBadgeModal'), companyBadgeModalTitle: document.getElementById('companyBadgeModalTitle'), companyBadgeModalNote: document.getElementById('companyBadgeModalNote'), companyBadgeModalClose: document.getElementById('companyBadgeModalClose'), companyBadgeModalClear: document.getElementById('companyBadgeModalClear'), companyBadgeGrid: document.getElementById('companyBadgeGrid')
     };
 
     // カード（backdrop-filter）内にモーダルを置くと、下のカードの重なり順に負けることがあるため、body直下へ移動します。
@@ -2379,6 +3267,9 @@
     if (els.companyBadgeModal && els.companyBadgeModal.parentElement !== document.body) {
       document.body.appendChild(els.companyBadgeModal);
     }
+    if (els.relatedJobsDialog && els.relatedJobsDialog.parentElement !== document.body) {
+      document.body.appendChild(els.relatedJobsDialog);
+    }
 
     const NORMAL_CHART_FONT = '"LINE Seed JP", "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, system-ui, sans-serif';
     if (window.Chart && window.Chart.defaults && window.Chart.defaults.font) {
@@ -2388,11 +3279,16 @@
 
     let dbPromise = null;
     let appState = null;
+    let folderLoadMode = 'direct'; // shared / local / direct
     let selectedJobTitles = [];
+    let latestRelatedJobRows = [];
+    let relatedJobDraftTitles = [];
+    let relatedQuickButtonVisible = false;
+    let relatedQuickVisibilityRaf = 0;
     let selectedEmploymentTypes = ['all'];
     let analysisMode = 'job';
     let comparisonMode = 'job';
-    let outputView = 'table'; // table=表一覧, chart=個別指標
+    let outputView = 'table'; // table=表一覧, chart=軸別分析
     let lastComparisonListResults = null;
     let monthGraphType = 'overall';
     let movingAverageWindow = 'none';
@@ -2607,7 +3503,7 @@
       document.body.removeChild(ta);
       return ok;
     }
-    function copyDefaultFolderPath() {
+    function copyDefaultFolderPath({ openGuide=false }={}) {
       // ファイル選択ダイアログが開く前に、同期コピーを先に試す。
       // Clipboard API は非同期のため、ダイアログ表示と競合して失敗/遅延することがある。
       let copied = copyTextFallback(DEFAULT_FOLDER_PATH);
@@ -2619,9 +3515,70 @@
       }
 
       showToast(`
-        <div class="toast-title">📋 フォルダパスをコピーしました</div>
-        <div class="toast-note">フォルダ選択画面にそのまま貼り付けて Enter を押してください。</div>
-      `, 2800);
+        <div class="toast-title">📋 共有フォルダのパスをコピーしました</div>
+        <div class="toast-note">${openGuide ? 'フォルダ選択画面にそのまま貼り付けて Enter を押してください。' : 'エクスプローラーのアドレス欄へ貼り付けると、コピー元の output_dataset を開けます。'}</div>
+      `, 3000);
+      return copied;
+    }
+
+    function folderLoadModeLabel(mode) {
+      if (mode === 'shared') return '共有フォルダ';
+      if (mode === 'local') return 'ローカルコピー';
+      return '直接選択';
+    }
+
+    function initialMonthCountForLoadMode(mode) {
+      return mode === 'shared' ? 3 : 12;
+    }
+
+    function selectFolderLoadMethod(mode) {
+      const normalized = mode === 'shared' || mode === 'local' ? mode : 'direct';
+      folderLoadMode = normalized;
+
+      const sharedActive = normalized === 'shared';
+      const localActive = normalized === 'local';
+
+      if (els.sharedLoadCard) {
+        els.sharedLoadCard.classList.toggle('active', sharedActive);
+        els.sharedLoadCard.setAttribute('aria-pressed', sharedActive ? 'true' : 'false');
+      }
+      if (els.localLoadCard) {
+        els.localLoadCard.classList.toggle('active', localActive);
+        els.localLoadCard.setAttribute('aria-pressed', localActive ? 'true' : 'false');
+      }
+      if (els.loadMethodDetail) {
+        els.loadMethodDetail.classList.toggle('hidden', normalized === 'direct');
+      }
+      if (els.sharedMethodPanel) {
+        els.sharedMethodPanel.classList.toggle('hidden', !sharedActive);
+      }
+      if (els.localMethodPanel) {
+        els.localMethodPanel.classList.toggle('hidden', !localActive);
+      }
+
+      const panel = sharedActive ? els.sharedMethodPanel : localActive ? els.localMethodPanel : null;
+      if (panel) {
+        requestAnimationFrame(() => {
+          const rect = panel.getBoundingClientRect();
+          if (rect.bottom > window.innerHeight || rect.top < 0) {
+            panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+          }
+        });
+      }
+    }
+
+    function openFolderPicker(mode) {
+      selectFolderLoadMethod(mode);
+      try {
+        els.folderInput.value = '';
+        els.folderInput.click();
+      } catch (err) {
+        console.error(err);
+        showToast(`
+          <div class="toast-title">フォルダ選択画面を開けませんでした</div>
+          <div class="toast-note">ブラウザの制限で開けない場合は、選択ボタンをもう一度押してください。</div>
+        `, 3200);
+      }
     }
 
     function esc(v) { return String(v ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch])); }
@@ -2655,6 +3612,30 @@
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1200);
+    }
+    function downloadUtf8BomCsvBuffer(filename, csvBuffer) {
+      const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+      const blob = new Blob([bom, csvBuffer], { type:'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    }
+    function fileTimestamp(date=new Date()) {
+      const parts = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, '0'),
+        String(date.getDate()).padStart(2, '0'),
+        '_',
+        String(date.getHours()).padStart(2, '0'),
+        String(date.getMinutes()).padStart(2, '0'),
+        String(date.getSeconds()).padStart(2, '0')
+      ];
+      return parts.join('');
     }
     function safeFileName(value, fallback='company') {
       const cleaned = String(value || '').normalize('NFKC').replace(/[\\/:*?"<>|\r\n\t]/g, '_').replace(/\s+/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '');
@@ -2737,7 +3718,7 @@
     function addMonths(yyyymm, offset) { const {year, month} = monthParts(yyyymm); const d = new Date(year, month - 1 + offset, 1); return String(d.getFullYear()) + String(d.getMonth()+1).padStart(2,'0'); }
     function formatMonthLabel(yyyymm) { const s = String(yyyymm || ''); return s.length === 6 ? `${s.slice(0,4)}年${s.slice(4,6)}月` : s; }
     function monthsBetween(from, to) { if (!from || !to) return []; let a = String(from), b = String(to); if (a > b) [a,b] = [b,a]; const out = []; let cur = a; while (cur <= b) { out.push(cur); cur = addMonths(cur, 1); if (out.length > 240) break; } return out; }
-    function defaultFrom(monthMax) { return addMonths(monthMax, -11); }
+    function defaultFrom(monthMax, monthCount=12) { return addMonths(monthMax, -(Math.max(1, Number(monthCount) || 12) - 1)); }
     function maxMonthFromFactFiles(factFiles) { const m = factFiles.map(f => Number(f.month_key)).filter(Number.isFinite); return m.length ? Math.max(...m) : null; }
 
     async function getDb() {
@@ -2781,10 +3762,11 @@
       const hasIndeedJob = factSchemaNames.has('Indeed職種');
       const hasJobBoost = factSchemaNames.has('ジョブブースト適用');
       const jobTitleMaster = await loadJobTitleMaster(selectedFileMap, manifest);
-      appState = { files, manifest, manifestItem, prefix, selectedFileMap, factFiles, factFileMap, availableMonths, monthMax, hasAggRelated, hasEmploymentType, hasIndeedJob, hasJobBoost, jobTitleNormToTitle: jobTitleMaster.normToTitle, jobTitleMasterFound: jobTitleMaster.found, sessionId: Date.now() };
+      appState = { files, manifest, manifestItem, prefix, selectedFileMap, factFiles, factFileMap, availableMonths, monthMax, hasAggRelated, hasEmploymentType, hasIndeedJob, hasJobBoost, jobTitleNormToTitle: jobTitleMaster.normToTitle, jobTitleMasterFound: jobTitleMaster.found, loadMode:folderLoadMode, sessionId: Date.now() };
       updateFilterAvailability();
       updateAdvancedFilterButton();
       renderKv(els.datasetInfo, [
+        ['source', `読み込み方法：${esc(folderLoadModeLabel(appState.loadMode))}`],
         ['range', `利用可能期間：${esc(formatMonthLabel(manifest.month_min))}〜${esc(formatMonthLabel(monthMax))}`],
         ['months', `読み込み可能な月：${esc(availableMonths.length)}か月分`],
         ['latest', `最新データ：${esc(formatMonthLabel(monthMax))}`]
@@ -2796,15 +3778,22 @@
       els.refreshBtn.disabled = false;
       setStatus('データ読込完了', 'ok');
       await refreshAll({ preserveScroll:false });
+      const initialMonths = initialMonthCountForLoadMode(appState.loadMode);
+      showToast(`
+        <div class="toast-title">✅ ${esc(folderLoadModeLabel(appState.loadMode))}として読み込みました</div>
+        <div class="toast-note">初期集計期間は最新${esc(initialMonths)}か月です。画面上部の「集計期間」からいつでも変更できます。</div>
+      `, 4300);
     }
 
     function renderPeriodOptions() {
       const months = appState.availableMonths;
       const max = String(appState.monthMax);
-      const fromDefault = defaultFrom(max);
+      const initialMonthCount = initialMonthCountForLoadMode(appState.loadMode);
+      const fromDefault = defaultFrom(max, initialMonthCount);
+      const fallbackFrom = months[Math.max(0, months.length - initialMonthCount)] || months[0];
       els.periodFrom.innerHTML = months.map(m => `<option value="${esc(m)}">${esc(formatMonthLabel(m))}</option>`).join('');
       els.periodTo.innerHTML = months.map(m => `<option value="${esc(m)}">${esc(formatMonthLabel(m))}</option>`).join('');
-      els.periodFrom.value = months.includes(fromDefault) ? fromDefault : months[0];
+      els.periodFrom.value = months.includes(fromDefault) ? fromDefault : fallbackFrom;
       els.periodTo.value = months.includes(max) ? max : months[months.length - 1];
 
       updatePeriodRangeLabel();
@@ -4295,7 +5284,7 @@
       }
     }
     function openModeSwitchDialog() { if (!els.modeSwitchDialog) return; if (typeof els.modeSwitchDialog.showModal === 'function') els.modeSwitchDialog.showModal(); else els.modeSwitchDialog.setAttribute('open',''); }
-    function closeModeSwitchDialog() { if (!els.modeSwitchDialog) return; if (typeof els.modeSwitchDialog.close === 'function') els.modeSwitchDialog.close(); else els.modeSwitchDialog.removeAttribute('open'); }
+    function closeModeSwitchDialog() { if (!els.modeSwitchDialog) return; if (typeof els.modeSwitchDialog.close === 'function' && els.modeSwitchDialog.open) els.modeSwitchDialog.close(); else els.modeSwitchDialog.removeAttribute('open'); }
     function enterCompanyMode() { closeModeSwitchDialog(); document.body.classList.add('company-mode-active'); if (els.companyModeArea) els.companyModeArea.classList.remove('hidden'); if (els.floatingXScroll) els.floatingXScroll.classList.add('hidden'); setCompanyStatus('企業IDは完全一致・前方一致、企業名は部分一致で候補を表示します。'); if (selectedCompany) { renderCompanySelectedPanel(); renderCompanyFilterPanel(); loadCompanySummary(); } requestAnimationFrame(() => els.companySearchInput && els.companySearchInput.focus()); }
     function exitCompanyMode() { destroyCompanyBreakdownChart(); document.body.classList.remove('company-mode-active'); if (els.companyModeArea) els.companyModeArea.classList.add('hidden'); scheduleFloatingScrollbarUpdate(); }
 
@@ -4388,6 +5377,197 @@
     }
 
     async function queryRows(conn, sql) { const table = await conn.query(sql); return tableToRows(table); }
+
+    const FILTERED_CSV_WARNING_ROWS = 300000;
+    const FILTERED_CSV_STRONG_WARNING_ROWS = 1000000;
+    const FILTERED_CSV_SOURCE_COLUMNS = [
+      '集計年月キー','企業ID','管理番号','タイトル','代表職種','関連職種','関連職種_集計用',
+      'キャンペーン','都道府県','市区町村','雇用形態','Indeed職種','ジョブブースト適用',
+      '消化金額','表示回数','クリック数','応募開始数','応募数'
+    ];
+
+    function factSchemaColumnNames() {
+      const schema = appState && appState.manifest && Array.isArray(appState.manifest.fact_schema)
+        ? appState.manifest.fact_schema
+        : [];
+      return schema.map(col => col && col.name ? String(col.name) : '').filter(Boolean);
+    }
+
+    async function resolvedFactColumnNames(conn, source) {
+      let names = factSchemaColumnNames();
+      if (!names.length) {
+        const rows = await queryRows(conn, `DESCRIBE SELECT * FROM ${source}`);
+        names = rows.map(row => String(row.column_name || row.name || '')).filter(Boolean);
+      }
+      const unique = [];
+      const seen = new Set();
+      names.forEach(name => {
+        if (!name || seen.has(name)) return;
+        seen.add(name);
+        unique.push(name);
+      });
+      const preferred = FILTERED_CSV_SOURCE_COLUMNS.filter(name => seen.has(name));
+      const extras = unique.filter(name => !FILTERED_CSV_SOURCE_COLUMNS.includes(name) && name !== '企業名');
+      return [...preferred, ...extras];
+    }
+
+    function filteredCsvWhere() {
+      // フリーワードと選択中の関連職種は、画面の比較条件と同じくORで合算する。
+      // その他の勤務地・雇用形態・詳細条件はすべてANDで反映する。
+      return unionFreeAndSelectedWhere({ includeLocation:true });
+    }
+
+    function filteredCsvWarningMessage(rowCount) {
+      const countLabel = Number(rowCount || 0).toLocaleString('ja-JP');
+      if (rowCount >= FILTERED_CSV_STRONG_WARNING_ROWS) {
+        return `対象は${countLabel}行です。\n大容量のため、CSV作成や保存に時間がかかり、ブラウザのメモリを多く使用する可能性があります。\n\nこのまま出力しますか？`;
+      }
+      return `対象は${countLabel}行です。\nCSV作成に少し時間がかかる可能性があります。\n\nこのまま出力しますか？`;
+    }
+
+    function filteredCsvSelectParts(factColumns, companyPath) {
+      const available = new Set(factColumns || []);
+      const quoteIdentifier = name => `"${String(name).replaceAll('"', '""')}"`;
+      const rawColumn = name => available.has(name) ? `f.${quoteIdentifier(name)}` : null;
+      const textColumn = name => {
+        const raw = rawColumn(name);
+        return raw ? `COALESCE(CAST(${raw} AS VARCHAR), '')` : `''`;
+      };
+      const countColumn = name => {
+        const raw = rawColumn(name);
+        return raw ? `COALESCE(TRY_CAST(${raw} AS BIGINT), 0)` : `0`;
+      };
+      const numberColumn = name => {
+        const raw = rawColumn(name);
+        return raw ? `COALESCE(TRY_CAST(${raw} AS DOUBLE), 0)` : `0`;
+      };
+
+      const monthValue = textColumn('集計年月キー');
+      const monthExpr = `CASE
+        WHEN regexp_matches(trim(${monthValue}), '^[0-9]{6}$')
+          THEN substr(trim(${monthValue}), 1, 4) || '年' || substr(trim(${monthValue}), 5, 2) || '月'
+        ELSE trim(${monthValue})
+      END`;
+
+      const spend = numberColumn('消化金額');
+      const impressions = countColumn('表示回数');
+      const clicks = countColumn('クリック数');
+      const applyStarts = countColumn('応募開始数');
+      const applications = countColumn('応募数');
+
+      const relatedSource = available.has('関連職種_集計用')
+        ? '関連職種_集計用'
+        : available.has('関連職種')
+          ? '関連職種'
+          : '';
+
+      const companyNameExpr = companyPath && available.has('企業ID')
+        ? `COALESCE(m."企業名", '')`
+        : `''`;
+
+      return [
+        `${monthExpr} AS "運用月"`,
+        `${companyNameExpr} AS "企業名"`,
+        `${textColumn('タイトル')} AS "タイトル"`,
+        `${textColumn('管理番号')} AS "管理番号"`,
+        `${textColumn('代表職種')} AS "代表職種"`,
+        `${textColumn('Indeed職種')} AS "Indeed職種"`,
+        `${textColumn('キャンペーン')} AS "キャンペーン"`,
+        `${textColumn('雇用形態')} AS "雇用形態"`,
+        `${textColumn('都道府県')} AS "都道府県"`,
+        `${textColumn('市区町村')} AS "市区町村"`,
+        `${spend} AS "消化金額"`,
+        `${impressions} AS "表示回数"`,
+        `${clicks} AS "クリック数"`,
+        `${applyStarts} AS "応募開始数"`,
+        `${applications} AS "応募数"`,
+        `CASE WHEN ${impressions} > 0 THEN ROUND(${clicks} * 100.0 / ${impressions}, 4) ELSE NULL END AS "クリック率（%）"`,
+        `CASE WHEN ${clicks} > 0 THEN ROUND(${applyStarts} * 100.0 / ${clicks}, 4) ELSE NULL END AS "応募開始率（%）"`,
+        `CASE WHEN ${clicks} > 0 THEN ROUND(${applications} * 100.0 / ${clicks}, 4) ELSE NULL END AS "応募率（%）"`,
+        `CASE WHEN ${clicks} > 0 THEN ROUND(${spend} / ${clicks}, 2) ELSE NULL END AS "CPC（円）"`,
+        `CASE WHEN ${applications} > 0 THEN ROUND(${spend} / ${applications}, 2) ELSE NULL END AS "CPA（円）"`,
+        `${textColumn('ジョブブースト適用')} AS "ジョブブースト適用"`,
+        `${relatedSource ? textColumn(relatedSource) : `''`} AS "関連職種"`,
+        `${textColumn('企業ID')} AS "企業ID"`
+      ];
+    }
+
+    async function downloadFilteredCsv() {
+      if (!appState) {
+        showToast('<div class="toast-title">データが読み込まれていません</div><div class="toast-note">先にoutput_datasetフォルダを選択してください。</div>', 3600);
+        return;
+      }
+      const months = selectedMonths();
+      if (!months.length) {
+        showToast('<div class="toast-title">CSV出力対象がありません</div><div class="toast-note">集計期間を確認してください。</div>', 3600);
+        return;
+      }
+      const btn = els.filteredCsvDownloadBtn;
+      const originalText = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = 'CSV件数確認中...'; }
+      let db = null;
+      let conn = null;
+      let exportPath = '';
+      try {
+        db = await getDb();
+        conn = await db.connect();
+        try { await conn.query('LOAD parquet;'); } catch(e) { /* autoload環境では不要 */ }
+        const paths = await registerMonths(db, months);
+        if (!paths.length) throw new Error('対象期間のfactファイルが見つかりません。');
+        const source = readExpr(paths);
+        const where = filteredCsvWhere();
+        const countRows = await queryRows(conn, `WITH filtered AS (SELECT * FROM ${source} ${where}) SELECT COUNT(*) AS count FROM filtered`);
+        const rowCount = Number((countRows[0] && countRows[0].count) || 0);
+        if (!rowCount) {
+          showToast('<div class="toast-title">CSV出力対象がありません</div><div class="toast-note">現在の検索・絞り込み条件に一致する明細は0件です。</div>', 4200);
+          return;
+        }
+        if (rowCount >= FILTERED_CSV_WARNING_ROWS && !window.confirm(filteredCsvWarningMessage(rowCount))) {
+          showToast('<div class="toast-title">CSV出力をキャンセルしました</div><div class="toast-note">期間や条件を絞ると、より軽く出力できます。</div>', 3200);
+          return;
+        }
+        if (btn) btn.textContent = `CSV作成中... ${rowCount.toLocaleString('ja-JP')}行`;
+
+        const factColumns = await resolvedFactColumnNames(conn, source);
+        const hasCompanyId = factColumns.includes('企業ID');
+        let companyPath = '';
+        if (hasCompanyId) {
+          try { companyPath = await ensureCompanyMasterRegistered(db); }
+          catch (err) { console.warn('企業マスタを結合せずCSVを出力します。', err); }
+        }
+
+        const selectParts = filteredCsvSelectParts(factColumns, companyPath);
+        const joinSql = companyPath && hasCompanyId
+          ? `LEFT JOIN (
+              SELECT CAST("企業ID" AS VARCHAR) AS "企業ID", any_value("企業名") AS "企業名"
+              FROM read_parquet(${sqlLiteral(companyPath)})
+              GROUP BY 1
+            ) m ON CAST(f."企業ID" AS VARCHAR) = m."企業ID"`
+          : '';
+
+        // 大容量出力の負荷を抑えるため、CSV作成時の強制ソートは行わない。
+        // Excel上では運用月や企業名など、用途に応じて自由に並べ替えられる。
+        const selectSql = `WITH filtered AS (SELECT * FROM ${source} ${where})
+          SELECT ${selectParts.join(', ')}
+          FROM filtered f
+          ${joinSql}`;
+
+        exportPath = `filtered_export_${Date.now()}_${Math.random().toString(36).slice(2)}.csv`;
+        await conn.query(`COPY (${selectSql}) TO ${sqlLiteral(exportPath)} (FORMAT CSV, HEADER TRUE, DELIMITER ',', QUOTE '"', ESCAPE '"', NULL '')`);
+        const csvBuffer = await db.copyFileToBuffer(exportPath);
+        const fileName = `indeed_filtered_analysis_${fileTimestamp()}.csv`;
+        downloadUtf8BomCsvBuffer(fileName, csvBuffer);
+        showToast(`<div class="toast-title">絞り込みCSVを出力しました</div><div class="toast-note">${esc(rowCount.toLocaleString('ja-JP'))}行 / UTF-8 BOM付きCSV<br>運用月・派生指標を含む、Excelで確認しやすい23列構成です。</div>`, 5600);
+      } catch (err) {
+        console.error(err);
+        log('[CSV EXPORT ERROR]\n' + (err && (err.stack || err.message) ? (err.stack || err.message) : String(err)));
+        showToast(`<div class="toast-title">CSV出力でエラーが発生しました</div><div class="toast-note">${esc(err && err.message ? err.message : err)}</div>`, 6500);
+      } finally {
+        if (conn) { try { await conn.close(); } catch (_) {} }
+        if (db && exportPath) { try { await db.dropFile(exportPath); } catch (_) {} }
+        if (btn) { btn.disabled = false; btn.textContent = originalText || '⬇ 絞り込みCSV出力'; }
+      }
+    }
 
     function comparisonCacheKey(mode=comparisonMode) {
       if (!appState) return '';
@@ -4614,12 +5794,17 @@
       // 検索条件変更によって関連職種候補の集合が変わった場合、
       // いま画面に表示されている候補バッジに含まれない過去の選択は解除する。
       // これにより、比較表には「フリーワード行」＋「現在ONのバッジ行」だけが残る。
-      const currentBadgeJobs = new Set(rows.map(row => row.related_job));
+      latestRelatedJobRows = Array.isArray(rows) ? rows.map(row => ({ ...row })) : [];
+      const currentBadgeJobs = new Set(latestRelatedJobRows.map(row => row.related_job));
       selectedJobTitles = selectedJobTitles.filter(job => currentBadgeJobs.has(job));
 
       renderSelectedJobs();
-      if (!rows.length) { els.relatedJobs.innerHTML = '<div class="empty">関連する職種が見つかりません。</div>'; return; }
-      els.relatedJobs.innerHTML = rows.map(row => `<button class="chip ${selectedJobTitles.includes(row.related_job) ? 'selected' : ''}" data-job="${esc(row.related_job)}" type="button">${esc(row.related_job)}</button>`).join('');
+      if (!latestRelatedJobRows.length) {
+        els.relatedJobs.innerHTML = '<div class="empty">関連する職種が見つかりません。</div>';
+        scheduleRelatedQuickButtonVisibility();
+        return;
+      }
+      els.relatedJobs.innerHTML = latestRelatedJobRows.map(row => `<button class="chip ${selectedJobTitles.includes(row.related_job) ? 'selected' : ''}" data-job="${esc(row.related_job)}" type="button">${esc(row.related_job)}</button>`).join('');
       els.relatedJobs.querySelectorAll('[data-job]').forEach(btn => btn.addEventListener('click', () => {
         const job = btn.dataset.job;
         const willSelect = !selectedJobTitles.includes(job);
@@ -4631,9 +5816,85 @@
 
         selectedJobTitles = willSelect ? [...selectedJobTitles, job] : selectedJobTitles.filter(j => j !== job);
         renderSelectedJobs();
+        updateToolbarContextSummary();
         textDirty = false;
         refreshAll();
       }));
+      scheduleRelatedQuickButtonVisibility();
+    }
+
+    function relatedJobsIconSvg() {
+      return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h7.1l6.9 6.9-5.6 5.6L5.5 11.1V5.5Z"></path><circle cx="8.3" cy="8.8" r="1.1"></circle><path d="m14.3 17.2 4.8-4.8 1.5 1.5-4.8 4.8-2.2.7.7-2.2Z"></path></svg>';
+    }
+
+    function relatedJobCandidateNames() {
+      return latestRelatedJobRows.map(row => String(row.related_job || '').trim()).filter(Boolean);
+    }
+
+    function openRelatedJobsDialog() {
+      if (!els.relatedJobsDialog) return;
+      const candidates = new Set(relatedJobCandidateNames());
+      if (!candidates.size) {
+        showToast('<div class="toast-title">関連職種候補がありません</div><div class="toast-note">検索条件を変更すると候補が表示される場合があります。</div>', 3000);
+        return;
+      }
+      relatedJobDraftTitles = selectedJobTitles.filter(job => candidates.has(job));
+      renderRelatedJobsDialog();
+      document.body.classList.add('modal-open');
+      if (typeof els.relatedJobsDialog.showModal === 'function') {
+        if (!els.relatedJobsDialog.open) els.relatedJobsDialog.showModal();
+      } else {
+        els.relatedJobsDialog.setAttribute('open', '');
+      }
+    }
+
+    function closeRelatedJobsDialog() {
+      if (!els.relatedJobsDialog) return;
+      if (typeof els.relatedJobsDialog.close === 'function' && els.relatedJobsDialog.open) els.relatedJobsDialog.close();
+      else els.relatedJobsDialog.removeAttribute('open');
+      document.body.classList.remove('modal-open');
+    }
+
+    function renderRelatedJobsDialog() {
+      if (!els.relatedJobsModalCandidates || !els.relatedJobsModalSelected) return;
+      const candidates = relatedJobCandidateNames();
+      const candidateSet = new Set(candidates);
+      relatedJobDraftTitles = relatedJobDraftTitles.filter(job => candidateSet.has(job));
+      const selectedSet = new Set(relatedJobDraftTitles);
+      if (els.relatedJobsModalCount) els.relatedJobsModalCount.textContent = String(relatedJobDraftTitles.length);
+      els.relatedJobsModalSelected.innerHTML = relatedJobDraftTitles.length
+        ? relatedJobDraftTitles.map(job => `<button type="button" class="related-jobs-selected-chip" data-related-draft-remove="${esc(job)}" title="選択を解除">${esc(job)}</button>`).join('')
+        : '<span class="related-jobs-current-empty">選択中の職種はありません。</span>';
+      els.relatedJobsModalCandidates.innerHTML = candidates.map(job => `<button type="button" class="related-jobs-candidate-chip ${selectedSet.has(job) ? 'active' : ''}" data-related-draft-job="${esc(job)}" aria-pressed="${selectedSet.has(job) ? 'true' : 'false'}">${esc(job)}</button>`).join('');
+      if (els.relatedJobsModalApply) els.relatedJobsModalApply.textContent = `適用して閉じる（${relatedJobDraftTitles.length}）`;
+    }
+
+    function toggleRelatedJobDraft(job) {
+      const exists = relatedJobDraftTitles.includes(job);
+      relatedJobDraftTitles = exists ? relatedJobDraftTitles.filter(item => item !== job) : [...relatedJobDraftTitles, job];
+      renderRelatedJobsDialog();
+    }
+
+    function syncMainRelatedJobChips() {
+      if (!els.relatedJobs) return;
+      els.relatedJobs.querySelectorAll('[data-job]').forEach(btn => {
+        btn.classList.toggle('selected', selectedJobTitles.includes(btn.dataset.job));
+      });
+    }
+
+    function applyRelatedJobDraft() {
+      const candidates = new Set(relatedJobCandidateNames());
+      const next = relatedJobDraftTitles.filter(job => candidates.has(job));
+      const changed = next.length !== selectedJobTitles.length || next.some((job, idx) => job !== selectedJobTitles[idx]);
+      selectedJobTitles = [...next];
+      syncMainRelatedJobChips();
+      renderSelectedJobs();
+      closeRelatedJobsDialog();
+      updateToolbarContextSummary();
+      scheduleRelatedQuickButtonVisibility();
+      if (!changed) return;
+      textDirty = false;
+      refreshAll();
     }
 
     function comparisonAxisTitle(mode) {
@@ -5005,12 +6266,70 @@
     }
 
 
+    function chartMetricLabel(metricId) {
+      return (METRIC_MAP[metricId] && METRIC_MAP[metricId].label) ? METRIC_MAP[metricId].label : 'CPA';
+    }
+
+    function updateChartMetricButton() {
+      const label = chartMetricLabel(chartLeftMetric);
+      if (els.chartMetricBtnText) els.chartMetricBtnText.textContent = label;
+      if (els.chartMetricBtn) {
+        els.chartMetricBtn.setAttribute('aria-label', `表示指標：${label}`);
+      }
+      if (els.chartLeftMetric) els.chartLeftMetric.value = chartLeftMetric;
+      if (els.chartMetricPopover && !els.chartMetricPopover.classList.contains('hidden')) renderChartMetricPopover();
+    }
+
+    function renderChartMetricPopover() {
+      if (!els.chartMetricPopover) return;
+      els.chartMetricPopover.innerHTML = CHART_METRIC_IDS.map(id => {
+        const active = id === chartLeftMetric;
+        return `<button class="metric-select-option ${active ? 'active' : ''}" type="button" role="option" aria-selected="${active ? 'true' : 'false'}" data-chart-metric="${esc(id)}"><span class="metric-select-check">✓</span><span>${esc(chartMetricLabel(id))}</span></button>`;
+      }).join('');
+    }
+
+    function openChartMetricPopover() {
+      if (!els.chartMetricPopover || !els.chartMetricBtn) return;
+      renderChartMetricPopover();
+      els.chartMetricPopover.classList.remove('hidden');
+      els.chartMetricBtn.setAttribute('aria-expanded', 'true');
+      const active = els.chartMetricPopover.querySelector('.metric-select-option.active');
+      if (active && typeof active.scrollIntoView === 'function') {
+        requestAnimationFrame(() => active.scrollIntoView({ block:'nearest' }));
+      }
+    }
+
+    function closeChartMetricPopover() {
+      if (!els.chartMetricPopover || !els.chartMetricBtn) return;
+      els.chartMetricPopover.classList.add('hidden');
+      els.chartMetricBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggleChartMetricPopover() {
+      if (!els.chartMetricPopover) return;
+      if (els.chartMetricPopover.classList.contains('hidden')) openChartMetricPopover();
+      else closeChartMetricPopover();
+    }
+
+    function setChartLeftMetric(metricId, repaint=true) {
+      const nextMetric = CHART_METRIC_IDS.includes(metricId) ? metricId : 'cpa';
+      const changed = nextMetric !== chartLeftMetric;
+      chartLeftMetric = nextMetric;
+      updateChartMetricButton();
+      closeChartMetricPopover();
+      hideAxisCapPopover();
+      updateChartStyleButtons();
+      if (repaint && changed) repaintCurrentTable(true);
+    }
+
     function renderChartMetricSelectors() {
       const metricOptions = CHART_METRIC_IDS.map(id => `<option value="${esc(id)}">${esc(METRIC_MAP[id].label)}</option>`).join('');
       if (els.chartLeftMetric) {
         els.chartLeftMetric.innerHTML = metricOptions;
         els.chartLeftMetric.value = chartLeftMetric;
       }
+      renderChartMetricPopover();
+      updateChartMetricButton();
       chartRightMetric = 'none';
       updateChartStyleButtons();
     }
@@ -6115,13 +7434,59 @@
     function chartContextHtml() {
       const chips = toolbarContextChipsHtml();
       if (!chips) return '';
-      return `<div class="chart-context"><span class="chart-context-label">集計対象：</span>${chips}</div>`;
+      const hasCandidates = latestRelatedJobRows.length > 0;
+      const isVisible = hasCandidates && relatedQuickButtonVisible;
+      const countBadge = selectedJobTitles.length ? `<span class="related-jobs-count">${esc(selectedJobTitles.length)}</span>` : '';
+      const quickButton = `<button type="button" class="related-jobs-quick-btn ${isVisible ? 'is-visible' : ''}" data-open-related-jobs aria-label="関連職種を変更" title="関連職種を変更" aria-hidden="${isVisible ? 'false' : 'true'}" tabindex="${isVisible ? '0' : '-1'}">${relatedJobsIconSvg()}${countBadge}</button>`;
+      return `<div class="chart-context"><span class="chart-context-label">集計対象：</span>${quickButton}${chips}</div>`;
+    }
+
+    function syncRelatedQuickButtonState() {
+      if (!els.comparisonContextSummary) return;
+      const btn = els.comparisonContextSummary.querySelector('[data-open-related-jobs]');
+      if (!btn) return;
+      const visible = latestRelatedJobRows.length > 0 && relatedQuickButtonVisible && !document.body.classList.contains('company-mode-active');
+      btn.classList.toggle('is-visible', visible);
+      btn.setAttribute('aria-hidden', visible ? 'false' : 'true');
+      btn.tabIndex = visible ? 0 : -1;
+      const oldBadge = btn.querySelector('.related-jobs-count');
+      if (oldBadge) oldBadge.remove();
+      if (selectedJobTitles.length) {
+        const badge = document.createElement('span');
+        badge.className = 'related-jobs-count';
+        badge.textContent = String(selectedJobTitles.length);
+        btn.appendChild(badge);
+      }
+    }
+
+    function updateRelatedQuickButtonVisibility() {
+      let visible = false;
+      if (appState && els.relatedJobs && latestRelatedJobRows.length && !document.body.classList.contains('company-mode-active')) {
+        const relatedRect = els.relatedJobs.getBoundingClientRect();
+        const filterBottom = els.searchFiltersShell ? els.searchFiltersShell.getBoundingClientRect().bottom : 0;
+        const threshold = Math.max(0, filterBottom) + 4;
+        visible = relatedRect.bottom <= threshold;
+      }
+      if (relatedQuickButtonVisible !== visible) relatedQuickButtonVisible = visible;
+      syncRelatedQuickButtonState();
+    }
+
+    function scheduleRelatedQuickButtonVisibility() {
+      if (relatedQuickVisibilityRaf) return;
+      relatedQuickVisibilityRaf = requestAnimationFrame(() => {
+        relatedQuickVisibilityRaf = 0;
+        updateRelatedQuickButtonVisibility();
+      });
     }
 
     function updateToolbarContextSummary() {
       if (!els.comparisonContextSummary) return;
       els.comparisonContextSummary.innerHTML = chartContextHtml();
+      syncRelatedQuickButtonState();
     }
+
+    window.addEventListener('scroll', scheduleRelatedQuickButtonVisibility, { passive:true });
+    window.addEventListener('resize', scheduleRelatedQuickButtonVisibility, { passive:true });
 
     function monthEmptyChartPanelHtml(message) {
       return `
@@ -7183,23 +8548,41 @@
       }
     });
 
-    els.folderSelectBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      copyDefaultFolderPath();
-      // ファイル/フォルダ選択ダイアログは、ブラウザによっては
-      // setTimeout 後の click() をユーザー操作として扱わずブロックする。
-      // そのため、クリックイベント内で同期的に開く。
-      try {
-        els.folderInput.value = '';
-        els.folderInput.click();
-      } catch (err) {
-        console.error(err);
-        showToast(`
-          <div class="toast-title">フォルダ選択画面を開けませんでした</div>
-          <div class="toast-note">ブラウザの制限で開けない場合は、フォルダ選択欄を再度クリックしてください。</div>
-        `, 3200);
-      }
-    });
+    if (els.sharedLoadCard) {
+      els.sharedLoadCard.addEventListener('click', () => selectFolderLoadMethod('shared'));
+    }
+    if (els.localLoadCard) {
+      els.localLoadCard.addEventListener('click', () => selectFolderLoadMethod('local'));
+    }
+    if (els.folderSelectBtn) {
+      els.folderSelectBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        copyDefaultFolderPath({ openGuide:true });
+        // ファイル/フォルダ選択ダイアログは、ブラウザによっては
+        // setTimeout 後の click() をユーザー操作として扱わずブロックする。
+        // そのため、クリックイベント内で同期的に開く。
+        openFolderPicker('shared');
+      });
+    }
+    if (els.localCopySourceBtn) {
+      els.localCopySourceBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        selectFolderLoadMethod('local');
+        copyDefaultFolderPath({ openGuide:false });
+      });
+    }
+    if (els.localFolderSelectBtn) {
+      els.localFolderSelectBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openFolderPicker('local');
+      });
+    }
+    if (els.directFolderSelectBtn) {
+      els.directFolderSelectBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openFolderPicker('direct');
+      });
+    }
     els.folderInput.addEventListener('change', e => handleFiles(e.target.files).catch(err => { console.error(err); log('[ERROR]\n' + (err.stack || err.message)); setStatus('エラー','bad'); }));
     els.refreshBtn.addEventListener('click', () => { textDirty = false; clearLog(); refreshAll(); });
     if (els.copyBtn) els.copyBtn.addEventListener('click', copyTable);
@@ -7210,7 +8593,37 @@
       if (els.columnPopover.contains(e.target) || els.columnMenuBtn.contains(e.target)) return;
       els.columnPopover.classList.add('hidden');
     });
-    els.clearSelectedBtn.addEventListener('click', () => { selectedJobTitles = []; renderSelectedJobs(); textDirty = false; refreshAll(); });
+    els.clearSelectedBtn.addEventListener('click', () => { selectedJobTitles = []; syncMainRelatedJobChips(); renderSelectedJobs(); updateToolbarContextSummary(); textDirty = false; refreshAll(); });
+    if (els.comparisonContextSummary) {
+      els.comparisonContextSummary.addEventListener('click', e => {
+        const btn = e.target.closest('[data-open-related-jobs]');
+        if (!btn || !btn.classList.contains('is-visible')) return;
+        e.preventDefault();
+        openRelatedJobsDialog();
+      });
+    }
+    if (els.relatedJobsModalCandidates) {
+      els.relatedJobsModalCandidates.addEventListener('click', e => {
+        const btn = e.target.closest('[data-related-draft-job]');
+        if (!btn) return;
+        toggleRelatedJobDraft(btn.dataset.relatedDraftJob);
+      });
+    }
+    if (els.relatedJobsModalSelected) {
+      els.relatedJobsModalSelected.addEventListener('click', e => {
+        const btn = e.target.closest('[data-related-draft-remove]');
+        if (!btn) return;
+        toggleRelatedJobDraft(btn.dataset.relatedDraftRemove);
+      });
+    }
+    if (els.relatedJobsModalClear) els.relatedJobsModalClear.addEventListener('click', () => { relatedJobDraftTitles = []; renderRelatedJobsDialog(); });
+    if (els.relatedJobsModalClose) els.relatedJobsModalClose.addEventListener('click', closeRelatedJobsDialog);
+    if (els.relatedJobsModalCancel) els.relatedJobsModalCancel.addEventListener('click', closeRelatedJobsDialog);
+    if (els.relatedJobsModalApply) els.relatedJobsModalApply.addEventListener('click', applyRelatedJobDraft);
+    if (els.relatedJobsDialog) {
+      els.relatedJobsDialog.addEventListener('click', e => { if (e.target === els.relatedJobsDialog) closeRelatedJobsDialog(); else e.stopPropagation(); });
+      els.relatedJobsDialog.addEventListener('cancel', e => { e.preventDefault(); closeRelatedJobsDialog(); });
+    }
     [els.freeWordInput, els.locationInput].forEach(input => {
       input.addEventListener('input', () => { textDirty = true; });
       input.addEventListener('blur', () => setTimeout(commitTextSearchIfNeeded, 0));
@@ -7276,11 +8689,41 @@
       hideAxisCapPopover();
       repaintCurrentTable(true);
     });
-    if (els.chartLeftMetric) els.chartLeftMetric.addEventListener('change', () => { chartLeftMetric = els.chartLeftMetric.value || 'cpa'; hideAxisCapPopover(); updateChartStyleButtons(); repaintCurrentTable(true); });
+    if (els.chartMetricBtn) {
+      els.chartMetricBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        toggleChartMetricPopover();
+      });
+      els.chartMetricBtn.addEventListener('keydown', e => {
+        if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openChartMetricPopover();
+        } else if (e.key === 'Escape') {
+          closeChartMetricPopover();
+        }
+      });
+    }
+    if (els.chartMetricPopover) {
+      els.chartMetricPopover.addEventListener('click', e => {
+        const btn = e.target.closest('[data-chart-metric]');
+        if (!btn) return;
+        e.stopPropagation();
+        setChartLeftMetric(btn.dataset.chartMetric || 'cpa', true);
+      });
+    }
+    if (els.chartLeftMetric) els.chartLeftMetric.addEventListener('change', () => { setChartLeftMetric(els.chartLeftMetric.value || 'cpa', true); });
     if (els.chartRightMetric) els.chartRightMetric.addEventListener('change', () => { chartRightMetric = els.chartRightMetric.value || 'none'; if (chartRightMetric === 'none') hideAxisCapPopover(); updateChartStyleButtons(); repaintCurrentTable(true); });
     if (els.chartLabelToggle) els.chartLabelToggle.addEventListener('click', (e) => { e.stopPropagation(); setChartAxisStyle('left', 'label', els.chartLabelToggle); });
     document.querySelectorAll('.chart-icon-btn[data-axis]').forEach(btn => {
       btn.addEventListener('click', (e) => { e.stopPropagation(); setChartAxisStyle(btn.dataset.axis, btn.dataset.style, btn); });
+    });
+    document.addEventListener('click', e => {
+      if (!els.chartMetricPopover || els.chartMetricPopover.classList.contains('hidden')) return;
+      if (els.chartMetricSelectWrap && els.chartMetricSelectWrap.contains(e.target)) return;
+      closeChartMetricPopover();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeChartMetricPopover();
     });
     document.addEventListener('click', e => {
       if (!els.chartAxisPopover || els.chartAxisPopover.classList.contains('hidden')) return;
@@ -7290,6 +8733,8 @@
     document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { setAnalysisMode(tab.dataset.mode); updateViewControls(); updateComparisonControls(); textDirty = false; clearLog(); refreshComparisonOnly(); }));
     window.addEventListener('resize', () => requestAnimationFrame(() => { updateComparisonStickyYAxis(comparisonChart); updateStickyLayout(); }));
     window.addEventListener('scroll', () => requestAnimationFrame(updateStickyLayout), { passive:true });
+    if (els.filteredCsvDownloadBtn) els.filteredCsvDownloadBtn.addEventListener('click', downloadFilteredCsv);
+    if (els.companyModeDirectBtn) els.companyModeDirectBtn.addEventListener('click', enterCompanyMode);
     if (els.modeSettingsBtn) els.modeSettingsBtn.addEventListener('click', openModeSwitchDialog);
     if (els.modeSwitchCloseBtn) els.modeSwitchCloseBtn.addEventListener('click', closeModeSwitchDialog);
     if (els.openCompanyModeBtn) els.openCompanyModeBtn.addEventListener('click', enterCompanyMode);
