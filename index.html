@@ -5265,6 +5265,471 @@
       }
     }
 
+  
+    /* Step83: exact sticky-header column alignment */
+    body.company-mode-active
+      .page-sticky-table-header.company-source table {
+      table-layout:fixed !important;
+      border-collapse:separate !important;
+      border-spacing:0 !important;
+    }
+
+    body.company-mode-active
+      .page-sticky-table-header.company-source col {
+      box-sizing:border-box;
+    }
+
+    body.company-mode-active
+      .page-sticky-table-header.company-source th {
+      box-sizing:border-box !important;
+      max-width:none;
+    }
+
+    body.company-mode-active
+      .page-sticky-table-header.company-source
+      .page-sticky-table-header-inner {
+      overflow:visible;
+    }
+
+  
+    /* Step84: cover the complete right edge of the company sticky header */
+    body.company-mode-active
+      .page-sticky-table-header.company-source {
+      position:fixed;
+      background:#e5e7eb !important;
+    }
+
+    body.company-mode-active
+      .page-sticky-table-header.company-source::after {
+      content:"";
+      position:absolute;
+      z-index:80;
+      top:0;
+      right:0;
+      bottom:0;
+      width:var(--company-sticky-right-cover, 4px);
+      min-width:4px;
+      background:#e5e7eb;
+      border-bottom:1px solid #cbd5e1;
+      pointer-events:none;
+    }
+
+    body.company-mode-active
+      .page-sticky-table-header.company-source
+      .page-sticky-table-header-inner {
+      /*
+        innerは列のcontent幅を基準に横移動し、
+        outerと疑似要素が右側の境界・余白を覆う。
+      */
+      min-height:100%;
+    }
+
+  
+    /* Step85: one-click replacement picker for the final pivot axis */
+    body.company-mode-active .company-pivot-axis-remove.is-replace-trigger:hover {
+      background:#e0f2fe;
+      color:#0369a1;
+    }
+
+    .company-pivot-replacement-popover {
+      position:fixed;
+      z-index:1600;
+      width:min(390px,calc(100vw - 24px));
+      padding:13px;
+      border:1px solid #bae6fd;
+      border-radius:16px;
+      background:rgba(255,255,255,.992);
+      color:#1e293b;
+      box-shadow:0 18px 46px rgba(15,23,42,.2);
+      backdrop-filter:blur(10px);
+    }
+
+    .company-pivot-replacement-head {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:11px;
+      padding-bottom:10px;
+      border-bottom:1px solid #e2e8f0;
+    }
+
+    .company-pivot-replacement-title {
+      color:#0c4a6e;
+      font-family:var(--company-font);
+      font-size:13px;
+      font-weight:900;
+      line-height:1.35;
+    }
+
+    .company-pivot-replacement-note {
+      margin-top:3px;
+      color:#64748b;
+      font-family:var(--company-font);
+      font-size:10px;
+      font-weight:650;
+      line-height:1.45;
+    }
+
+    .company-pivot-replacement-close {
+      display:grid;
+      place-items:center;
+      flex:0 0 28px;
+      width:28px;
+      height:28px;
+      padding:0;
+      border:0;
+      border-radius:9px;
+      background:#f1f5f9;
+      color:#64748b;
+      font-size:17px;
+      line-height:1;
+      cursor:pointer;
+    }
+
+    .company-pivot-replacement-close:hover {
+      background:#e2e8f0;
+      color:#0f172a;
+    }
+
+    .company-pivot-replacement-options {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+    }
+
+    .company-pivot-replacement-option {
+      display:grid;
+      grid-template-columns:18px minmax(0,1fr) auto;
+      align-items:center;
+      gap:8px;
+      min-height:43px;
+      padding:8px 10px;
+      border:1px solid #d7e1eb;
+      border-radius:11px;
+      background:#f8fafc;
+      color:#334155;
+      font-family:var(--company-font);
+      text-align:left;
+      cursor:pointer;
+      transition:
+        border-color .12s ease,
+        background .12s ease,
+        box-shadow .12s ease,
+        transform .12s ease;
+    }
+
+    .company-pivot-replacement-option:hover {
+      border-color:#38bdf8;
+      background:#f0f9ff;
+      box-shadow:0 3px 9px rgba(14,165,233,.1);
+      transform:translateY(-1px);
+    }
+
+    .company-pivot-replacement-option.active {
+      border-color:#0ea5e9;
+      background:#e0f2fe;
+      color:#075985;
+      box-shadow:inset 0 0 0 1px rgba(14,165,233,.18);
+    }
+
+    .company-pivot-replacement-radio {
+      display:grid;
+      place-items:center;
+      width:16px;
+      height:16px;
+      border:1.5px solid #94a3b8;
+      border-radius:50%;
+      background:#fff;
+    }
+
+    .company-pivot-replacement-radio::after {
+      content:"";
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:transparent;
+    }
+
+    .company-pivot-replacement-option.active
+      .company-pivot-replacement-radio {
+      border-color:#0284c7;
+    }
+
+    .company-pivot-replacement-option.active
+      .company-pivot-replacement-radio::after {
+      background:#0284c7;
+    }
+
+    .company-pivot-replacement-option-label {
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .company-pivot-replacement-scope,
+    .company-pivot-replacement-current {
+      padding:2px 5px;
+      border-radius:999px;
+      font-size:8px;
+      font-weight:850;
+      white-space:nowrap;
+    }
+
+    .company-pivot-replacement-scope {
+      background:#fff7ed;
+      color:#c2410c;
+    }
+
+    .company-pivot-replacement-current {
+      background:#0284c7;
+      color:#fff;
+    }
+
+    @media (max-width:520px) {
+      .company-pivot-replacement-options {
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      .company-pivot-replacement-option {
+        transition:none !important;
+      }
+    }
+
+  
+    /* Step86: related-jobs modal follows the app-wide close-to-apply rule */
+    .related-jobs-dialog-footer #relatedJobsModalCancel {
+      color:#64748b;
+    }
+
+    .related-jobs-dialog-footer #relatedJobsModalCancel:hover {
+      color:#334155;
+      background:#f1f5f9;
+    }
+
+    .related-jobs-dialog-footer #relatedJobsModalApply {
+      min-width:150px;
+    }
+
+  
+    /* Step89: explicit one-shot apply for top related-job badges */
+    .related-jobs-apply-bar {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin:10px 0 12px;
+      padding:10px 12px;
+      border:1px solid #fdba74;
+      border-radius:14px;
+      background:linear-gradient(135deg,#fff7ed,#fffbeb);
+      box-shadow:0 6px 16px rgba(194,65,12,.08);
+    }
+
+    .related-jobs-apply-bar.hidden {
+      display:none !important;
+    }
+
+    .related-jobs-apply-copy {
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+      gap:2px;
+    }
+
+    .related-jobs-apply-copy strong {
+      color:#9a3412;
+      font-size:12px;
+      font-weight:900;
+      line-height:1.35;
+    }
+
+    .related-jobs-apply-copy span {
+      color:#78716c;
+      font-size:10.5px;
+      font-weight:650;
+      line-height:1.45;
+    }
+
+    .related-jobs-apply-actions {
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      flex:0 0 auto;
+      gap:8px;
+    }
+
+    #relatedJobsApplyBtn {
+      min-width:170px;
+    }
+
+    #relatedJobsApplyBtn:disabled,
+    #relatedJobsDiscardBtn:disabled {
+      cursor:wait;
+      opacity:.58;
+    }
+
+    .related-jobs-section.has-pending-related-jobs
+      #relatedJobs .chip.selected {
+      position:relative;
+      box-shadow:
+        0 0 0 2px rgba(249,115,22,.18),
+        0 3px 8px rgba(194,65,12,.08);
+    }
+
+    @media (max-width:680px) {
+      .related-jobs-apply-bar {
+        align-items:stretch;
+        flex-direction:column;
+      }
+
+      .related-jobs-apply-actions {
+        width:100%;
+      }
+
+      .related-jobs-apply-actions .btn {
+        flex:1 1 auto;
+      }
+
+      #relatedJobsApplyBtn {
+        min-width:0;
+      }
+    }
+
+  
+    /* Step90: visible search logic badges and inline clear controls */
+    .search-label-row {
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      min-width:0;
+      gap:7px;
+    }
+
+    .search-label-row > .label {
+      min-width:0;
+      white-space:nowrap;
+    }
+
+    .search-mode-badge {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:18px;
+      padding:2px 7px;
+      border:1px solid #d6d3d1;
+      border-radius:999px;
+      background:#f5f5f4;
+      color:#78716c;
+      font-family:inherit;
+      font-size:9px;
+      font-weight:850;
+      line-height:1.15;
+      white-space:nowrap;
+      cursor:pointer;
+      transition:
+        border-color .12s ease,
+        background .12s ease,
+        color .12s ease,
+        transform .08s ease;
+    }
+
+    .search-mode-badge:hover,
+    .search-mode-badge:focus-visible {
+      border-color:#7dd3fc;
+      background:#e0f2fe;
+      color:#0369a1;
+      outline:none;
+    }
+
+    .search-mode-badge:active {
+      transform:translateY(1px);
+    }
+
+    .search-mode-badge[data-mode="OR"] {
+      border-color:#fed7aa;
+      background:#fff7ed;
+      color:#9a3412;
+    }
+
+    .search-input-wrap {
+      position:relative;
+      min-width:0;
+    }
+
+    .search-input-wrap > input[type="text"] {
+      display:block;
+      width:100%;
+    }
+
+    .search-input-wrap > input[type="text"].has-clear-button {
+      padding-right:43px !important;
+    }
+
+    .search-input-clear {
+      position:absolute;
+      z-index:3;
+      top:50%;
+      right:9px;
+      display:grid;
+      place-items:center;
+      width:26px;
+      height:26px;
+      padding:0;
+      border:0;
+      border-radius:999px;
+      background:#e7e5e4;
+      color:#78716c;
+      font-family:inherit;
+      font-size:16px;
+      font-weight:800;
+      line-height:1;
+      cursor:pointer;
+      transform:translateY(-50%);
+      transition:
+        background .12s ease,
+        color .12s ease,
+        box-shadow .12s ease;
+    }
+
+    .search-input-clear[hidden] {
+      display:none !important;
+    }
+
+    .search-input-clear:hover,
+    .search-input-clear:focus-visible {
+      background:#d6d3d1;
+      color:#292524;
+      box-shadow:0 0 0 3px rgba(125,211,252,.35);
+      outline:none;
+    }
+
+    .advanced-field.is-mode-target {
+      border-color:#38bdf8 !important;
+      background:#f0f9ff;
+      box-shadow:
+        0 0 0 4px rgba(125,211,252,.28),
+        inset 0 1px 0 rgba(255,255,255,.9);
+    }
+
+    @media (max-width:900px) {
+      .search-label-row {
+        justify-content:space-between;
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      .search-mode-badge,
+      .search-input-clear {
+        transition:none !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -5401,13 +5866,47 @@
       <div class="card span-12 search-related-card" id="searchRelatedCard">
         <div id="searchFiltersPlaceholder" class="search-filters-placeholder" aria-hidden="true"></div>
         <div id="searchFilters" class="filters search-filter-row">
-          <div class="field">
-            <label class="label" for="freeWordInput">🔎 フリーワード</label>
-            <input id="freeWordInput" type="text" placeholder="例：接客 販売" />
+          <div class="field search-text-field">
+            <div class="search-label-row">
+              <label class="label" for="freeWordInput">🔎 フリーワード</label>
+              <button
+                id="freeWordModeBadge"
+                class="search-mode-badge"
+                type="button"
+                data-search-mode-target="searchMode"
+                title="入力した語句をすべて含むデータを検索します。クリックすると詳細条件を開きます。">すべて含む</button>
+            </div>
+            <div class="search-input-wrap">
+              <input id="freeWordInput" type="text" placeholder="例：接客 販売" />
+              <button
+                id="freeWordClearBtn"
+                class="search-input-clear"
+                type="button"
+                aria-label="フリーワードをすべて削除"
+                title="入力内容をすべて削除"
+                hidden>×</button>
+            </div>
           </div>
-          <div class="field">
-            <label class="label" for="locationInput">📍 勤務地</label>
-            <input id="locationInput" type="text" placeholder="例：東京 新宿" />
+          <div class="field search-text-field">
+            <div class="search-label-row">
+              <label class="label" for="locationInput">📍 勤務地</label>
+              <button
+                id="locationModeBadge"
+                class="search-mode-badge"
+                type="button"
+                data-search-mode-target="locationMode"
+                title="入力した語句のいずれかを含むデータを検索します。クリックすると詳細条件を開きます。">どれか含む</button>
+            </div>
+            <div class="search-input-wrap">
+              <input id="locationInput" type="text" placeholder="例：東京 新宿" />
+              <button
+                id="locationClearBtn"
+                class="search-input-clear"
+                type="button"
+                aria-label="勤務地をすべて削除"
+                title="入力内容をすべて削除"
+                hidden>×</button>
+            </div>
           </div>
           <div class="field md employment-field">
             <label class="label employment-label-row" for="employmentFilterBtn">雇用形態 <span id="employmentFilterNote" class="employment-inline-note hidden">2026年6月以降に対応</span></label>
@@ -5514,9 +6013,19 @@
                 </span>
                 関連する職種
               </h2>
-              <p class="muted" style="margin:0;font-size:13px;">クリックすると比較表に追加できます。数値は下の比較表で確認できます。</p>
+              <p class="muted" style="margin:0;font-size:13px;">バッジを選び、「選択内容を反映」を押すと一度だけ再集計します。</p>
             </div>
             <button id="clearSelectedBtn" class="btn ghost small" type="button">選択をクリア</button>
+          </div>
+          <div id="relatedJobsApplyBar" class="related-jobs-apply-bar hidden" role="status" aria-live="polite">
+            <div class="related-jobs-apply-copy">
+              <strong id="relatedJobsPendingTitle">未反映の変更があります</strong>
+              <span id="relatedJobsPendingNote">選択内容を確認して反映してください。</span>
+            </div>
+            <div class="related-jobs-apply-actions">
+              <button id="relatedJobsDiscardBtn" class="btn ghost small" type="button">変更を破棄</button>
+              <button id="relatedJobsApplyBtn" class="btn secondary small" type="button">選択内容を反映</button>
+            </div>
           </div>
           <div id="selectedJobs" class="chips" style="display:none;"></div>
           <div id="relatedJobs" class="chips"></div>
@@ -5663,7 +6172,7 @@
             </span>
             関連職種を選択
           </div>
-          <div class="related-jobs-dialog-note">候補を複数選択し、「適用して閉じる」を押すと一度だけ再集計します。</div>
+          <div class="related-jobs-dialog-note">候補を複数選択できます。閉じると選択内容を反映し、一度だけ再集計します。</div>
         </div>
         <div class="related-jobs-dialog-head-actions">
           <button id="relatedJobsModalClear" class="btn ghost small" type="button">すべて解除</button>
@@ -5679,8 +6188,8 @@
         <div id="relatedJobsModalCandidates" class="related-jobs-candidate-grid"></div>
       </div>
       <div class="related-jobs-dialog-footer">
-        <button id="relatedJobsModalCancel" class="btn ghost small" type="button">キャンセル</button>
-        <button id="relatedJobsModalApply" class="btn secondary small" type="button">適用して閉じる</button>
+        <button id="relatedJobsModalCancel" class="btn ghost small" type="button">変更を破棄</button>
+        <button id="relatedJobsModalApply" class="btn secondary small" type="button">閉じる</button>
       </div>
     </div>
   </dialog>
@@ -5691,9 +6200,9 @@
 
     const els = {
       folderInput: document.getElementById('folderInput'), folderSelectBtn: document.getElementById('folderSelectBtn'), sharedLoadCard: document.getElementById('sharedLoadCard'), localLoadCard: document.getElementById('localLoadCard'), loadMethodDetail: document.getElementById('loadMethodDetail'), sharedMethodPanel: document.getElementById('sharedMethodPanel'), localMethodPanel: document.getElementById('localMethodPanel'), localCopySourceBtn: document.getElementById('localCopySourceBtn'), localFolderSelectBtn: document.getElementById('localFolderSelectBtn'), directFolderSelectBtn: document.getElementById('directFolderSelectBtn'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), comparisonCopyBtn: document.getElementById('comparisonCopyBtn'), mainStatus: document.getElementById('mainStatus'), toast: document.getElementById('toast'),
-      datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), searchFiltersShell: document.getElementById('searchFiltersShell'), searchFilters: document.getElementById('searchFilters'), searchFiltersPlaceholder: document.getElementById('searchFiltersPlaceholder'), freeWordInput: document.getElementById('freeWordInput'), locationInput: document.getElementById('locationInput'), employmentFilter: document.getElementById('employmentFilter'), employmentFilterBtn: document.getElementById('employmentFilterBtn'), employmentFilterBtnText: document.getElementById('employmentFilterBtnText'), employmentPopover: document.getElementById('employmentPopover'), employmentFilterNote: document.getElementById('employmentFilterNote'), advancedFilterBtn: document.getElementById('advancedFilterBtn'), advancedFilterCount: document.getElementById('advancedFilterCount'), advancedFilterDialog: document.getElementById('advancedFilterDialog'), advancedFilterClose: document.getElementById('advancedFilterClose'), advancedFilterApply: document.getElementById('advancedFilterApply'), advancedFilterReset: document.getElementById('advancedFilterReset'), locationMode: document.getElementById('locationMode'), indeedJobInput: document.getElementById('indeedJobInput'), jobBoostFilter: document.getElementById('jobBoostFilter'), indeedJobField: document.getElementById('indeedJobField'), jobBoostField: document.getElementById('jobBoostField'),
+      datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), searchFiltersShell: document.getElementById('searchFiltersShell'), searchFilters: document.getElementById('searchFilters'), searchFiltersPlaceholder: document.getElementById('searchFiltersPlaceholder'), freeWordInput: document.getElementById('freeWordInput'), freeWordModeBadge: document.getElementById('freeWordModeBadge'), freeWordClearBtn: document.getElementById('freeWordClearBtn'), locationInput: document.getElementById('locationInput'), locationModeBadge: document.getElementById('locationModeBadge'), locationClearBtn: document.getElementById('locationClearBtn'), employmentFilter: document.getElementById('employmentFilter'), employmentFilterBtn: document.getElementById('employmentFilterBtn'), employmentFilterBtnText: document.getElementById('employmentFilterBtnText'), employmentPopover: document.getElementById('employmentPopover'), employmentFilterNote: document.getElementById('employmentFilterNote'), advancedFilterBtn: document.getElementById('advancedFilterBtn'), advancedFilterCount: document.getElementById('advancedFilterCount'), advancedFilterDialog: document.getElementById('advancedFilterDialog'), advancedFilterClose: document.getElementById('advancedFilterClose'), advancedFilterApply: document.getElementById('advancedFilterApply'), advancedFilterReset: document.getElementById('advancedFilterReset'), locationMode: document.getElementById('locationMode'), indeedJobInput: document.getElementById('indeedJobInput'), jobBoostFilter: document.getElementById('jobBoostFilter'), indeedJobField: document.getElementById('indeedJobField'), jobBoostField: document.getElementById('jobBoostField'),
       searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalAll: document.getElementById('periodModalAll'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
-      relatedJobsSection: document.getElementById('relatedJobsSection'), relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'), relatedJobsDialog: document.getElementById('relatedJobsDialog'), relatedJobsModalClose: document.getElementById('relatedJobsModalClose'), relatedJobsModalClear: document.getElementById('relatedJobsModalClear'), relatedJobsModalCancel: document.getElementById('relatedJobsModalCancel'), relatedJobsModalApply: document.getElementById('relatedJobsModalApply'), relatedJobsModalCount: document.getElementById('relatedJobsModalCount'), relatedJobsModalSelected: document.getElementById('relatedJobsModalSelected'), relatedJobsModalCandidates: document.getElementById('relatedJobsModalCandidates'),
+      relatedJobsSection: document.getElementById('relatedJobsSection'), relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'), relatedJobsApplyBar: document.getElementById('relatedJobsApplyBar'), relatedJobsPendingTitle: document.getElementById('relatedJobsPendingTitle'), relatedJobsPendingNote: document.getElementById('relatedJobsPendingNote'), relatedJobsDiscardBtn: document.getElementById('relatedJobsDiscardBtn'), relatedJobsApplyBtn: document.getElementById('relatedJobsApplyBtn'), relatedJobsDialog: document.getElementById('relatedJobsDialog'), relatedJobsModalClose: document.getElementById('relatedJobsModalClose'), relatedJobsModalClear: document.getElementById('relatedJobsModalClear'), relatedJobsModalCancel: document.getElementById('relatedJobsModalCancel'), relatedJobsModalApply: document.getElementById('relatedJobsModalApply'), relatedJobsModalCount: document.getElementById('relatedJobsModalCount'), relatedJobsModalSelected: document.getElementById('relatedJobsModalSelected'), relatedJobsModalCandidates: document.getElementById('relatedJobsModalCandidates'),
       comparisonToolbar: document.getElementById('comparisonToolbar'), comparisonContextSummary: document.getElementById('comparisonContextSummary'), comparisonContent: document.getElementById('comparisonContent'), comparisonLoadingOverlay: document.getElementById('comparisonLoadingOverlay'), comparisonLoadingText: document.getElementById('comparisonLoadingText'), periodCompareControls: document.getElementById('periodCompareControls'), compareAFrom: document.getElementById('compareAFrom'), compareATo: document.getElementById('compareATo'), compareBFrom: document.getElementById('compareBFrom'), compareBTo: document.getElementById('compareBTo'), columnMenuBtn: document.getElementById('columnMenuBtn'), columnPopover: document.getElementById('columnPopover'), chartControls: document.getElementById('chartControls'), chartLeftMetric: document.getElementById('chartLeftMetric'), chartMetricBtn: document.getElementById('chartMetricBtn'), chartMetricBtnText: document.getElementById('chartMetricBtnText'), chartMetricPopover: document.getElementById('chartMetricPopover'), chartMetricSelectWrap: document.getElementById('chartMetricSelectWrap'), chartLabelToggle: document.getElementById('chartLabelToggle'), chartRightMetric: null, chartAxisPopover: null, floatingXScroll: document.getElementById('floatingXScroll'), floatingXScrollInner: document.getElementById('floatingXScrollInner'), log: document.getElementById('log'),
       modeSettingsBtn: document.getElementById('modeSettingsBtn'), filteredCsvDownloadBtn: document.getElementById('filteredCsvDownloadBtn'), companyModeDirectBtn: document.getElementById('companyModeDirectBtn'), modeSwitchDialog: document.getElementById('modeSwitchDialog'), modeSwitchCloseBtn: document.getElementById('modeSwitchCloseBtn'), openCompanyModeBtn: document.getElementById('openCompanyModeBtn'), companyModeArea: document.getElementById('companyModeArea'), backToMarketModeBtn: document.getElementById('backToMarketModeBtn'), companySearchInput: document.getElementById('companySearchInput'), companySearchBtn: document.getElementById('companySearchBtn'), companySearchStatus: document.getElementById('companySearchStatus'), companyResults: document.getElementById('companyResults'), companySelectedPanel: document.getElementById('companySelectedPanel'), companyFilterPanel: document.getElementById('companyFilterPanel'), companySummaryPanel: document.getElementById('companySummaryPanel'), companyPeriodModal: document.getElementById('companyPeriodModal'), companyPeriodModalClose: document.getElementById('companyPeriodModalClose'), companyPeriodModalAll: document.getElementById('companyPeriodModalAll'), companyPeriodModalNote: document.getElementById('companyPeriodModalNote'), companyPeriodMonthGrid: document.getElementById('companyPeriodMonthGrid'), companyBadgeModal: document.getElementById('companyBadgeModal'), companyBadgeModalTitle: document.getElementById('companyBadgeModalTitle'), companyBadgeModalNote: document.getElementById('companyBadgeModalNote'), companyBadgeModalClose: document.getElementById('companyBadgeModalClose'), companyBadgeModalClear: document.getElementById('companyBadgeModalClear'), companyBadgeSearchInput: document.getElementById('companyBadgeSearchInput'), companyBadgeGrid: document.getElementById('companyBadgeGrid')
     };
@@ -5728,8 +6237,10 @@
     let appState = null;
     let folderLoadMode = 'direct'; // shared / local / direct
     let selectedJobTitles = [];
+    let relatedJobTopDraftTitles = [];
     let latestRelatedJobRows = [];
     let relatedJobDraftTitles = [];
+    let relatedJobOriginalTitles = [];
     let relatedQuickButtonVisible = false;
     let relatedQuickVisibilityRaf = 0;
     let selectedEmploymentTypes = ['all'];
@@ -5841,6 +6352,7 @@
     let companyPivotRenderedCache = new Map();
     let companyAnalysisSwitchToken = 0;
     let companyPivotDraggedAxis = '';
+    let companyPivotReplaceAxis = '';
     let companyPivotPendingDropTarget = '';
     let companyPivotPendingDropAfter = false;
     let companyPivotDropCommitted = false;
@@ -6229,7 +6741,7 @@
 
     async function handleFiles(fileList) {
       const files = Array.from(fileList || []);
-      clearLog(); selectedJobTitles = []; selectedEmploymentTypes = ['all']; companyMasterVirtualPath = null; selectedCompany = null; companyPeriodRange = null; resetCompanyFilters(); invalidateCompanyViewCache({ resetScroll:true }); companySummaryToken++; if (els.companySelectedPanel) els.companySelectedPanel.classList.add('hidden'); if (els.companyFilterPanel) els.companyFilterPanel.classList.add('hidden'); if (els.companySummaryPanel) els.companySummaryPanel.classList.add('hidden'); registeredFiles.clear(); clearComparisonCaches(); lastCopyRows = []; lastDisplayRows = []; lastTableHelper = ''; if (els.copyBtn) els.copyBtn.disabled = true; if (els.comparisonCopyBtn) els.comparisonCopyBtn.disabled = true;
+      clearLog(); selectedJobTitles = []; relatedJobTopDraftTitles = []; selectedEmploymentTypes = ['all']; companyMasterVirtualPath = null; updateSearchClearButtons(); updateSearchModeBadges(); selectedCompany = null; companyPeriodRange = null; resetCompanyFilters(); invalidateCompanyViewCache({ resetScroll:true }); companySummaryToken++; if (els.companySelectedPanel) els.companySelectedPanel.classList.add('hidden'); if (els.companyFilterPanel) els.companyFilterPanel.classList.add('hidden'); if (els.companySummaryPanel) els.companySummaryPanel.classList.add('hidden'); registeredFiles.clear(); clearComparisonCaches(); lastCopyRows = []; lastDisplayRows = []; lastTableHelper = ''; if (els.copyBtn) els.copyBtn.disabled = true; if (els.comparisonCopyBtn) els.comparisonCopyBtn.disabled = true;
       if (!files.length) return;
       setStatus('データ確認中...', 'warn');
       const manifestItem = findManifestFile(files);
@@ -6354,6 +6866,7 @@
       companyPivotVisibleRows = COMPANY_PIVOT_PAGE_SIZE;
       companyPivotSortState = null;
       companyPivotDraggedAxis = '';
+      companyPivotReplaceAxis = '';
       companyPivotPendingDropTarget = '';
       companyPivotPendingDropAfter = false;
       companyPivotDropCommitted = false;
@@ -7168,6 +7681,78 @@
       if (els.jobBoostFilter) { els.jobBoostFilter.disabled = !hasBoost; if (!hasBoost) els.jobBoostFilter.value = 'all'; }
       if (els.jobBoostField) els.jobBoostField.classList.toggle('is-disabled', !hasBoost);
     }
+    function searchModeBadgeDefinition(mode, kind='keyword') {
+      const normalized = mode === 'OR' ? 'OR' : 'AND';
+      const isAll = normalized === 'AND';
+      const text = isAll ? 'すべて含む' : 'どれか含む';
+      const subject = kind === 'location' ? '勤務地欄' : 'フリーワード欄';
+      const description = isAll
+        ? `${subject}に入力した語句をすべて含むデータを検索します。`
+        : `${subject}に入力した語句のいずれかを含むデータを検索します。`;
+      return {
+        text,
+        title:`${description} クリックすると詳細条件を開きます。`
+      };
+    }
+
+    function updateSearchModeBadges() {
+      const freeWordDef = searchModeBadgeDefinition(
+        els.searchMode ? els.searchMode.value : 'AND',
+        'keyword'
+      );
+      const locationDef = searchModeBadgeDefinition(
+        els.locationMode ? els.locationMode.value : 'OR',
+        'location'
+      );
+
+      if (els.freeWordModeBadge) {
+        els.freeWordModeBadge.textContent = freeWordDef.text;
+        els.freeWordModeBadge.title = freeWordDef.title;
+        els.freeWordModeBadge.setAttribute(
+          'aria-label',
+          `フリーワードの検索条件：${freeWordDef.text}。詳細条件を開く`
+        );
+        els.freeWordModeBadge.dataset.mode =
+          els.searchMode && els.searchMode.value === 'OR'
+            ? 'OR'
+            : 'AND';
+      }
+
+      if (els.locationModeBadge) {
+        els.locationModeBadge.textContent = locationDef.text;
+        els.locationModeBadge.title = locationDef.title;
+        els.locationModeBadge.setAttribute(
+          'aria-label',
+          `勤務地の検索条件：${locationDef.text}。詳細条件を開く`
+        );
+        els.locationModeBadge.dataset.mode =
+          els.locationMode && els.locationMode.value === 'AND'
+            ? 'AND'
+            : 'OR';
+      }
+    }
+
+    function focusAdvancedSearchMode(selectElement) {
+      if (!selectElement) return;
+      openAdvancedFilterDialog();
+
+      window.requestAnimationFrame(() => {
+        const field = selectElement.closest('.advanced-field');
+        if (field) {
+          field.classList.add('is-mode-target');
+          field.scrollIntoView({
+            block:'center',
+            behavior:'smooth'
+          });
+          window.setTimeout(
+            () => field.classList.remove('is-mode-target'),
+            1400
+          );
+        }
+        selectElement.focus({ preventScroll:true });
+      });
+    }
+
     function advancedFilterActiveCount() {
       let count = 0;
       if (els.searchMode && els.searchMode.value !== 'AND') count++;
@@ -7178,6 +7763,7 @@
       return count;
     }
     function updateAdvancedFilterButton() {
+      updateSearchModeBadges();
       const count = advancedFilterActiveCount();
       if (els.advancedFilterBtn) {
         els.advancedFilterBtn.classList.toggle('active', count > 0);
@@ -7693,6 +8279,7 @@
     }
 
     function resetCompanyModeContentStickyArtifacts(content) {
+      closeCompanyPivotReplacementPopover();
       const oldPivot = content
         ? content.querySelector('.company-pivot-builder')
         : null;
@@ -7992,13 +8579,23 @@
 
     function companyPivotAxisChips() {
       const axes = normalizeCompanyPivotAxes();
+      const singleAxis = axes.length === 1;
       return axes.map((key, index) => {
         const info = companyPivotAxisInfo(key);
+        const removeLabel = singleAxis
+          ? `${info.label}を別の行項目へ入れ替える`
+          : `${info.label}を行項目から外す`;
         return `<div class="company-pivot-axis-chip" draggable="true" data-company-pivot-axis-chip="${esc(key)}" title="ドラッグしてピボットの優先順位を変更">
           <span class="company-pivot-drag-handle" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
           <span class="company-pivot-axis-rank">${index + 1}</span>
           <span class="company-pivot-axis-chip-label">${esc(info.label)}</span>
-          <button class="company-pivot-axis-remove" type="button" draggable="false" data-company-pivot-axis-remove="${esc(key)}" aria-label="${esc(info.label)}を行項目から外す">×</button>
+          <button
+            class="company-pivot-axis-remove ${singleAxis ? 'is-replace-trigger' : ''}"
+            type="button"
+            draggable="false"
+            data-company-pivot-axis-remove="${esc(key)}"
+            aria-label="${esc(removeLabel)}"
+            title="${esc(removeLabel)}">×</button>
         </div>`;
       }).join('');
     }
@@ -8060,6 +8657,7 @@
     }
 
     function applyCompanyPivotAxes(nextAxes, { preservePopover=false }={}) {
+      closeCompanyPivotReplacementPopover();
       const normalized = normalizeCompanyPivotAxes(nextAxes);
       if (!normalized.length) return;
       const scrollState = startCompanyViewPreservation(document.getElementById('companyPivotAxisButton'));
@@ -8090,6 +8688,126 @@
       const button = document.getElementById('companyPivotAxisButton');
       if (popover) popover.classList.add('hidden');
       if (button) button.setAttribute('aria-expanded', 'false');
+    }
+
+    function ensureCompanyPivotReplacementPopover() {
+      let popover = document.getElementById('companyPivotReplacementPopover');
+      if (popover) return popover;
+
+      popover = document.createElement('div');
+      popover.id = 'companyPivotReplacementPopover';
+      popover.className = 'company-pivot-replacement-popover hidden';
+      popover.setAttribute('role','dialog');
+      popover.setAttribute('aria-modal','false');
+      popover.setAttribute('aria-labelledby','companyPivotReplacementTitle');
+      popover.setAttribute('tabindex','-1');
+      document.body.appendChild(popover);
+      return popover;
+    }
+
+    function companyPivotReplacementOptionsHtml(currentAxis) {
+      return companyAvailablePivotAxisKeys().map(key => {
+        const info = companyPivotAxisInfo(key);
+        const active = key === currentAxis;
+        const scope = key === 'campaign'
+          ? '<span class="company-pivot-replacement-scope">対象企業のみ</span>'
+          : '';
+        return `<button
+          class="company-pivot-replacement-option ${active ? 'active' : ''}"
+          type="button"
+          role="radio"
+          aria-checked="${active ? 'true' : 'false'}"
+          data-company-pivot-replace-axis="${esc(key)}">
+          <span class="company-pivot-replacement-radio" aria-hidden="true"></span>
+          <span class="company-pivot-replacement-option-label">${esc(info.label)}</span>
+          ${scope}
+          ${active ? '<span class="company-pivot-replacement-current">現在</span>' : ''}
+        </button>`;
+      }).join('');
+    }
+
+    function positionCompanyPivotReplacementPopover(popover, anchorElement) {
+      if (!popover || !anchorElement) return;
+      const anchorRect = anchorElement.getBoundingClientRect();
+      const gap = 8;
+      const viewportPadding = 12;
+      const measuredWidth = Math.min(
+        410,
+        Math.max(300, popover.getBoundingClientRect().width || 390)
+      );
+
+      let left = anchorRect.right - measuredWidth;
+      left = Math.max(
+        viewportPadding,
+        Math.min(left, window.innerWidth - measuredWidth - viewportPadding)
+      );
+
+      let top = anchorRect.bottom + gap;
+      popover.style.left = `${Math.round(left)}px`;
+      popover.style.top = `${Math.round(top)}px`;
+
+      const popoverRect = popover.getBoundingClientRect();
+      if (
+        popoverRect.bottom > window.innerHeight - viewportPadding
+        && anchorRect.top - popoverRect.height - gap >= viewportPadding
+      ) {
+        top = anchorRect.top - popoverRect.height - gap;
+        popover.classList.add('opens-upward');
+      } else {
+        popover.classList.remove('opens-upward');
+      }
+
+      popover.style.top = `${Math.round(Math.max(viewportPadding, top))}px`;
+    }
+
+    function openCompanyPivotReplacementPopover(axis, anchorElement) {
+      const currentAxis = String(axis || '');
+      if (!currentAxis || !anchorElement) return;
+
+      closeCompanyPivotAxisPopover();
+      const popover = ensureCompanyPivotReplacementPopover();
+      companyPivotReplaceAxis = currentAxis;
+
+      popover.innerHTML = `
+        <div class="company-pivot-replacement-head">
+          <div>
+            <div id="companyPivotReplacementTitle" class="company-pivot-replacement-title">行項目を入れ替え</div>
+            <div class="company-pivot-replacement-note">行項目は1つ以上必要です。別の項目を選ぶと、すぐに切り替わります。</div>
+          </div>
+          <button
+            class="company-pivot-replacement-close"
+            type="button"
+            data-company-pivot-replacement-close
+            aria-label="閉じる">×</button>
+        </div>
+        <div class="company-pivot-replacement-options" role="radiogroup" aria-label="入れ替え先の行項目">
+          ${companyPivotReplacementOptionsHtml(currentAxis)}
+        </div>`;
+
+      popover.classList.remove('hidden');
+      positionCompanyPivotReplacementPopover(popover, anchorElement);
+      requestAnimationFrame(() => popover.focus({ preventScroll:true }));
+    }
+
+    function closeCompanyPivotReplacementPopover() {
+      const popover = document.getElementById('companyPivotReplacementPopover');
+      if (popover) {
+        popover.classList.add('hidden');
+        popover.classList.remove('opens-upward');
+      }
+      companyPivotReplaceAxis = '';
+    }
+
+    function replaceSingleCompanyPivotAxis(nextAxis) {
+      const value = String(nextAxis || '');
+      if (!value || !companyAvailablePivotAxisKeys().includes(value)) return;
+      if (value === companyPivotReplaceAxis) {
+        closeCompanyPivotReplacementPopover();
+        return;
+      }
+
+      closeCompanyPivotReplacementPopover();
+      applyCompanyPivotAxes([value]);
     }
 
     function renderCompanyAnalysisShell(targetRow, marketRow, months, hasTargetData) {
@@ -9723,7 +10441,11 @@
       if (!appState) { restorePreservedScroll(scrollState); return; }
       const months = selectedMonths();
       if (!months.length) { setStatus('対象月なし', 'bad'); restorePreservedScroll(scrollState); return; }
-      els.refreshBtn.disabled = true; updateFilterAvailability(); updateAdvancedFilterButton(); setStatus('表示を更新中...', 'warn');
+      els.refreshBtn.disabled = true;
+      updateRelatedJobsApplyBar();
+      updateFilterAvailability();
+      updateAdvancedFilterButton();
+      setStatus('表示を更新中...', 'warn');
       showComparisonBusy('表示を更新中...');
       try {
         const db = await getDb();
@@ -9747,7 +10469,12 @@
         setStatus(`表示中：${formatMonthLabel(months[0])}〜${formatMonthLabel(months[months.length-1])}`, 'ok');
       } catch (error) {
         console.error(error); log('[ERROR]\n' + (error.stack || error.message)); setStatus('表示エラー', 'bad');
-      } finally { els.refreshBtn.disabled = false; hideComparisonBusy(); restorePreservedScroll(scrollState); }
+      } finally {
+        els.refreshBtn.disabled = false;
+        updateRelatedJobsApplyBar();
+        hideComparisonBusy();
+        restorePreservedScroll(scrollState);
+      }
     }
 
     function calcRates(row) {
@@ -9790,36 +10517,167 @@
       els.selectedJobs.innerHTML = '';
     }
 
+    function sameRelatedJobSelection(left, right) {
+      const a = Array.isArray(left) ? left : [];
+      const b = Array.isArray(right) ? right : [];
+      return (
+        a.length === b.length
+        && a.every((value, index) => value === b[index])
+      );
+    }
+
+    function relatedJobSelectionChangeCount() {
+      const applied = new Set(selectedJobTitles);
+      const draft = new Set(relatedJobTopDraftTitles);
+      let count = 0;
+      applied.forEach(job => {
+        if (!draft.has(job)) count++;
+      });
+      draft.forEach(job => {
+        if (!applied.has(job)) count++;
+      });
+      return count;
+    }
+
+    function hasPendingRelatedJobSelection() {
+      return !sameRelatedJobSelection(
+        relatedJobTopDraftTitles,
+        selectedJobTitles
+      );
+    }
+
+    function updateRelatedJobsApplyBar() {
+      if (!els.relatedJobsApplyBar) return;
+
+      const pending = hasPendingRelatedJobSelection();
+      els.relatedJobsApplyBar.classList.toggle('hidden', !pending);
+      els.relatedJobsSection?.classList.toggle(
+        'has-pending-related-jobs',
+        pending
+      );
+
+      if (!pending) return;
+
+      const changeCount = relatedJobSelectionChangeCount();
+      const selectedCount = relatedJobTopDraftTitles.length;
+      const busy = Boolean(els.refreshBtn && els.refreshBtn.disabled);
+
+      if (els.relatedJobsPendingTitle) {
+        els.relatedJobsPendingTitle.textContent =
+          `${changeCount}件の変更があります`;
+      }
+      if (els.relatedJobsPendingNote) {
+        els.relatedJobsPendingNote.textContent = busy
+          ? '現在の集計が完了してから反映できます。'
+          : `現在${selectedCount}職種を選択中です。表にはまだ反映されていません。`;
+      }
+      if (els.relatedJobsApplyBtn) {
+        els.relatedJobsApplyBtn.textContent =
+          `選択内容を反映（${selectedCount}）`;
+        els.relatedJobsApplyBtn.disabled = busy;
+      }
+      if (els.relatedJobsDiscardBtn) {
+        els.relatedJobsDiscardBtn.disabled = busy;
+      }
+    }
+
+    function discardTopRelatedJobSelection() {
+      relatedJobTopDraftTitles = [...selectedJobTitles];
+      syncMainRelatedJobChips();
+      renderSelectedJobs();
+      updateRelatedJobsApplyBar();
+    }
+
+    function applyTopRelatedJobSelection() {
+      if (!hasPendingRelatedJobSelection()) return;
+
+      if (els.refreshBtn && els.refreshBtn.disabled) {
+        showToast(
+          '<div class="toast-title">現在の集計が完了するまでお待ちください</div><div class="toast-note">選択内容は保持されています。集計完了後にもう一度「選択内容を反映」を押してください。</div>',
+          3600,
+          { tone:'warning' }
+        );
+        updateRelatedJobsApplyBar();
+        return;
+      }
+
+      const candidates = new Set(relatedJobCandidateNames());
+      const next = relatedJobTopDraftTitles.filter(job =>
+        candidates.has(job)
+      );
+
+      selectedJobTitles = [...next];
+      relatedJobTopDraftTitles = [...next];
+      syncMainRelatedJobChips();
+      renderSelectedJobs();
+      updateRelatedJobsApplyBar();
+      updateToolbarContextSummary();
+      scheduleRelatedQuickButtonVisibility();
+      textDirty = false;
+
+      // ユーザーが明示的に押した場合だけ、1回だけ再集計する。
+      refreshAll();
+    }
+
     function renderRelated(rows) {
-      // 検索条件変更によって関連職種候補の集合が変わった場合、
-      // いま画面に表示されている候補バッジに含まれない過去の選択は解除する。
-      // これにより、比較表には「フリーワード行」＋「現在ONのバッジ行」だけが残る。
-      latestRelatedJobRows = Array.isArray(rows) ? rows.map(row => ({ ...row })) : [];
-      const currentBadgeJobs = new Set(latestRelatedJobRows.map(row => row.related_job));
-      selectedJobTitles = selectedJobTitles.filter(job => currentBadgeJobs.has(job));
+      // 検索条件変更で候補集合が変わった場合は、適用済み・仮選択の
+      // どちらも現在表示可能な候補だけへ整える。
+      latestRelatedJobRows = Array.isArray(rows)
+        ? rows.map(row => ({ ...row }))
+        : [];
+      const currentBadgeJobs = new Set(
+        latestRelatedJobRows.map(row => row.related_job)
+      );
+      const hadPendingDraft = hasPendingRelatedJobSelection();
+
+      selectedJobTitles = selectedJobTitles.filter(job =>
+        currentBadgeJobs.has(job)
+      );
+      relatedJobTopDraftTitles = hadPendingDraft
+        ? relatedJobTopDraftTitles.filter(job =>
+            currentBadgeJobs.has(job)
+          )
+        : [...selectedJobTitles];
 
       renderSelectedJobs();
+      updateRelatedJobsApplyBar();
+
       if (!latestRelatedJobRows.length) {
-        els.relatedJobs.innerHTML = '<div class="empty">関連する職種が見つかりません。</div>';
+        els.relatedJobs.innerHTML =
+          '<div class="empty">関連する職種が見つかりません。</div>';
         scheduleRelatedQuickButtonVisibility();
         return;
       }
-      els.relatedJobs.innerHTML = latestRelatedJobRows.map(row => `<button class="chip ${selectedJobTitles.includes(row.related_job) ? 'selected' : ''}" data-job="${esc(row.related_job)}" type="button">${esc(row.related_job)}</button>`).join('');
-      els.relatedJobs.querySelectorAll('[data-job]').forEach(btn => btn.addEventListener('click', () => {
-        const job = btn.dataset.job;
-        const willSelect = !selectedJobTitles.includes(job);
 
-        // 集計完了を待たず、クリック直後に押し込み感と選択色だけ先に返す。
-        btn.classList.add('is-pressing');
-        btn.classList.toggle('selected', willSelect);
-        window.setTimeout(() => btn.classList.remove('is-pressing'), 180);
+      els.relatedJobs.innerHTML = latestRelatedJobRows.map(row =>
+        `<button class="chip ${relatedJobTopDraftTitles.includes(row.related_job) ? 'selected' : ''}" data-job="${esc(row.related_job)}" type="button">${esc(row.related_job)}</button>`
+      ).join('');
 
-        selectedJobTitles = willSelect ? [...selectedJobTitles, job] : selectedJobTitles.filter(j => j !== job);
-        renderSelectedJobs();
-        updateToolbarContextSummary();
-        textDirty = false;
-        refreshAll();
-      }));
+      els.relatedJobs.querySelectorAll('[data-job]').forEach(btn =>
+        btn.addEventListener('click', () => {
+          const job = btn.dataset.job;
+          const willSelect =
+            !relatedJobTopDraftTitles.includes(job);
+
+          // 見た目だけは即時に反映し、集計は明示ボタンまで開始しない。
+          btn.classList.add('is-pressing');
+          btn.classList.toggle('selected', willSelect);
+          window.setTimeout(
+            () => btn.classList.remove('is-pressing'),
+            180
+          );
+
+          relatedJobTopDraftTitles = willSelect
+            ? [...relatedJobTopDraftTitles, job]
+            : relatedJobTopDraftTitles.filter(
+                currentJob => currentJob !== job
+              );
+
+          renderSelectedJobs();
+          updateRelatedJobsApplyBar();
+        })
+      );
+
       scheduleRelatedQuickButtonVisibility();
     }
 
@@ -9838,7 +10696,10 @@
         showToast('<div class="toast-title">関連職種候補がありません</div><div class="toast-note">検索条件を変更すると候補が表示される場合があります。</div>', 3000);
         return;
       }
-      relatedJobDraftTitles = selectedJobTitles.filter(job => candidates.has(job));
+      relatedJobDraftTitles = relatedJobTopDraftTitles.filter(job =>
+        candidates.has(job)
+      );
+      relatedJobOriginalTitles = [...relatedJobDraftTitles];
       renderRelatedJobsDialog();
       document.body.classList.add('modal-open');
       if (typeof els.relatedJobsDialog.showModal === 'function') {
@@ -9848,11 +10709,23 @@
       }
     }
 
-    function closeRelatedJobsDialog() {
+    function hideRelatedJobsDialog() {
       if (!els.relatedJobsDialog) return;
-      if (typeof els.relatedJobsDialog.close === 'function' && els.relatedJobsDialog.open) els.relatedJobsDialog.close();
-      else els.relatedJobsDialog.removeAttribute('open');
+      if (typeof els.relatedJobsDialog.close === 'function' && els.relatedJobsDialog.open) {
+        els.relatedJobsDialog.close();
+      } else {
+        els.relatedJobsDialog.removeAttribute('open');
+      }
       document.body.classList.remove('modal-open');
+    }
+
+    function closeRelatedJobsDialog() {
+      applyRelatedJobDraft();
+    }
+
+    function discardRelatedJobDraft() {
+      relatedJobDraftTitles = [...relatedJobOriginalTitles];
+      hideRelatedJobsDialog();
     }
 
     function renderRelatedJobsDialog() {
@@ -9866,7 +10739,7 @@
         ? relatedJobDraftTitles.map(job => `<button type="button" class="related-jobs-selected-chip" data-related-draft-remove="${esc(job)}" title="選択を解除">${esc(job)}</button>`).join('')
         : '<span class="related-jobs-current-empty">選択中の職種はありません。</span>';
       els.relatedJobsModalCandidates.innerHTML = candidates.map(job => `<button type="button" class="related-jobs-candidate-chip ${selectedSet.has(job) ? 'active' : ''}" data-related-draft-job="${esc(job)}" aria-pressed="${selectedSet.has(job) ? 'true' : 'false'}">${esc(job)}</button>`).join('');
-      if (els.relatedJobsModalApply) els.relatedJobsModalApply.textContent = `適用して閉じる（${relatedJobDraftTitles.length}）`;
+      if (els.relatedJobsModalApply) els.relatedJobsModalApply.textContent = `閉じる（${relatedJobDraftTitles.length}）`;
     }
 
     function toggleRelatedJobDraft(job) {
@@ -9878,20 +10751,30 @@
     function syncMainRelatedJobChips() {
       if (!els.relatedJobs) return;
       els.relatedJobs.querySelectorAll('[data-job]').forEach(btn => {
-        btn.classList.toggle('selected', selectedJobTitles.includes(btn.dataset.job));
+        btn.classList.toggle(
+          'selected',
+          relatedJobTopDraftTitles.includes(btn.dataset.job)
+        );
       });
     }
 
     function applyRelatedJobDraft() {
       const candidates = new Set(relatedJobCandidateNames());
       const next = relatedJobDraftTitles.filter(job => candidates.has(job));
-      const changed = next.length !== selectedJobTitles.length || next.some((job, idx) => job !== selectedJobTitles[idx]);
+      const changed =
+        next.length !== selectedJobTitles.length
+        || next.some((job, idx) => job !== selectedJobTitles[idx]);
+
       selectedJobTitles = [...next];
+      relatedJobTopDraftTitles = [...next];
+      relatedJobOriginalTitles = [...next];
       syncMainRelatedJobChips();
       renderSelectedJobs();
-      closeRelatedJobsDialog();
+      hideRelatedJobsDialog();
+      updateRelatedJobsApplyBar();
       updateToolbarContextSummary();
       scheduleRelatedQuickButtonVisibility();
+
       if (!changed) return;
       textDirty = false;
       refreshAll();
@@ -12922,6 +13805,38 @@
       refreshAll();
     }
 
+    function updateSearchClearButton(input, button) {
+      if (!input || !button) return;
+      const hasValue = String(input.value || '').length > 0;
+      button.hidden = !hasValue;
+      button.tabIndex = hasValue ? 0 : -1;
+      button.setAttribute('aria-hidden', hasValue ? 'false' : 'true');
+      input.classList.toggle('has-clear-button', hasValue);
+    }
+
+    function updateSearchClearButtons() {
+      updateSearchClearButton(
+        els.freeWordInput,
+        els.freeWordClearBtn
+      );
+      updateSearchClearButton(
+        els.locationInput,
+        els.locationClearBtn
+      );
+    }
+
+    function clearSearchInput(input, button) {
+      if (!input || !String(input.value || '').length) return;
+      input.value = '';
+      textDirty = true;
+      updateSearchClearButton(input, button);
+      input.focus({ preventScroll:true });
+
+      // 通常の全文削除後にフォーカスを外した場合と同じ検索処理を、
+      // ×ボタンでは待たずに実行する。
+      commitTextSearchIfNeeded();
+    }
+
     document.addEventListener('click', (e) => {
       const companySortButton = e.target.closest('[data-company-pivot-sort-key]');
       if (
@@ -13012,7 +13927,24 @@
       if (els.columnPopover.contains(e.target) || els.columnMenuBtn.contains(e.target)) return;
       els.columnPopover.classList.add('hidden');
     });
-    els.clearSelectedBtn.addEventListener('click', () => { selectedJobTitles = []; syncMainRelatedJobChips(); renderSelectedJobs(); updateToolbarContextSummary(); textDirty = false; refreshAll(); });
+    els.clearSelectedBtn.addEventListener('click', () => {
+      relatedJobTopDraftTitles = [];
+      syncMainRelatedJobChips();
+      renderSelectedJobs();
+      updateRelatedJobsApplyBar();
+    });
+    if (els.relatedJobsDiscardBtn) {
+      els.relatedJobsDiscardBtn.addEventListener(
+        'click',
+        discardTopRelatedJobSelection
+      );
+    }
+    if (els.relatedJobsApplyBtn) {
+      els.relatedJobsApplyBtn.addEventListener(
+        'click',
+        applyTopRelatedJobSelection
+      );
+    }
     if (els.comparisonContextSummary) {
       els.comparisonContextSummary.addEventListener('click', e => {
         const btn = e.target.closest('[data-open-related-jobs]');
@@ -13035,19 +13967,90 @@
         toggleRelatedJobDraft(btn.dataset.relatedDraftRemove);
       });
     }
-    if (els.relatedJobsModalClear) els.relatedJobsModalClear.addEventListener('click', () => { relatedJobDraftTitles = []; renderRelatedJobsDialog(); });
-    if (els.relatedJobsModalClose) els.relatedJobsModalClose.addEventListener('click', closeRelatedJobsDialog);
-    if (els.relatedJobsModalCancel) els.relatedJobsModalCancel.addEventListener('click', closeRelatedJobsDialog);
-    if (els.relatedJobsModalApply) els.relatedJobsModalApply.addEventListener('click', applyRelatedJobDraft);
-    if (els.relatedJobsDialog) {
-      els.relatedJobsDialog.addEventListener('click', e => { if (e.target === els.relatedJobsDialog) closeRelatedJobsDialog(); else e.stopPropagation(); });
-      els.relatedJobsDialog.addEventListener('cancel', e => { e.preventDefault(); closeRelatedJobsDialog(); });
+    if (els.relatedJobsModalClear) {
+      els.relatedJobsModalClear.addEventListener('click', () => {
+        relatedJobDraftTitles = [];
+        renderRelatedJobsDialog();
+      });
     }
-    [els.freeWordInput, els.locationInput].forEach(input => {
-      input.addEventListener('input', () => { textDirty = true; });
-      input.addEventListener('blur', () => setTimeout(commitTextSearchIfNeeded, 0));
-      input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commitTextSearchIfNeeded(); input.blur(); } });
+    if (els.relatedJobsModalClose) {
+      els.relatedJobsModalClose.addEventListener('click', closeRelatedJobsDialog);
+    }
+    if (els.relatedJobsModalCancel) {
+      els.relatedJobsModalCancel.addEventListener('click', discardRelatedJobDraft);
+    }
+    if (els.relatedJobsModalApply) {
+      els.relatedJobsModalApply.addEventListener('click', applyRelatedJobDraft);
+    }
+    if (els.relatedJobsDialog) {
+      els.relatedJobsDialog.addEventListener('click', e => {
+        if (e.target === els.relatedJobsDialog) {
+          closeRelatedJobsDialog();
+        } else {
+          e.stopPropagation();
+        }
+      });
+      els.relatedJobsDialog.addEventListener('cancel', e => {
+        e.preventDefault();
+        closeRelatedJobsDialog();
+      });
+    }
+    [
+      [els.freeWordInput, els.freeWordClearBtn],
+      [els.locationInput, els.locationClearBtn]
+    ].forEach(([input, clearButton]) => {
+      if (!input) return;
+
+      input.addEventListener('input', () => {
+        textDirty = true;
+        updateSearchClearButton(input, clearButton);
+      });
+      input.addEventListener('focus', () => {
+        updateSearchClearButton(input, clearButton);
+      });
+      input.addEventListener('blur', () =>
+        window.setTimeout(commitTextSearchIfNeeded, 0)
+      );
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          commitTextSearchIfNeeded();
+          input.blur();
+        }
+      });
+
+      if (clearButton) {
+        clearButton.addEventListener('pointerdown', e => {
+          // 入力欄のblurより先にボタン処理を完了させる。
+          e.preventDefault();
+        });
+        clearButton.addEventListener('click', () => {
+          clearSearchInput(input, clearButton);
+        });
+      }
     });
+
+    [
+      [els.freeWordModeBadge, els.searchMode],
+      [els.locationModeBadge, els.locationMode]
+    ].forEach(([badge, selectElement]) => {
+      if (!badge) return;
+      badge.addEventListener('click', () =>
+        focusAdvancedSearchMode(selectElement)
+      );
+    });
+
+    [els.searchMode, els.locationMode]
+      .filter(Boolean)
+      .forEach(selectElement => {
+        selectElement.addEventListener(
+          'change',
+          updateSearchModeBadges
+        );
+      });
+
+    updateSearchClearButtons();
+    updateSearchModeBadges();
     if (els.employmentFilterBtn) {
       els.employmentFilterBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -13254,9 +14257,10 @@
       const removeBtn = e.target.closest('[data-company-pivot-axis-remove]');
       if (removeBtn) {
         const axis = removeBtn.dataset.companyPivotAxisRemove;
-        const next = normalizeCompanyPivotAxes().filter(key => key !== axis);
+        const axes = normalizeCompanyPivotAxes();
+        const next = axes.filter(key => key !== axis);
         if (!next.length) {
-          showToast('<div class="toast-title">行項目を1つ以上選択してください</div><div class="toast-note">概要を見る場合は「概要」モードへ切り替えられます。</div>', 3400);
+          openCompanyPivotReplacementPopover(axis, removeBtn);
           return;
         }
         applyCompanyPivotAxes(next);
@@ -13416,9 +14420,42 @@
     });
 
     document.addEventListener('click', e => {
+      const replacementOption = e.target.closest('[data-company-pivot-replace-axis]');
+      if (replacementOption) {
+        e.preventDefault();
+        replaceSingleCompanyPivotAxis(
+          replacementOption.dataset.companyPivotReplaceAxis
+        );
+        return;
+      }
+
+      if (e.target.closest('[data-company-pivot-replacement-close]')) {
+        closeCompanyPivotReplacementPopover();
+        return;
+      }
+
       const picker = e.target.closest('.company-pivot-picker');
       if (!picker) closeCompanyPivotAxisPopover();
+
+      const replacementPopover = e.target.closest('#companyPivotReplacementPopover');
+      const replacementTrigger = e.target.closest(
+        '.company-pivot-axis-remove.is-replace-trigger'
+      );
+      if (!replacementPopover && !replacementTrigger) {
+        closeCompanyPivotReplacementPopover();
+      }
     });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeCompanyPivotReplacementPopover();
+    });
+
+    window.addEventListener('resize', closeCompanyPivotReplacementPopover);
+    window.addEventListener(
+      'scroll',
+      closeCompanyPivotReplacementPopover,
+      { passive:true }
+    );
 
 
     // Step17: page-level sticky table header clone.
@@ -13463,7 +14500,11 @@
       const cells = thead && thead.rows && thead.rows[0]
         ? Array.from(thead.rows[0].cells)
         : [];
-      return cells.map(cell => Math.round(cell.getBoundingClientRect().width || cell.offsetWidth || 0)).join('-');
+      return cells.map(cell => Number(
+        cell.getBoundingClientRect().width
+          || cell.offsetWidth
+          || 0
+      ).toFixed(3)).join('-');
     }
 
     function pageStickyHeaderColumnWidths(thead) {
@@ -13483,14 +14524,22 @@
         .reduce((sum, width) => sum + width, 0);
     }
 
-    function measuredPageStickyColGroup(thead, targetWidth=0, rightGuard=0) {
+    function measuredPageStickyColGroup(thead, targetWidth=0) {
       const widths = pageStickyHeaderColumnWidths(thead);
       if (!widths.length) return '';
 
       const measuredWidth = widths.reduce((sum, width) => sum + width, 0);
-      const guardedTargetWidth = Math.max(measuredWidth, Number(targetWidth || 0)) + Math.max(0, Number(rightGuard || 0));
+      const normalizedTarget = Math.max(
+        measuredWidth,
+        Number(targetWidth || 0)
+      );
       const adjustedWidths = [...widths];
-      adjustedWidths[adjustedWidths.length - 1] += Math.max(0, guardedTargetWidth - measuredWidth);
+
+      // 本体表とcloneの幅差は最終列だけへ吸収する。
+      // 中間列へ余剰幅を再配分させないことで、すべての縦境界を一致させる。
+      adjustedWidths[adjustedWidths.length - 1] += (
+        normalizedTarget - measuredWidth
+      );
 
       return `<colgroup>${adjustedWidths.map(width =>
         `<col style="width:${width.toFixed(3)}px;min-width:${width.toFixed(3)}px;max-width:${width.toFixed(3)}px">`
@@ -13598,33 +14647,31 @@
       const wrapRect = candidate.wrap.getBoundingClientRect();
       const isCompanySource = candidate.mode === 'company';
       const wrapClientLeft = candidate.wrap.clientLeft || 0;
-      const visibleLeft = Math.max(
-        0,
-        isCompanySource ? wrapRect.left : wrapRect.left + wrapClientLeft
-      );
       const sourceViewportWidth = Math.max(
         0,
         candidate.wrap.clientWidth || Math.floor(wrapRect.width)
       );
-      const visibleClientWidth = Math.max(
+      const visibleLeft = Math.max(
         0,
-        isCompanySource ? wrapRect.width : sourceViewportWidth
+        wrapRect.left + wrapClientLeft
       );
+      const visibleClientWidth = sourceViewportWidth;
       const measuredHeaderWidth = pageStickyHeaderMeasuredWidth(candidate.thead);
-      const companyRightGuard = isCompanySource ? 10 : 0;
+      const sourceTableRect = candidate.table
+        ? candidate.table.getBoundingClientRect()
+        : null;
       const sourceTableWidth = Math.max(
-        candidate.wrap.scrollWidth || 0,
-        candidate.table ? candidate.table.scrollWidth : 0,
-        candidate.headerTable ? candidate.headerTable.scrollWidth : 0,
+        sourceTableRect ? sourceTableRect.width : 0,
+        candidate.table ? candidate.table.offsetWidth : 0,
         measuredHeaderWidth,
         sourceViewportWidth
       );
-      const tableWidth = Math.ceil(sourceTableWidth + companyRightGuard);
+      const tableWidth = Number(sourceTableWidth.toFixed(3));
 
-      const stickySourceKey = `${candidate.key}-${tableWidth}-${companyRightGuard}`;
+      const stickySourceKey = `${candidate.key}-${tableWidth.toFixed(3)}`;
       if (stickySourceKey !== pageStickyTableSourceKey) {
         const colGroupHtml = isCompanySource
-          ? measuredPageStickyColGroup(candidate.thead, sourceTableWidth, companyRightGuard)
+          ? measuredPageStickyColGroup(candidate.thead, tableWidth)
           : (candidate.colGroup ? candidate.colGroup.outerHTML : measuredPageStickyColGroup(candidate.thead));
         const tableClass = isCompanySource
           ? candidate.table.className
@@ -13634,33 +14681,65 @@
       }
       pageStickyTableHeaderEl.classList.toggle('company-source', candidate.mode === 'company');
 
-      const visibleRight = Math.min(
+      const contentRight = Math.min(
+        window.innerWidth,
+        visibleLeft + visibleClientWidth
+      );
+      const contentVisibleWidth = Math.max(
+        0,
+        contentRight - visibleLeft
+      );
+
+      // 列位置はスクロール領域のcontent boxに合わせる一方、
+      // stickyの背景はラッパー外周まで広げて右端の下表を完全に覆う。
+      const coverRight = Math.min(
         window.innerWidth,
         isCompanySource
-          ? wrapRect.right
-          : visibleLeft + visibleClientWidth + 2
+          ? Math.max(contentRight, wrapRect.right)
+          : contentRight
       );
-      const visibleWidth = Math.max(0, Math.ceil(visibleRight - visibleLeft));
+      const visibleWidth = Math.max(
+        0,
+        Math.ceil(coverRight - visibleLeft)
+      );
+      const scrollViewportWidth = isCompanySource
+        ? contentVisibleWidth
+        : visibleWidth;
+      const rightCoverWidth = isCompanySource
+        ? Math.max(4, visibleWidth - contentVisibleWidth + 2)
+        : 0;
 
       pageStickyTableHeaderEl.style.top = `${stickyTop}px`;
       pageStickyTableHeaderEl.style.left = `${visibleLeft}px`;
       pageStickyTableHeaderEl.style.width = `${visibleWidth}px`;
+      pageStickyTableHeaderEl.style.setProperty(
+        '--company-sticky-content-width',
+        `${contentVisibleWidth.toFixed(3)}px`
+      );
+      pageStickyTableHeaderEl.style.setProperty(
+        '--company-sticky-right-cover',
+        `${rightCoverWidth.toFixed(3)}px`
+      );
       pageStickyTableInnerEl.style.width = `${tableWidth}px`;
       const clonedTable = pageStickyTableInnerEl.querySelector('table');
       if (clonedTable) {
         clonedTable.style.width = `${tableWidth}px`;
         clonedTable.style.minWidth = `${tableWidth}px`;
       }
-      const sourceScrollMax = Math.max(
+      const clonedScrollMax = Math.max(
         0,
-        (candidate.wrap.scrollWidth || 0) - (candidate.wrap.clientWidth || visibleWidth)
+        tableWidth - scrollViewportWidth
       );
-      const sourceScrollRatio = sourceScrollMax > 0
-        ? Math.max(0, Math.min(1, candidate.wrap.scrollLeft / sourceScrollMax))
-        : 0;
-      const clonedScrollMax = Math.max(0, tableWidth - visibleWidth);
-      const clonedScrollLeft = sourceScrollRatio * clonedScrollMax;
+      const clonedScrollLeft = Math.max(
+        0,
+        Math.min(
+          Number(candidate.wrap.scrollLeft || 0),
+          clonedScrollMax
+        )
+      );
 
+      // 割合変換ではなく、本体と同じscrollLeftをそのまま使用する。
+      // これにより途中位置でも縦罫線が累積的にずれない。
       pageStickyTableInnerEl.style.transform = `translate3d(${-clonedScrollLeft}px,0,0)`;
       syncCompanyStickyFrozenHeaderCells(
         isCompanySource ? clonedTable : null,
