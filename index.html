@@ -5730,6 +5730,346 @@
       }
     }
 
+  
+    /* Step91: single-action data loading screen */
+    body:not(.normal-analysis-fullwidth)
+      .intro-card:not(.data-loaded) {
+      max-width:880px;
+      margin:min(9vh,78px) auto 0;
+      padding:34px;
+    }
+
+    .intro-card:not(.data-loaded)
+      .intro-content > h1 {
+      margin-bottom:23px;
+    }
+
+    .single-load-hero {
+      display:grid;
+      justify-items:center;
+      gap:14px;
+      padding:28px 28px 24px;
+      border:1px solid #e7e5e4;
+      border-radius:26px;
+      background:
+        radial-gradient(circle at 50% 0%,rgba(254,215,170,.26),transparent 42%),
+        linear-gradient(180deg,#ffffff,#fafaf9);
+      box-shadow:
+        0 20px 46px -36px rgba(68,64,60,.42),
+        inset 0 1px 0 rgba(255,255,255,.92);
+      text-align:center;
+    }
+
+    .single-load-icon {
+      display:grid;
+      place-items:center;
+      width:50px;
+      height:50px;
+      border-radius:17px;
+      background:#fff7ed;
+      border:1px solid #fed7aa;
+      font-size:25px;
+      box-shadow:0 9px 18px -14px rgba(194,65,12,.55);
+    }
+
+    .single-load-heading h2 {
+      margin:0;
+      color:#292524;
+      font-size:21px;
+      font-weight:700;
+      letter-spacing:.01em;
+    }
+
+    .single-load-heading p {
+      margin:7px 0 0;
+      color:#78716c;
+      font-size:13px;
+      font-weight:450;
+      line-height:1.65;
+    }
+
+    .single-load-button {
+      min-width:290px;
+      min-height:52px;
+      margin-top:2px;
+      padding:0 25px;
+      border-radius:17px;
+      font-size:15px;
+      font-weight:750;
+      box-shadow:0 11px 24px -16px rgba(194,65,12,.7);
+    }
+
+    .single-load-speed-tip {
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      gap:8px;
+      width:min(100%,590px);
+      margin-top:2px;
+      padding:10px 13px;
+      border-radius:14px;
+      background:#f0f9ff;
+      border:1px solid #bae6fd;
+      color:#475569;
+      font-size:11.5px;
+      font-weight:450;
+      line-height:1.6;
+      text-align:left;
+    }
+
+    .single-load-speed-tip strong {
+      color:#075985;
+      font-weight:750;
+    }
+
+    .single-load-speed-icon {
+      flex:0 0 auto;
+      margin-top:1px;
+    }
+
+    .shared-folder-guide {
+      margin-top:15px;
+      border:1px solid #e7e5e4;
+      border-radius:17px;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    .shared-folder-guide > summary {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      min-height:48px;
+      padding:0 16px;
+      color:#57534e;
+      font-size:12px;
+      font-weight:650;
+      cursor:pointer;
+      list-style:none;
+      user-select:none;
+    }
+
+    .shared-folder-guide > summary::-webkit-details-marker {
+      display:none;
+    }
+
+    .shared-folder-guide > summary:hover {
+      background:#fafaf9;
+      color:#292524;
+    }
+
+    .shared-folder-guide-chevron {
+      color:#a8a29e;
+      font-size:16px;
+      transition:transform .16s ease;
+    }
+
+    .shared-folder-guide[open]
+      .shared-folder-guide-chevron {
+      transform:rotate(180deg);
+    }
+
+    .shared-folder-guide-body {
+      padding:0 16px 16px;
+      border-top:1px solid #f1f5f9;
+    }
+
+    .shared-folder-guide-lead,
+    .shared-folder-guide-note {
+      margin:13px 0 0;
+      color:#78716c;
+      font-size:11.5px;
+      font-weight:450;
+      line-height:1.65;
+    }
+
+    .shared-folder-path-row {
+      display:flex;
+      align-items:flex-end;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .shared-folder-path-copy {
+      min-width:0;
+      flex:1 1 auto;
+    }
+
+    .shared-folder-path-copy > span {
+      display:block;
+      margin-bottom:6px;
+      color:#9a3412;
+      font-size:10.5px;
+      font-weight:700;
+    }
+
+    .shared-folder-path-copy code {
+      display:block;
+      min-width:0;
+      padding:9px 11px;
+      border:1px solid #fed7aa;
+      border-radius:12px;
+      background:#fff7ed;
+      color:#7c2d12;
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;
+      font-size:10.5px;
+      line-height:1.55;
+      overflow-wrap:anywhere;
+    }
+
+    #sharedPathCopyBtn {
+      flex:0 0 auto;
+      min-height:38px;
+      white-space:nowrap;
+    }
+
+    .shared-folder-path-status {
+      margin-top:11px;
+      padding:8px 10px;
+      border-radius:11px;
+      background:#ecfdf5;
+      border:1px solid #a7f3d0;
+      color:#047857;
+      font-size:10.5px;
+      font-weight:650;
+      line-height:1.5;
+    }
+
+    @media (max-width:680px) {
+      body:not(.normal-analysis-fullwidth)
+        .intro-card:not(.data-loaded) {
+        margin:18px auto 0;
+        padding:18px;
+      }
+
+      .single-load-hero {
+        padding:23px 16px 19px;
+      }
+
+      .single-load-button {
+        width:100%;
+        min-width:0;
+      }
+
+      .single-load-speed-tip {
+        width:100%;
+      }
+
+      .shared-folder-path-row {
+        align-items:stretch;
+        flex-direction:column;
+      }
+
+      #sharedPathCopyBtn {
+        width:100%;
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      .shared-folder-guide-chevron {
+        transition:none !important;
+      }
+    }
+
+  
+    /* Step92: concise local-copy guide below the primary load action */
+    .local-save-guide {
+      border-color:#bae6fd;
+      background:linear-gradient(180deg,#ffffff,#f8fcff);
+    }
+
+    .local-save-guide > summary {
+      color:#075985;
+    }
+
+    .local-save-guide > summary em {
+      display:inline-flex;
+      align-items:center;
+      margin-left:7px;
+      padding:2px 6px;
+      border-radius:999px;
+      background:#e0f2fe;
+      color:#0369a1;
+      font-size:9px;
+      font-style:normal;
+      font-weight:850;
+      vertical-align:middle;
+    }
+
+    .local-save-steps {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:9px;
+      margin:13px 0 0;
+      padding:0;
+      list-style:none;
+    }
+
+    .local-save-steps li {
+      display:flex;
+      align-items:flex-start;
+      gap:9px;
+      min-width:0;
+      padding:10px 11px;
+      border:1px solid #dbeafe;
+      border-radius:12px;
+      background:#f8fbff;
+    }
+
+    .local-save-steps li > span {
+      display:grid;
+      place-items:center;
+      flex:0 0 22px;
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      background:#0ea5e9;
+      color:#fff;
+      font-size:10px;
+      font-weight:850;
+    }
+
+    .local-save-steps li > p {
+      margin:0;
+      color:#475569;
+      font-size:10.5px;
+      font-weight:500;
+      line-height:1.55;
+    }
+
+    .local-save-guide-action {
+      display:flex;
+      justify-content:flex-end;
+      margin-top:11px;
+    }
+
+    .local-save-caution {
+      margin:11px 0 0;
+      padding:9px 11px;
+      border-left:3px solid #38bdf8;
+      border-radius:8px;
+      background:#f0f9ff;
+      color:#475569;
+      font-size:10.5px;
+      font-weight:500;
+      line-height:1.6;
+    }
+
+    @media (max-width:680px) {
+      .local-save-steps {
+        grid-template-columns:1fr;
+      }
+
+      .local-save-guide-action {
+        justify-content:stretch;
+      }
+
+      #localSavePathCopyBtn {
+        width:100%;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -5738,108 +6078,93 @@
       <div class="header intro-header">
         <div class="intro-content">
           <h1>天市×indeedPLUS運用実績</h1>
-          <p class="main-subtitle">データの読み込み方法を選択してください。どちらも同じ運用データを使用します。</p>
 
-          <div class="load-method-heading">
-            <div class="load-method-heading-title">利用頻度と集計速度に合わせて選べます</div>
-            <div class="load-method-heading-note">方法を選ぶと、その下に読み込み手順が表示されます。</div>
-          </div>
-
-          <div class="load-method-grid" aria-label="データの読み込み方法">
-            <button id="sharedLoadCard" class="load-method-card shared" type="button" aria-pressed="false" aria-controls="sharedMethodPanel">
-              <span class="load-method-card-top">
-                <span class="load-method-icon" aria-hidden="true">☁</span>
-                <span class="load-method-kicker">手軽さ優先</span>
-              </span>
-              <span class="load-method-title">共有フォルダから読み込む</span>
-              <span class="load-method-description">月1回程度の利用や、直近の状況を手早く確認したい方に向いています。</span>
-              <span class="load-method-points">
-                <span>✓ 共有フォルダの最新データを利用</span>
-                <span>✓ データ更新を自分で管理しなくてよい</span>
-                <span>△ 長期間の集計はやや時間がかかる</span>
-              </span>
-              <span class="load-method-footer">
-                <span class="load-method-period">初期表示：最新3か月</span>
-                <span class="load-method-select-text">この方法を選ぶ →</span>
-              </span>
-            </button>
-
-            <button id="localLoadCard" class="load-method-card local" type="button" aria-pressed="false" aria-controls="localMethodPanel">
-              <span class="load-method-card-top">
-                <span class="load-method-icon" aria-hidden="true">⚡</span>
-                <span class="load-method-kicker recommended">快適さ優先</span>
-              </span>
-              <span class="load-method-title">ローカルコピーから読み込む</span>
-              <span class="load-method-description">月に何度か利用する方や、長期間のデータを分析したい方に向いています。</span>
-              <span class="load-method-points">
-                <span>✓ 集計や画面切替が速い</span>
-                <span>✓ 長期間の分析に向いている</span>
-                <span>△ 月1回程度、最新版への更新を推奨</span>
-              </span>
-              <span class="load-method-footer">
-                <span class="load-method-period">初期表示：最新12か月</span>
-                <span class="load-method-select-text">この方法を選ぶ →</span>
-              </span>
-            </button>
-          </div>
-
-          <div id="loadMethodDetail" class="load-method-detail hidden" aria-live="polite">
-            <section id="sharedMethodPanel" class="load-method-panel shared hidden" aria-label="共有フォルダから読み込む手順">
-              <div class="load-method-panel-head">
-                <div>
-                  <div class="load-method-panel-title">☁ 共有フォルダから読み込む</div>
-                  <div class="load-method-panel-note">初期集計期間は処理を軽くするため最新3か月です。読み込み後に自由に変更できます。</div>
-                </div>
-                <span class="load-method-speed-badge">最新データを手軽に確認</span>
-              </div>
-              <div class="load-method-steps">
-                <div class="load-method-step"><span>1</span><p>下のボタンを押します。共有フォルダのパスがコピーされ、フォルダ選択画面が開きます。</p></div>
-                <div class="load-method-step"><span>2</span><p>フォルダ選択画面のアドレス欄へ、コピーされたパスを貼り付けて Enter を押します。</p></div>
-                <div class="load-method-step"><span>3</span><p><strong>output_dataset</strong> フォルダを選択します。</p></div>
-              </div>
-              <div class="load-method-path-box">
-                <span class="load-method-path-label">選択する共有フォルダ</span>
-                <code>K:\天市事業\public\1049\共有情報\tenichiプラス\indeedマージレポート\output_dataset</code>
-              </div>
-              <div class="folder-cta-area">
-                <button id="folderSelectBtn" class="btn" type="button">📋 パスをコピーして選択画面を開く</button>
-              </div>
-            </section>
-
-            <section id="localMethodPanel" class="load-method-panel local hidden" aria-label="ローカルコピーから読み込む手順">
-              <div class="load-method-panel-head">
-                <div>
-                  <div class="load-method-panel-title">⚡ ローカルコピーから読み込む</div>
-                  <div class="load-method-panel-note">PC本体へ保存したコピーを読み込むため、集計や分析軸の切替が軽快になります。</div>
-                </div>
-                <span class="load-method-speed-badge local">長期分析・頻繁な利用向け</span>
-              </div>
-              <div class="load-method-steps">
-                <div class="load-method-step"><span>1</span><p>共有フォルダにある <strong>output_dataset</strong> をコピーします。</p></div>
-                <div class="load-method-step"><span>2</span><p>PC本体のユーザーフォルダに <strong>indeed分析用</strong> フォルダを作り、その中へ貼り付けます。</p></div>
-                <div class="load-method-step"><span>3</span><p>下の「ローカルの output_dataset を選択」から、コピーしたフォルダを読み込みます。</p></div>
-                <div class="load-method-step"><span>4</span><p>翌月以降は、月1回程度を目安に共有フォルダの最新版へ差し替えてください。</p></div>
-              </div>
-              <div class="local-location-guide">
-                <div class="local-location-title">おすすめの保存場所</div>
-                <div class="local-location-text">エクスプローラーで「PC」→「ローカル ディスク（C:）」→「ユーザー」→「自分のユーザー名」と進み、その中に <strong>indeed分析用</strong> フォルダを作成します。</div>
-                <code>C:\Users\［ユーザー名］\indeed分析用\output_dataset</code>
-                <div class="local-location-caution">共有ドライブやネットワークフォルダではなく、PC本体への保存を推奨します。OneDrive配下では同期状況により速度が変わることがあります。</div>
-              </div>
-              <div class="folder-cta-area">
-                <button id="localCopySourceBtn" class="btn ghost" type="button">📋 コピー元の共有パスをコピー</button>
-                <button id="localFolderSelectBtn" class="btn secondary" type="button">📁 ローカルの output_dataset を選択</button>
-              </div>
-            </section>
-          </div>
-
-          <div class="direct-load-shortcut">
-            <div>
-              <div class="direct-load-title">保存場所が分かっている方</div>
-              <div class="direct-load-note">説明を開かず、目的の output_dataset を直接選択できます。初期表示は最新12か月です。</div>
+          <div class="single-load-hero">
+            <div class="single-load-icon" aria-hidden="true">📊</div>
+            <div class="single-load-heading">
+              <h2>分析データを読み込む</h2>
+              <p>indeedPLUSのデータフォルダを選択してください。</p>
             </div>
-            <button id="directFolderSelectBtn" class="btn ghost" type="button">📁 フォルダを直接選択</button>
+
+            <button id="folderSelectBtn" class="btn single-load-button" type="button">
+              📁 データフォルダを選択
+            </button>
+
+            <div class="single-load-speed-tip">
+              <span class="single-load-speed-icon" aria-hidden="true">⚡</span>
+              <span><strong>より快適に使うには</strong> ローカルに保存したフォルダの選択がおすすめです。</span>
+            </div>
           </div>
+
+          <details id="localSaveGuide" class="shared-folder-guide local-save-guide">
+            <summary>
+              <span>ローカル保存の方法を見る <em>おすすめ</em></span>
+              <span class="shared-folder-guide-chevron" aria-hidden="true">⌄</span>
+            </summary>
+            <div class="shared-folder-guide-body">
+              <p class="shared-folder-guide-lead">
+                共有フォルダにある <strong>output_dataset</strong> をPC本体へコピーしておくと、長期間の集計や画面切替が快適になります。
+              </p>
+
+              <ol class="local-save-steps">
+                <li>
+                  <span>1</span>
+                  <p>下のボタンで共有フォルダのパスをコピーし、エクスプローラーで開きます。</p>
+                </li>
+                <li>
+                  <span>2</span>
+                  <p>共有フォルダ内の <strong>output_dataset</strong> フォルダを丸ごとコピーします。</p>
+                </li>
+                <li>
+                  <span>3</span>
+                  <p>ドキュメントやデスクトップ内など、PC本体の分かりやすい場所へ貼り付けます。</p>
+                </li>
+                <li>
+                  <span>4</span>
+                  <p>上の「データフォルダを選択」から、貼り付けた <strong>output_dataset</strong> を選択します。</p>
+                </li>
+              </ol>
+
+              <div class="local-save-guide-action">
+                <button id="localSavePathCopyBtn" class="btn ghost small" type="button">
+                  📋 コピー元の共有パスをコピー
+                </button>
+              </div>
+
+              <p class="local-save-caution">
+                共有フォルダやネットワークドライブ内ではなく、PC本体へ貼り付けてください。新しい月のデータが追加されたら、共有フォルダの最新版へ定期的に差し替えます。
+              </p>
+            </div>
+          </details>
+
+          <details id="sharedFolderGuide" class="shared-folder-guide">
+            <summary>
+              <span>共有フォルダから直接読み込む場合</span>
+              <span class="shared-folder-guide-chevron" aria-hidden="true">⌄</span>
+            </summary>
+            <div class="shared-folder-guide-body">
+              <p class="shared-folder-guide-lead">
+                共有フォルダから直接読み込む場合は、下のパスをコピーしてから、上の「データフォルダを選択」を押してください。
+              </p>
+
+              <div class="shared-folder-path-row">
+                <div class="shared-folder-path-copy">
+                  <span>共有フォルダのパス</span>
+                  <code>K:\天市事業\public\1049\共有情報\tenichiプラス\indeedマージレポート\output_dataset</code>
+                </div>
+                <button id="sharedPathCopyBtn" class="btn ghost small" type="button">
+                  📋 パスをコピー
+                </button>
+              </div>
+
+              <p class="shared-folder-guide-note">
+                フォルダ選択画面のアドレス欄へ貼り付けて Enter を押し、<strong>output_dataset</strong> を選択します。
+              </p>
+              <div id="sharedPathStatus" class="shared-folder-path-status hidden" aria-live="polite">
+                共有フォルダ用の軽量設定で読み込みます（初期表示：最新3か月）。
+              </div>
+            </div>
+          </details>
 
           <input id="folderInput" type="file" webkitdirectory directory multiple />
         </div>
@@ -6199,7 +6524,7 @@
     import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm/+esm";
 
     const els = {
-      folderInput: document.getElementById('folderInput'), folderSelectBtn: document.getElementById('folderSelectBtn'), sharedLoadCard: document.getElementById('sharedLoadCard'), localLoadCard: document.getElementById('localLoadCard'), loadMethodDetail: document.getElementById('loadMethodDetail'), sharedMethodPanel: document.getElementById('sharedMethodPanel'), localMethodPanel: document.getElementById('localMethodPanel'), localCopySourceBtn: document.getElementById('localCopySourceBtn'), localFolderSelectBtn: document.getElementById('localFolderSelectBtn'), directFolderSelectBtn: document.getElementById('directFolderSelectBtn'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), comparisonCopyBtn: document.getElementById('comparisonCopyBtn'), mainStatus: document.getElementById('mainStatus'), toast: document.getElementById('toast'),
+      folderInput: document.getElementById('folderInput'), folderSelectBtn: document.getElementById('folderSelectBtn'), localSaveGuide: document.getElementById('localSaveGuide'), localSavePathCopyBtn: document.getElementById('localSavePathCopyBtn'), sharedFolderGuide: document.getElementById('sharedFolderGuide'), sharedPathCopyBtn: document.getElementById('sharedPathCopyBtn'), sharedPathStatus: document.getElementById('sharedPathStatus'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), comparisonCopyBtn: document.getElementById('comparisonCopyBtn'), mainStatus: document.getElementById('mainStatus'), toast: document.getElementById('toast'),
       datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), searchFiltersShell: document.getElementById('searchFiltersShell'), searchFilters: document.getElementById('searchFilters'), searchFiltersPlaceholder: document.getElementById('searchFiltersPlaceholder'), freeWordInput: document.getElementById('freeWordInput'), freeWordModeBadge: document.getElementById('freeWordModeBadge'), freeWordClearBtn: document.getElementById('freeWordClearBtn'), locationInput: document.getElementById('locationInput'), locationModeBadge: document.getElementById('locationModeBadge'), locationClearBtn: document.getElementById('locationClearBtn'), employmentFilter: document.getElementById('employmentFilter'), employmentFilterBtn: document.getElementById('employmentFilterBtn'), employmentFilterBtnText: document.getElementById('employmentFilterBtnText'), employmentPopover: document.getElementById('employmentPopover'), employmentFilterNote: document.getElementById('employmentFilterNote'), advancedFilterBtn: document.getElementById('advancedFilterBtn'), advancedFilterCount: document.getElementById('advancedFilterCount'), advancedFilterDialog: document.getElementById('advancedFilterDialog'), advancedFilterClose: document.getElementById('advancedFilterClose'), advancedFilterApply: document.getElementById('advancedFilterApply'), advancedFilterReset: document.getElementById('advancedFilterReset'), locationMode: document.getElementById('locationMode'), indeedJobInput: document.getElementById('indeedJobInput'), jobBoostFilter: document.getElementById('jobBoostFilter'), indeedJobField: document.getElementById('indeedJobField'), jobBoostField: document.getElementById('jobBoostField'),
       searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalAll: document.getElementById('periodModalAll'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
       relatedJobsSection: document.getElementById('relatedJobsSection'), relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'), relatedJobsApplyBar: document.getElementById('relatedJobsApplyBar'), relatedJobsPendingTitle: document.getElementById('relatedJobsPendingTitle'), relatedJobsPendingNote: document.getElementById('relatedJobsPendingNote'), relatedJobsDiscardBtn: document.getElementById('relatedJobsDiscardBtn'), relatedJobsApplyBtn: document.getElementById('relatedJobsApplyBtn'), relatedJobsDialog: document.getElementById('relatedJobsDialog'), relatedJobsModalClose: document.getElementById('relatedJobsModalClose'), relatedJobsModalClear: document.getElementById('relatedJobsModalClear'), relatedJobsModalCancel: document.getElementById('relatedJobsModalCancel'), relatedJobsModalApply: document.getElementById('relatedJobsModalApply'), relatedJobsModalCount: document.getElementById('relatedJobsModalCount'), relatedJobsModalSelected: document.getElementById('relatedJobsModalSelected'), relatedJobsModalCandidates: document.getElementById('relatedJobsModalCandidates'),
@@ -6522,51 +6847,15 @@
     function folderLoadModeLabel(mode) {
       if (mode === 'shared') return '共有フォルダ';
       if (mode === 'local') return 'ローカルコピー';
-      return '直接選択';
+      return 'データフォルダ';
     }
 
     function initialMonthCountForLoadMode(mode) {
       return mode === 'shared' ? 3 : 12;
     }
 
-    function selectFolderLoadMethod(mode) {
-      const normalized = mode === 'shared' || mode === 'local' ? mode : 'direct';
-      folderLoadMode = normalized;
-
-      const sharedActive = normalized === 'shared';
-      const localActive = normalized === 'local';
-
-      if (els.sharedLoadCard) {
-        els.sharedLoadCard.classList.toggle('active', sharedActive);
-        els.sharedLoadCard.setAttribute('aria-pressed', sharedActive ? 'true' : 'false');
-      }
-      if (els.localLoadCard) {
-        els.localLoadCard.classList.toggle('active', localActive);
-        els.localLoadCard.setAttribute('aria-pressed', localActive ? 'true' : 'false');
-      }
-      if (els.loadMethodDetail) {
-        els.loadMethodDetail.classList.toggle('hidden', normalized === 'direct');
-      }
-      if (els.sharedMethodPanel) {
-        els.sharedMethodPanel.classList.toggle('hidden', !sharedActive);
-      }
-      if (els.localMethodPanel) {
-        els.localMethodPanel.classList.toggle('hidden', !localActive);
-      }
-
-      const panel = sharedActive ? els.sharedMethodPanel : localActive ? els.localMethodPanel : null;
-      if (panel) {
-        requestAnimationFrame(() => {
-          const rect = panel.getBoundingClientRect();
-          if (rect.bottom > window.innerHeight || rect.top < 0) {
-            panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
-          }
-        });
-      }
-    }
-
-    function openFolderPicker(mode) {
-      selectFolderLoadMethod(mode);
+    function openFolderPicker(mode='direct') {
+      folderLoadMode = mode === 'shared' ? 'shared' : 'direct';
       try {
         els.folderInput.value = '';
         els.folderInput.click();
@@ -13882,39 +14171,55 @@
       }
     });
 
-    if (els.sharedLoadCard) {
-      els.sharedLoadCard.addEventListener('click', () => selectFolderLoadMethod('shared'));
-    }
-    if (els.localLoadCard) {
-      els.localLoadCard.addEventListener('click', () => selectFolderLoadMethod('local'));
-    }
     if (els.folderSelectBtn) {
       els.folderSelectBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        copyDefaultFolderPath({ openGuide:true });
-        // ファイル/フォルダ選択ダイアログは、ブラウザによっては
-        // setTimeout 後の click() をユーザー操作として扱わずブロックする。
-        // そのため、クリックイベント内で同期的に開く。
-        openFolderPicker('shared');
+        openFolderPicker(
+          folderLoadMode === 'shared' ? 'shared' : 'direct'
+        );
       });
     }
-    if (els.localCopySourceBtn) {
-      els.localCopySourceBtn.addEventListener('click', (e) => {
+
+    if (els.localSavePathCopyBtn) {
+      els.localSavePathCopyBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        selectFolderLoadMethod('local');
+        // ローカル保存用のコピー元案内なので、次回読込は通常設定のままにする。
+        folderLoadMode = 'direct';
         copyDefaultFolderPath({ openGuide:false });
       });
     }
-    if (els.localFolderSelectBtn) {
-      els.localFolderSelectBtn.addEventListener('click', (e) => {
+
+    if (els.sharedPathCopyBtn) {
+      els.sharedPathCopyBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        openFolderPicker('local');
+        folderLoadMode = 'shared';
+        copyDefaultFolderPath({ openGuide:false });
+
+        if (els.sharedPathStatus) {
+          els.sharedPathStatus.classList.remove('hidden');
+        }
       });
     }
-    if (els.directFolderSelectBtn) {
-      els.directFolderSelectBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        openFolderPicker('direct');
+
+    if (els.localSaveGuide) {
+      els.localSaveGuide.addEventListener('toggle', () => {
+        if (els.localSaveGuide.open && els.sharedFolderGuide?.open) {
+          els.sharedFolderGuide.open = false;
+        }
+      });
+    }
+
+    if (els.sharedFolderGuide) {
+      els.sharedFolderGuide.addEventListener('toggle', () => {
+        if (els.sharedFolderGuide.open && els.localSaveGuide?.open) {
+          els.localSaveGuide.open = false;
+        }
+        if (!els.sharedFolderGuide.open) {
+          folderLoadMode = 'direct';
+          if (els.sharedPathStatus) {
+            els.sharedPathStatus.classList.add('hidden');
+          }
+        }
       });
     }
     els.folderInput.addEventListener('change', e => handleFiles(e.target.files).catch(err => { console.error(err); log('[ERROR]\n' + (err.stack || err.message)); setStatus('エラー','bad'); }));
