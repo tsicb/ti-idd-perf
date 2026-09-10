@@ -5818,6 +5818,104 @@
       margin-top:1px;
     }
 
+    .single-load-path-guide {
+      width:min(100%,620px);
+      margin-top:2px;
+      padding:13px 15px 12px;
+      border:1px solid #fed7aa;
+      border-radius:15px;
+      background:#fffaf5;
+      color:#57534e;
+      text-align:left;
+    }
+
+    .single-load-path-guide-title {
+      margin-bottom:9px;
+      color:#9a3412;
+      font-size:11px;
+      font-weight:800;
+      text-align:center;
+    }
+
+    .single-load-path-steps {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:9px;
+      flex-wrap:wrap;
+    }
+
+    .single-load-path-steps > span {
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      color:#44403c;
+      font-size:11px;
+      font-weight:650;
+      white-space:nowrap;
+    }
+
+    .single-load-path-steps > span > b {
+      display:grid;
+      place-items:center;
+      width:20px;
+      height:20px;
+      border-radius:999px;
+      background:#c2410c;
+      color:#fff;
+      font-size:10px;
+      font-weight:850;
+    }
+
+    .single-load-path-steps > i {
+      color:#a8a29e;
+      font-size:12px;
+      font-style:normal;
+    }
+
+    .single-load-path-steps kbd {
+      display:inline-flex;
+      align-items:center;
+      min-height:24px;
+      padding:2px 7px;
+      border:1px solid #d6d3d1;
+      border-bottom-width:2px;
+      border-radius:6px;
+      background:#fff;
+      color:#292524;
+      font-family:inherit;
+      font-size:10.5px;
+      font-weight:750;
+      box-shadow:0 1px 0 rgba(0,0,0,.04);
+    }
+
+    .single-load-path-guide p {
+      margin:10px 0 0;
+      color:#78716c;
+      font-size:10.5px;
+      font-weight:500;
+      line-height:1.6;
+      text-align:center;
+    }
+
+    .single-load-alt-button {
+      margin-top:-1px;
+      padding:4px 6px;
+      border:0;
+      background:transparent;
+      color:#78716c;
+      font:inherit;
+      font-size:10.5px;
+      font-weight:600;
+      text-decoration:underline;
+      text-underline-offset:3px;
+      cursor:pointer;
+    }
+
+    .single-load-alt-button:hover {
+      color:#292524;
+    }
+
     .shared-folder-guide {
       margin-top:15px;
       border:1px solid #e7e5e4;
@@ -5945,6 +6043,14 @@
 
       .single-load-speed-tip {
         width:100%;
+      }
+
+      .single-load-path-guide {
+        width:100%;
+      }
+
+      .single-load-path-steps {
+        gap:7px;
       }
 
       .shared-folder-path-row {
@@ -6587,88 +6693,29 @@
           <div class="single-load-hero">
             <div class="single-load-heading">
               <h2>分析データを読み込む</h2>
-              <p>indeedPLUSのデータフォルダを選択してください。</p>
+              <p>共有フォルダにある最新のindeedPLUSデータを読み込みます。</p>
             </div>
 
             <button id="folderSelectBtn" class="btn single-load-button" type="button">
-              📁 データフォルダを選択
+              共有データを読み込む
             </button>
 
-            <div class="single-load-speed-tip">
-              <span class="single-load-speed-icon" aria-hidden="true">⚡</span>
-              <span><strong>より快適に使うには</strong> ローカルに保存したフォルダの選択がおすすめです。</span>
+            <div class="single-load-path-guide" aria-label="フォルダ選択手順">
+              <div class="single-load-path-guide-title">開いた選択画面で</div>
+              <div class="single-load-path-steps">
+                <span><b>1</b><kbd>Ctrl</kbd> + <kbd>L</kbd></span>
+                <i aria-hidden="true">→</i>
+                <span><b>2</b><kbd>Ctrl</kbd> + <kbd>V</kbd></span>
+                <i aria-hidden="true">→</i>
+                <span><b>3</b><kbd>Enter</kbd></span>
+              </div>
+              <p>ボタンを押すと、共有フォルダの場所を自動でクリップボードへコピーします。移動後に「フォルダーの選択」を押してください。</p>
             </div>
+
+            <button id="alternateFolderBtn" class="single-load-alt-button" type="button">
+              別のデータフォルダを選択
+            </button>
           </div>
-
-          <details id="localSaveGuide" class="shared-folder-guide local-save-guide">
-            <summary>
-              <span>ローカル保存の方法を見る <em>おすすめ</em></span>
-              <span class="shared-folder-guide-chevron" aria-hidden="true">⌄</span>
-            </summary>
-            <div class="shared-folder-guide-body">
-              <p class="shared-folder-guide-lead">
-                共有フォルダにある <strong>output_dataset</strong> をPC本体へコピーしておくと、長期間の集計や画面切替が快適になります。
-              </p>
-
-              <ol class="local-save-steps">
-                <li>
-                  <span>1</span>
-                  <p>下のボタンで <strong>output_dataset</strong> が置かれている場所のパスをコピーし、エクスプローラーで開きます。</p>
-                </li>
-                <li>
-                  <span>2</span>
-                  <p>共有フォルダ内の <strong>output_dataset</strong> フォルダを丸ごとコピーします。</p>
-                </li>
-                <li>
-                  <span>3</span>
-                  <p>ドキュメントやデスクトップ内など、PC本体の分かりやすい場所へ貼り付けます。</p>
-                </li>
-                <li>
-                  <span>4</span>
-                  <p>上の「データフォルダを選択」から、貼り付けた <strong>output_dataset</strong> を選択します。</p>
-                </li>
-              </ol>
-
-              <div class="local-save-guide-action">
-                <button id="localSavePathCopyBtn" class="btn ghost small" type="button">
-                  📋 output_datasetのある場所をコピー
-                </button>
-              </div>
-
-              <p class="local-save-caution">
-                共有フォルダやネットワークドライブ内ではなく、PC本体へ貼り付けてください。新しい月のデータが追加されたら、共有フォルダの最新版へ定期的に差し替えます。
-              </p>
-            </div>
-          </details>
-
-          <details id="sharedFolderGuide" class="shared-folder-guide">
-            <summary>
-              <span>共有フォルダから直接読み込む場合</span>
-              <span class="shared-folder-guide-chevron" aria-hidden="true">⌄</span>
-            </summary>
-            <div class="shared-folder-guide-body">
-              <p class="shared-folder-guide-lead">
-                共有フォルダから直接読み込む場合は、下のパスをコピーしてから、上の「データフォルダを選択」を押してください。
-              </p>
-
-              <div class="shared-folder-path-row">
-                <div class="shared-folder-path-copy">
-                  <span>共有フォルダのパス</span>
-                  <code>K:\天市事業\public\1049\共有情報\tenichiプラス\indeedマージレポート\output_dataset</code>
-                </div>
-                <button id="sharedPathCopyBtn" class="btn ghost small" type="button">
-                  📋 パスをコピー
-                </button>
-              </div>
-
-              <p class="shared-folder-guide-note">
-                フォルダ選択画面のアドレス欄へ貼り付けて Enter を押し、<strong>output_dataset</strong> を選択します。
-              </p>
-              <div id="sharedPathStatus" class="shared-folder-path-status hidden" aria-live="polite">
-                共有フォルダ用の軽量設定で読み込みます（初期表示：最新3か月）。
-              </div>
-            </div>
-          </details>
 
           <input id="folderInput" type="file" webkitdirectory directory multiple />
         </div>
@@ -7141,7 +7188,7 @@
     import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm/+esm";
 
     const els = {
-      folderInput: document.getElementById('folderInput'), folderSelectBtn: document.getElementById('folderSelectBtn'), localSaveGuide: document.getElementById('localSaveGuide'), localSavePathCopyBtn: document.getElementById('localSavePathCopyBtn'), sharedFolderGuide: document.getElementById('sharedFolderGuide'), sharedPathCopyBtn: document.getElementById('sharedPathCopyBtn'), sharedPathStatus: document.getElementById('sharedPathStatus'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), comparisonCopyBtn: document.getElementById('comparisonCopyBtn'), mainStatus: document.getElementById('mainStatus'), toast: document.getElementById('toast'),
+      folderInput: document.getElementById('folderInput'), folderSelectBtn: document.getElementById('folderSelectBtn'), alternateFolderBtn: document.getElementById('alternateFolderBtn'), localSaveGuide: document.getElementById('localSaveGuide'), localSavePathCopyBtn: document.getElementById('localSavePathCopyBtn'), sharedFolderGuide: document.getElementById('sharedFolderGuide'), sharedPathCopyBtn: document.getElementById('sharedPathCopyBtn'), sharedPathStatus: document.getElementById('sharedPathStatus'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), comparisonCopyBtn: document.getElementById('comparisonCopyBtn'), mainStatus: document.getElementById('mainStatus'), toast: document.getElementById('toast'),
       datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), searchFiltersShell: document.getElementById('searchFiltersShell'), searchFilters: document.getElementById('searchFilters'), searchFiltersPlaceholder: document.getElementById('searchFiltersPlaceholder'), freeWordInput: document.getElementById('freeWordInput'), freeWordModeBadge: document.getElementById('freeWordModeBadge'), freeWordClearBtn: document.getElementById('freeWordClearBtn'), locationInput: document.getElementById('locationInput'), locationModeBadge: document.getElementById('locationModeBadge'), locationClearBtn: document.getElementById('locationClearBtn'), employmentFilter: document.getElementById('employmentFilter'), employmentFilterBtn: document.getElementById('employmentFilterBtn'), employmentFilterBtnText: document.getElementById('employmentFilterBtnText'), employmentPopover: document.getElementById('employmentPopover'), employmentFilterNote: document.getElementById('employmentFilterNote'), advancedFilterBtn: document.getElementById('advancedFilterBtn'), advancedFilterCount: document.getElementById('advancedFilterCount'), advancedFilterDialog: document.getElementById('advancedFilterDialog'), advancedFilterClose: document.getElementById('advancedFilterClose'), advancedFilterApply: document.getElementById('advancedFilterApply'), advancedFilterReset: document.getElementById('advancedFilterReset'), locationMode: document.getElementById('locationMode'), indeedJobInput: document.getElementById('indeedJobInput'), jobBoostFilter: document.getElementById('jobBoostFilter'), indeedJobField: document.getElementById('indeedJobField'), jobBoostField: document.getElementById('jobBoostField'),
       searchMode: document.getElementById('searchMode'), campaignFilter: document.getElementById('campaignFilter'), periodFrom: document.getElementById('periodFrom'), periodTo: document.getElementById('periodTo'), periodRangeBtn: document.getElementById('periodRangeBtn'), periodModal: document.getElementById('periodModal'), periodModalClose: document.getElementById('periodModalClose'), periodModalAll: document.getElementById('periodModalAll'), periodModalNote: document.getElementById('periodModalNote'), periodMonthGrid: document.getElementById('periodMonthGrid'),
       relatedJobsSection: document.getElementById('relatedJobsSection'), relatedJobs: document.getElementById('relatedJobs'), selectedJobs: document.getElementById('selectedJobs'), clearSelectedBtn: document.getElementById('clearSelectedBtn'), relatedJobsApplyBar: document.getElementById('relatedJobsApplyBar'), relatedJobsPendingTitle: document.getElementById('relatedJobsPendingTitle'), relatedJobsPendingNote: document.getElementById('relatedJobsPendingNote'), relatedJobsDiscardBtn: document.getElementById('relatedJobsDiscardBtn'), relatedJobsApplyBtn: document.getElementById('relatedJobsApplyBtn'), relatedJobsDialog: document.getElementById('relatedJobsDialog'), relatedJobsModalClose: document.getElementById('relatedJobsModalClose'), relatedJobsModalClear: document.getElementById('relatedJobsModalClear'), relatedJobsModalCancel: document.getElementById('relatedJobsModalCancel'), relatedJobsModalApply: document.getElementById('relatedJobsModalApply'), relatedJobsModalCount: document.getElementById('relatedJobsModalCount'), relatedJobsModalSelected: document.getElementById('relatedJobsModalSelected'), relatedJobsModalCandidates: document.getElementById('relatedJobsModalCandidates'),
@@ -7338,7 +7385,6 @@
     let companyBreakdownChartMetric = 'cpa';
     const registeredFiles = new Set();
     const DEFAULT_FOLDER_PATH = String.raw`K:\天市事業\public\1049\共有情報\tenichiプラス\indeedマージレポート\output_dataset`;
-    const LOCAL_COPY_SOURCE_PATH = String.raw`K:\天市事業\public\1049\共有情報\tenichiプラス\indeedマージレポート`;
     const PREFECTURES = [
       '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県',
       '茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県',
@@ -15293,65 +15339,25 @@
     if (els.folderSelectBtn) {
       els.folderSelectBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        openFolderPicker(
-          folderLoadMode === 'shared' ? 'shared' : 'direct'
-        );
-      });
-    }
-
-    if (els.localSavePathCopyBtn) {
-      els.localSavePathCopyBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        // output_dataset自体をコピーしやすいよう、その親フォルダを案内する。
-        // 次回読込はローカル利用向けの通常設定のままにする。
-        folderLoadMode = 'direct';
-        copyDefaultFolderPath({
-          openGuide:false,
-          path:LOCAL_COPY_SOURCE_PATH,
-          title:'output_datasetのある場所をコピーしました',
-          note:'エクスプローラーで開き、output_datasetフォルダを丸ごとコピーしてください。'
-        });
-      });
-    }
-
-    if (els.sharedPathCopyBtn) {
-      els.sharedPathCopyBtn.addEventListener('click', (e) => {
-        e.preventDefault();
         folderLoadMode = 'shared';
         copyDefaultFolderPath({
-          openGuide:false,
+          openGuide:true,
           path:DEFAULT_FOLDER_PATH,
-          title:'共有フォルダのパスをコピーしました',
-          note:'フォルダ選択画面のアドレス欄へ貼り付けて Enter を押してください。'
+          title:'共有フォルダの場所をコピーしました',
+          note:'選択画面で Ctrl+L → Ctrl+V → Enter の順に操作してください。'
         });
-
-        if (els.sharedPathStatus) {
-          els.sharedPathStatus.classList.remove('hidden');
-        }
+        openFolderPicker('shared');
       });
     }
 
-    if (els.localSaveGuide) {
-      els.localSaveGuide.addEventListener('toggle', () => {
-        if (els.localSaveGuide.open && els.sharedFolderGuide?.open) {
-          els.sharedFolderGuide.open = false;
-        }
+    if (els.alternateFolderBtn) {
+      els.alternateFolderBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        folderLoadMode = 'direct';
+        openFolderPicker('direct');
       });
     }
 
-    if (els.sharedFolderGuide) {
-      els.sharedFolderGuide.addEventListener('toggle', () => {
-        if (els.sharedFolderGuide.open && els.localSaveGuide?.open) {
-          els.localSaveGuide.open = false;
-        }
-        if (!els.sharedFolderGuide.open) {
-          folderLoadMode = 'direct';
-          if (els.sharedPathStatus) {
-            els.sharedPathStatus.classList.add('hidden');
-          }
-        }
-      });
-    }
     els.folderInput.addEventListener('change', e => handleFiles(e.target.files).catch(err => { console.error(err); log('[ERROR]\n' + (err.stack || err.message)); setStatus('エラー','bad'); }));
     els.refreshBtn.addEventListener('click', () => { textDirty = false; clearLog(); refreshAll(); });
     if (els.copyBtn) els.copyBtn.addEventListener('click', copyTable);
