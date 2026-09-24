@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>ti × Indeed 運用分析</title>
+  <title>天市×indeedPLUS運用実績</title>
   <link rel="icon" type="image/png" href="./assets/app-icon.png">
   <link rel="apple-touch-icon" href="./assets/app-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -6688,30 +6688,41 @@
     <section id="introCard" class="card intro-card">
       <div class="header intro-header">
         <div class="intro-content">
-          <h1><span class="app-brand-title"><img class="app-brand-mark" src="./assets/app-icon.png" alt="" aria-hidden="true"><span class="app-brand-text">ti × Indeed 運用分析</span></span></h1>
+          <h1><span class="app-brand-title"><img class="app-brand-mark" src="./assets/app-icon.png" alt="" aria-hidden="true"><span class="app-brand-text">天市×indeedPLUS運用実績</span></span></h1>
 
           <div class="single-load-hero">
             <div class="single-load-heading">
-              <h2>Cloudflareデータへ接続</h2>
-              <p>認証済みユーザーとして、Private R2上の最新データセットを自動で読み込みます。</p>
+              <h2>分析データを読み込む</h2>
+              <p>共有フォルダにある最新のindeedPLUSデータを読み込みます。</p>
             </div>
 
             <button id="folderSelectBtn" class="btn single-load-button" type="button">
-              データを再読み込み
+              共有データを読み込む
             </button>
 
-            <div class="single-load-path-guide" aria-label="Cloudflare版のデータ読み込み方式">
-              <div class="single-load-path-guide-title">Cloudflare版</div>
-              <p>フォルダ選択は不要です。current.jsonが指す公開済みリリースのmanifest.jsonを起点に、必要なParquetだけをDuckDB-WasmがHTTP Range Readで参照します。</p>
+            <div class="single-load-path-guide" aria-label="フォルダ選択手順">
+              <div class="single-load-path-guide-title">開いた選択画面で</div>
+              <div class="single-load-path-steps">
+                <span><b>1</b><kbd>Ctrl</kbd> + <kbd>L</kbd></span>
+                <i aria-hidden="true">→</i>
+                <span><b>2</b><kbd>Ctrl</kbd> + <kbd>V</kbd></span>
+                <i aria-hidden="true">→</i>
+                <span><b>3</b><kbd>Enter</kbd></span>
+              </div>
+              <p>ボタンを押すと、共有フォルダの場所を自動でクリップボードへコピーします。移動後に「フォルダーの選択」を押してください。</p>
             </div>
+
+            <button id="alternateFolderBtn" class="single-load-alt-button" type="button">
+              別のデータフォルダを選択
+            </button>
           </div>
 
-          <input id="folderInput" class="hidden" type="file" webkitdirectory directory multiple />
+          <input id="folderInput" type="file" webkitdirectory directory multiple />
         </div>
         <div class="toolbar top-hidden-toolbar">
           <button id="refreshBtn" class="btn secondary top-only-control" type="button" disabled>表示を更新</button>
           <button id="copyBtn" class="btn ghost top-only-control" type="button" disabled>表をコピー</button>
-          <span id="mainStatus" class="status top-only-control">Cloudflare接続待ち</span>
+          <span id="mainStatus" class="status top-only-control">データ未選択</span>
         </div>
       </div>
       <div id="datasetInfo" class="kv hidden"></div>
@@ -6720,7 +6731,7 @@
     <section id="appArea" class="grid hidden" style="margin-top:18px;">
       <div class="card span-12 app-title-card" id="appTitleCard">
         <div class="analysis-title-row mode-title-row">
-          <h1><span class="app-brand-title"><img class="app-brand-mark" src="./assets/app-icon.png" alt="" aria-hidden="true"><span class="app-brand-text">ti × Indeed 運用分析</span></span></h1>
+          <h1><span class="app-brand-title"><img class="app-brand-mark" src="./assets/app-icon.png" alt="" aria-hidden="true"><span class="app-brand-text">天市×indeedPLUS運用実績</span></span></h1>
           <div class="title-action-buttons" aria-label="データ出力とモード切替">
             <button id="filteredCsvDownloadBtn" class="top-action-btn csv" type="button" title="現在の条件に一致する明細を、Excelで確認しやすい列順・派生指標付きのUTF-8 BOM付きCSVで保存します。率系はExcelでパーセント表示できる0～1の小数です">⬇ 絞り込みCSV出力</button>
             <button id="companyModeDirectBtn" class="top-action-btn company" type="button">🏢 個社分析モードへ</button>
@@ -6913,7 +6924,7 @@
                   </p>
                   <ul class="job-logic-list">
                     <li>
-                      該当求人が持つ <code>関連職種_集計用</code>（旧データでは <code>関連職種</code>）をタグ単位に分解し、Indeed職種列がある場合は <code>Indeed職種</code> も候補へ加えます。
+                      該当求人が持つ <code>関連職種</code> をタグ単位に分解し、Indeed職種列がある場合は <code>Indeed職種</code> も候補へ加えます。
                     </li>
                     <li>
                       求人件数が多い順、応募数が多い順、クリック数が多い順、職種名順で並べます。
@@ -6933,11 +6944,11 @@
                 <section class="job-logic-section">
                   <h3><span class="job-logic-number">3</span><span>選択した関連職種はどのように絞り込まれるか</span></h3>
                   <p>
-                    選択した名称が、求人の集計用関連職種タグ、または <code>Indeed職種</code> として存在するかを判定します。単なる文字列の部分一致ではありません。
+                    選択した名称が、求人の関連職種タグの中に1つのタグとして存在するかを判定します。単なる文字列の部分一致ではありません。
                   </p>
                   <ul class="job-logic-list">
                     <li>
-                      <code>関連職種_集計用</code> があれば優先し、ない場合は <code>関連職種</code> を使用します。Indeed職種列がある場合は、同じ選択条件に <code>Indeed職種</code> も含めます。
+                      <code>関連職種_集計用</code> があれば優先し、ない場合は <code>関連職種</code> を使用します。
                     </li>
                     <li>
                       タグ列と選択名の空白を取り除き、区切り位置を含めて完全一致相当で判定します。
@@ -7176,9 +7187,6 @@
   <script type="module">
     import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm/+esm";
 
-    const REMOTE_DATASET_POINTER_URL = '/api/data/prod/current.json';
-    const REMOTE_LOAD_MODE = 'remote';
-
     const els = {
       folderInput: document.getElementById('folderInput'), folderSelectBtn: document.getElementById('folderSelectBtn'), alternateFolderBtn: document.getElementById('alternateFolderBtn'), localSaveGuide: document.getElementById('localSaveGuide'), localSavePathCopyBtn: document.getElementById('localSavePathCopyBtn'), sharedFolderGuide: document.getElementById('sharedFolderGuide'), sharedPathCopyBtn: document.getElementById('sharedPathCopyBtn'), sharedPathStatus: document.getElementById('sharedPathStatus'), refreshBtn: document.getElementById('refreshBtn'), copyBtn: document.getElementById('copyBtn'), comparisonCopyBtn: document.getElementById('comparisonCopyBtn'), mainStatus: document.getElementById('mainStatus'), toast: document.getElementById('toast'),
       datasetInfo: document.getElementById('datasetInfo'), appArea: document.getElementById('appArea'), searchRelatedCard: document.getElementById('searchRelatedCard'), searchFiltersShell: document.getElementById('searchFiltersShell'), searchFilters: document.getElementById('searchFilters'), searchFiltersPlaceholder: document.getElementById('searchFiltersPlaceholder'), freeWordInput: document.getElementById('freeWordInput'), freeWordModeBadge: document.getElementById('freeWordModeBadge'), freeWordClearBtn: document.getElementById('freeWordClearBtn'), locationInput: document.getElementById('locationInput'), locationModeBadge: document.getElementById('locationModeBadge'), locationClearBtn: document.getElementById('locationClearBtn'), employmentFilter: document.getElementById('employmentFilter'), employmentFilterBtn: document.getElementById('employmentFilterBtn'), employmentFilterBtnText: document.getElementById('employmentFilterBtnText'), employmentPopover: document.getElementById('employmentPopover'), employmentFilterNote: document.getElementById('employmentFilterNote'), advancedFilterBtn: document.getElementById('advancedFilterBtn'), advancedFilterCount: document.getElementById('advancedFilterCount'), advancedFilterDialog: document.getElementById('advancedFilterDialog'), advancedFilterClose: document.getElementById('advancedFilterClose'), advancedFilterApply: document.getElementById('advancedFilterApply'), advancedFilterReset: document.getElementById('advancedFilterReset'), locationMode: document.getElementById('locationMode'), indeedJobInput: document.getElementById('indeedJobInput'), jobBoostFilter: document.getElementById('jobBoostFilter'), indeedJobField: document.getElementById('indeedJobField'), jobBoostField: document.getElementById('jobBoostField'),
@@ -7216,7 +7224,7 @@
 
     let dbPromise = null;
     let appState = null;
-    let folderLoadMode = REMOTE_LOAD_MODE; // remote / shared / local / direct
+    let folderLoadMode = 'direct'; // shared / local / direct
     let selectedJobTitles = [];
     let relatedJobTopDraftTitles = [];
     let relatedJobFocusModeActive = false;
@@ -7534,14 +7542,13 @@
     }
 
     function folderLoadModeLabel(mode) {
-      if (mode === 'remote') return 'Cloudflare R2';
       if (mode === 'shared') return '共有フォルダ';
       if (mode === 'local') return 'ローカルコピー';
       return 'データフォルダ';
     }
 
     function initialMonthCountForLoadMode(mode) {
-      return (mode === 'shared' || mode === 'remote') ? 3 : 12;
+      return mode === 'shared' ? 3 : 12;
     }
 
     function openFolderPicker(mode='direct') {
@@ -7685,132 +7692,6 @@
       return { normToTitle, titles, found: true };
     }
 
-    function remoteUrlFromBase(baseUrl, relativePath) {
-      return new URL(normalizePath(relativePath), baseUrl).href;
-    }
-
-    async function fetchRemoteJson(url) {
-      const response = await fetch(url, { cache:'no-store', credentials:'same-origin' });
-      if (!response.ok) throw new Error(`Remote JSON の取得に失敗しました（HTTP ${response.status}）: ${url}`);
-      return response.json();
-    }
-
-    async function fetchRemoteText(url) {
-      const response = await fetch(url, { cache:'no-store', credentials:'same-origin' });
-      if (!response.ok) throw new Error(`Remote master の取得に失敗しました（HTTP ${response.status}）: ${url}`);
-      return response.text();
-    }
-
-    async function loadJobTitleMasterRemote(manifest, remoteBaseUrl) {
-      const masterFiles = manifest && manifest.master_files ? manifest.master_files : {};
-      const candidates = [masterFiles.job_title_csv, 'master/job_title_master.csv'].filter(Boolean).map(normalizePath);
-      const normToTitle = new Map();
-      const titles = [];
-      let found = false;
-      for (const path of candidates) {
-        try {
-          const rows = parseCsvRows(await fetchRemoteText(remoteUrlFromBase(remoteBaseUrl, path)));
-          rows.forEach(row => {
-            const title = String(row['職種名'] || row['標準化職種名'] || row['標準化された職種名'] || '').trim();
-            const norm = String(row['正規化職種名'] || normalizeMatchText(title)).trim();
-            if (!title || !norm || normToTitle.has(norm)) return;
-            normToTitle.set(norm, title);
-            titles.push(title);
-          });
-          found = true;
-          break;
-        } catch (_) {
-          // manifest側の候補が存在しない場合は既定パスへフォールバックする。
-        }
-      }
-      return { normToTitle, titles, found };
-    }
-
-    function resetDatasetRuntimeState() {
-      clearLog(); selectedJobTitles = []; relatedJobTopDraftTitles = []; exitRelatedJobFocusMode(); selectedEmploymentTypes = ['all']; companyMasterVirtualPath = null; updateSearchClearButtons(); updateSearchModeBadges(); selectedCompany = null; companyPeriodRange = null; resetCompanyFilters(); invalidateCompanyViewCache({ resetScroll:true }); companySummaryToken++; if (els.companySelectedPanel) els.companySelectedPanel.classList.add('hidden'); if (els.companyFilterPanel) els.companyFilterPanel.classList.add('hidden'); if (els.companySummaryPanel) els.companySummaryPanel.classList.add('hidden'); registeredFiles.clear(); clearComparisonCaches(); lastCopyRows = []; lastDisplayRows = []; lastTableHelper = ''; if (els.copyBtn) els.copyBtn.disabled = true; if (els.comparisonCopyBtn) els.comparisonCopyBtn.disabled = true;
-    }
-
-    async function loadRemoteDataset(pointerUrl=REMOTE_DATASET_POINTER_URL) {
-      resetDatasetRuntimeState();
-      folderLoadMode = REMOTE_LOAD_MODE;
-      setStatus('Cloudflare R2へ接続中...', 'warn');
-      if (els.folderSelectBtn) els.folderSelectBtn.disabled = true;
-      try {
-        const absolutePointerUrl = new URL(pointerUrl, window.location.origin).href;
-        const releasePointer = await fetchRemoteJson(absolutePointerUrl);
-        const manifestKey = normalizePath(releasePointer && releasePointer.manifest_path);
-        if (!/^prod\/releases\/[^/]+\/manifest\.json$/.test(manifestKey)) {
-          throw new Error('current.json の manifest_path が不正です。');
-        }
-        const absoluteManifestUrl = new URL(`/api/data/${manifestKey}`, window.location.origin).href;
-        const manifest = await fetchRemoteJson(absoluteManifestUrl);
-        const remoteBaseUrl = new URL('./', absoluteManifestUrl).href;
-        const factFiles = Array.isArray(manifest.fact_files) ? manifest.fact_files : [];
-        const factFileMap = new Map(factFiles.map(info => [String(info.month_key), info]));
-        const availableMonths = factFiles
-          .filter(info => info && info.path && info.month_key != null)
-          .map(info => String(info.month_key))
-          .sort();
-        if (!availableMonths.length) throw new Error('manifest.json に利用可能な fact_files がありません。');
-        const monthMax = manifest.month_max || maxMonthFromFactFiles(factFiles);
-        const factSchemaNames = new Set((Array.isArray(manifest.fact_schema) ? manifest.fact_schema : []).map(col => col && col.name).filter(Boolean));
-        const jobTitleMaster = await loadJobTitleMasterRemote(manifest, remoteBaseUrl);
-        appState = {
-          files: [], manifest, manifestItem: { path:absoluteManifestUrl }, prefix:'', selectedFileMap:new Map(),
-          factFiles, factFileMap, availableMonths, monthMax,
-          hasAggRelated: factSchemaNames.has('関連職種_集計用'),
-          hasEmploymentType: factSchemaNames.has('雇用形態'),
-          hasIndeedJob: factSchemaNames.has('Indeed職種'),
-          hasJobBoost: factSchemaNames.has('ジョブブースト適用'),
-          jobTitleNormToTitle: jobTitleMaster.normToTitle,
-          jobTitleMasterFound: jobTitleMaster.found,
-          loadMode: REMOTE_LOAD_MODE,
-          remote: true,
-          remoteManifestUrl: absoluteManifestUrl,
-          remotePointerUrl: absolutePointerUrl,
-          remoteRelease: releasePointer,
-          remoteBaseUrl,
-          sessionId: Date.now()
-        };
-        updateFilterAvailability();
-        updateAdvancedFilterButton();
-        renderKv(els.datasetInfo, [
-          ['source', '読み込み方法：Cloudflare R2（自動読込）'],
-          ['range', `利用可能期間：${esc(formatMonthLabel(manifest.month_min))}〜${esc(formatMonthLabel(monthMax))}`],
-          ['months', `読み込み可能な月：${esc(availableMonths.length)}か月分`],
-          ['latest', `最新データ：${esc(formatMonthLabel(monthMax))}`],
-          ['release', `公開版：${esc(releasePointer.release_id || '-')}`]
-        ]);
-        els.datasetInfo.classList.add('hidden');
-        renderPeriodOptions();
-        document.getElementById('introCard')?.classList.add('hidden');
-        document.body.classList.add('normal-analysis-fullwidth');
-        els.appArea.classList.remove('hidden');
-        els.refreshBtn.disabled = false;
-        setStatus('Cloudflareデータ読込完了', 'ok');
-        await refreshAll({ preserveScroll:false });
-        showToast(`
-          <div class="toast-title">Cloudflare R2から読み込みました</div>
-          <div class="toast-note">公開版 ${esc(releasePointer.release_id || '-')} / ${esc(availableMonths.length)}か月分を認識し、初期集計は最新${esc(initialMonthCountForLoadMode(REMOTE_LOAD_MODE))}か月です。</div>
-        `, 3200, { tone:'success' });
-        await applySasukeLaunchAfterLoad();
-      } catch (err) {
-        console.error(err);
-        log('[REMOTE ERROR]\n' + (err && (err.stack || err.message) ? (err.stack || err.message) : String(err)));
-        setStatus('Cloudflareデータ接続エラー', 'bad');
-        document.getElementById('introCard')?.classList.remove('hidden');
-        document.body.classList.remove('normal-analysis-fullwidth');
-        els.appArea.classList.add('hidden');
-        showToast(`
-          <div class="toast-title">Cloudflareデータを読み込めませんでした</div>
-          <div class="toast-note">Access認証・manifest・R2 APIを確認し、「データを再読み込み」を押してください。</div>
-        `, 5200, { tone:'error' });
-        throw err;
-      } finally {
-        if (els.folderSelectBtn) els.folderSelectBtn.disabled = false;
-      }
-    }
-
     function findManifestFile(files) {
       const candidates = files.map(file => ({file, path: normalizePath(filePath(file))})).filter(item => item.path.endsWith('manifest.json'));
       return candidates.find(item => item.path.endsWith('/output_dataset/manifest.json')) || candidates.find(item => item.path === 'output_dataset/manifest.json') || candidates.find(item => item.path === 'manifest.json') || candidates[0] || null;
@@ -7835,13 +7716,6 @@
         const logger = new duckdb.ConsoleLogger();
         const db = new duckdb.AsyncDuckDB(logger, worker);
         await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
-        await db.open({
-          filesystem: {
-            allowFullHTTPReads: false,
-            reliableHeadRequests: true,
-            forceFullHTTPReads: false
-          }
-        });
         URL.revokeObjectURL(workerUrl);
         
         return db;
@@ -7853,7 +7727,7 @@
 
     async function handleFiles(fileList) {
       const files = Array.from(fileList || []);
-      resetDatasetRuntimeState();
+      clearLog(); selectedJobTitles = []; relatedJobTopDraftTitles = []; exitRelatedJobFocusMode(); selectedEmploymentTypes = ['all']; companyMasterVirtualPath = null; updateSearchClearButtons(); updateSearchModeBadges(); selectedCompany = null; companyPeriodRange = null; resetCompanyFilters(); invalidateCompanyViewCache({ resetScroll:true }); companySummaryToken++; if (els.companySelectedPanel) els.companySelectedPanel.classList.add('hidden'); if (els.companyFilterPanel) els.companyFilterPanel.classList.add('hidden'); if (els.companySummaryPanel) els.companySummaryPanel.classList.add('hidden'); registeredFiles.clear(); clearComparisonCaches(); lastCopyRows = []; lastDisplayRows = []; lastTableHelper = ''; if (els.copyBtn) els.copyBtn.disabled = true; if (els.comparisonCopyBtn) els.comparisonCopyBtn.disabled = true;
       if (!files.length) return;
       setStatus('データ確認中...', 'warn');
       const manifestItem = findManifestFile(files);
@@ -8688,17 +8562,13 @@
         const info = appState.factFileMap.get(String(month));
         if (!info) continue;
         const relPath = normalizePath(info.path);
+        const file = appState.selectedFileMap.get(relPath);
+        if (!file) continue;
         const virtualPath = `session_${appState.sessionId}_${relPath.replaceAll('/', '_')}`;
         if (!registeredFiles.has(virtualPath)) {
-          if (appState.remote) {
-            const remoteUrl = remoteUrlFromBase(appState.remoteBaseUrl, relPath);
-            await db.registerFileURL(virtualPath, remoteUrl, duckdb.DuckDBDataProtocol.HTTP, false);
-          } else {
-            const file = appState.selectedFileMap.get(relPath);
-            if (!file) continue;
-            const buffer = await file.arrayBuffer();
-            await db.registerFileBuffer(virtualPath, new Uint8Array(buffer));
-          }
+          
+          const buffer = await file.arrayBuffer();
+          await db.registerFileBuffer(virtualPath, new Uint8Array(buffer));
           registeredFiles.add(virtualPath);
         }
         paths.push(virtualPath);
@@ -8900,17 +8770,11 @@
       if (companyMasterVirtualPath) return companyMasterVirtualPath;
       const masterFiles = appState.manifest && appState.manifest.master_files ? appState.manifest.master_files : {};
       const candidates = [masterFiles.company, 'master/company_master.parquet'].filter(Boolean).map(normalizePath);
-      const relPath = candidates[0] || 'master/company_master.parquet';
+      const file = candidates.map(path => appState.selectedFileMap.get(path)).find(Boolean);
+      if (!file) throw new Error('company_master.parquet が見つかりません。');
       const virtualPath = `session_${appState.sessionId}_company_master.parquet`;
-      if (appState.remote) {
-        const remoteUrl = remoteUrlFromBase(appState.remoteBaseUrl, relPath);
-        await db.registerFileURL(virtualPath, remoteUrl, duckdb.DuckDBDataProtocol.HTTP, false);
-      } else {
-        const file = candidates.map(path => appState.selectedFileMap.get(path)).find(Boolean);
-        if (!file) throw new Error('company_master.parquet が見つかりません。');
-        const buffer = await file.arrayBuffer();
-        await db.registerFileBuffer(virtualPath, new Uint8Array(buffer));
-      }
+      const buffer = await file.arrayBuffer();
+      await db.registerFileBuffer(virtualPath, new Uint8Array(buffer));
       companyMasterVirtualPath = virtualPath;
       return virtualPath;
     }
@@ -9997,6 +9861,7 @@
       }
       companyPivotReplaceAxis = '';
     }
+
     function replaceSingleCompanyPivotAxis(nextAxis) {
       const value = String(nextAxis || '');
       if (!value || !companyAvailablePivotAxisKeys().includes(value)) return;
@@ -11425,24 +11290,12 @@
       return preferAgg && appState && appState.hasAggRelated ? '関連職種_集計用' : '関連職種';
     }
 
-    function relatedJobSourceExpression() {
-      // 関連職種バッジの「候補生成」と「選択後の集計」で、必ず同じ母集団を使う。
-      // v1.2以降は 関連職種_集計用 を優先し、Indeed職種も候補・集計の双方へ含める。
-      const relatedCol = relatedJobColumn(true);
-      const relatedExpr = `coalesce("${relatedCol}", '')`;
-      return appState && appState.hasIndeedJob
-        ? `concat(${relatedExpr}, CASE WHEN coalesce("Indeed職種", '') <> '' THEN concat('|', "Indeed職種") ELSE '' END)`
-        : relatedExpr;
-    }
-
     function relatedJobExactClause(job, columnName=null) {
       // 「|」区切りタグ列を完全一致相当にする。
-      // columnName指定時はその列だけ、未指定時は関連職種_集計用 + Indeed職種を同一条件で判定する。
-      const sourceExpr = columnName
-        ? `coalesce("${columnName}", '')`
-        : relatedJobSourceExpression();
+      // v1.2以降は 関連職種_集計用 を優先し、旧データでは 関連職種 にフォールバックする。
+      const col = columnName || relatedJobColumn(true);
       const normalizedJob = String(job || '').replace(/\s+/g, '');
-      return `concat('|', regexp_replace(${sourceExpr}, '\\s+', '', 'g'), '|') LIKE ${sqlLiteral('%|' + normalizedJob + '|%')}`;
+      return `concat('|', regexp_replace(coalesce("${col}", ''), '\\s+', '', 'g'), '|') LIKE ${sqlLiteral('%|' + normalizedJob + '|%')}`;
     }
 
     function freeWordKeywordClause(keyword) {
@@ -11895,7 +11748,9 @@
         const aggregateSql = `WITH src AS (SELECT * FROM ${source} ${where}) SELECT COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src;`;
         const totals = (await queryRows(conn, aggregateSql))[0] || {};
         latestTotals = totals;
-        const relatedSourceExpr = relatedJobSourceExpression();
+        const relatedSourceExpr = appState.hasIndeedJob
+          ? `concat(coalesce("関連職種", ''), CASE WHEN coalesce("Indeed職種", '') <> '' THEN concat('|', "Indeed職種") ELSE '' END)`
+          : `coalesce("関連職種", '')`;
         const relatedSql = `WITH src AS (SELECT * FROM ${source} ${where}), exploded AS (SELECT trim(candidate) AS related_job, "消化金額", "表示回数", "クリック数", "応募開始数", "応募数" FROM src, UNNEST(string_split(${relatedSourceExpr}, '|')) AS t(candidate)) SELECT related_job, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM exploded WHERE related_job <> '' GROUP BY related_job ORDER BY count DESC, applies DESC, clicks DESC, related_job ASC LIMIT 500;`;
         const relatedRaw = await queryRows(conn, relatedSql);
         renderRelated(relatedRaw.filter(r => isUsefulCandidate(r.related_job)).slice(0,50));
@@ -12006,6 +11861,7 @@
       ensureRelatedJobFocusBackdrop();
       relatedJobFocusModeActive = true;
       document.body.classList.add('related-job-focus-mode');
+
       const rect = els.relatedJobsSection.getBoundingClientRect();
       const margin = 18;
       const needsScroll =
@@ -15483,17 +15339,26 @@
     if (els.folderSelectBtn) {
       els.folderSelectBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        loadRemoteDataset().catch(() => {});
+        folderLoadMode = 'shared';
+        copyDefaultFolderPath({
+          openGuide:true,
+          path:DEFAULT_FOLDER_PATH,
+          title:'共有フォルダの場所をコピーしました',
+          note:'選択画面で Ctrl+L → Ctrl+V → Enter の順に操作してください。'
+        });
+        openFolderPicker('shared');
       });
     }
 
-    // file inputはローカルデバッグ用の互換経路として残すが、Cloudflare版UIからは使用しない。
-    if (els.folderInput) {
-      els.folderInput.addEventListener('change', e => handleFiles(e.target.files).catch(err => { console.error(err); log('[ERROR]\n' + (err.stack || err.message)); setStatus('エラー','bad'); }));
+    if (els.alternateFolderBtn) {
+      els.alternateFolderBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        folderLoadMode = 'direct';
+        openFolderPicker('direct');
+      });
     }
 
-    // Cloudflare版はフォルダ選択なしで自動起動する。
-    queueMicrotask(() => loadRemoteDataset().catch(() => {}));
+    els.folderInput.addEventListener('change', e => handleFiles(e.target.files).catch(err => { console.error(err); log('[ERROR]\n' + (err.stack || err.message)); setStatus('エラー','bad'); }));
     els.refreshBtn.addEventListener('click', () => { textDirty = false; clearLog(); refreshAll(); });
     if (els.copyBtn) els.copyBtn.addEventListener('click', copyTable);
     if (els.comparisonCopyBtn) els.comparisonCopyBtn.addEventListener('click', copyTable);
@@ -16005,6 +15870,7 @@
       commitCompanyPivotPendingDrop();
       finishCompanyPivotDrag();
     });
+
     document.addEventListener('click', e => {
       const replacementOption = e.target.closest('[data-company-pivot-replace-axis]');
       if (replacementOption) {
