@@ -6924,7 +6924,7 @@
                   </p>
                   <ul class="job-logic-list">
                     <li>
-                      該当求人が持つ <code>関連職種</code> をタグ単位に分解し、Indeed職種列がある場合は <code>Indeed職種</code> も候補へ加えます。
+                      該当求人が持つ <code>関連職種_集計用</code>（旧データでは <code>関連職種</code>）をタグ単位に分解し、Indeed職種列がある場合は <code>Indeed職種</code> も候補へ加えます。
                     </li>
                     <li>
                       求人件数が多い順、応募数が多い順、クリック数が多い順、職種名順で並べます。
@@ -6944,11 +6944,11 @@
                 <section class="job-logic-section">
                   <h3><span class="job-logic-number">3</span><span>選択した関連職種はどのように絞り込まれるか</span></h3>
                   <p>
-                    選択した名称が、求人の関連職種タグの中に1つのタグとして存在するかを判定します。単なる文字列の部分一致ではありません。
+                    選択した名称が、求人の集計用関連職種タグ、または <code>Indeed職種</code> として存在するかを判定します。単なる文字列の部分一致ではありません。
                   </p>
                   <ul class="job-logic-list">
                     <li>
-                      <code>関連職種_集計用</code> があれば優先し、ない場合は <code>関連職種</code> を使用します。
+                      <code>関連職種_集計用</code> があれば優先し、ない場合は <code>関連職種</code> を使用します。Indeed職種列がある場合は、同じ選択条件に <code>Indeed職種</code> も含めます。
                     </li>
                     <li>
                       タグ列と選択名の空白を取り除き、区切り位置を含めて完全一致相当で判定します。
@@ -11290,12 +11290,24 @@
       return preferAgg && appState && appState.hasAggRelated ? '関連職種_集計用' : '関連職種';
     }
 
+    function relatedJobSourceExpression() {
+      // 関連職種バッジの「候補生成」と「選択後の集計」で、必ず同じ母集団を使う。
+      // v1.2以降は 関連職種_集計用 を優先し、Indeed職種も候補・集計の双方へ含める。
+      const relatedCol = relatedJobColumn(true);
+      const relatedExpr = `coalesce("${relatedCol}", '')`;
+      return appState && appState.hasIndeedJob
+        ? `concat(${relatedExpr}, CASE WHEN coalesce("Indeed職種", '') <> '' THEN concat('|', "Indeed職種") ELSE '' END)`
+        : relatedExpr;
+    }
+
     function relatedJobExactClause(job, columnName=null) {
       // 「|」区切りタグ列を完全一致相当にする。
-      // v1.2以降は 関連職種_集計用 を優先し、旧データでは 関連職種 にフォールバックする。
-      const col = columnName || relatedJobColumn(true);
+      // columnName指定時はその列だけ、未指定時は関連職種_集計用 + Indeed職種を同一条件で判定する。
+      const sourceExpr = columnName
+        ? `coalesce("${columnName}", '')`
+        : relatedJobSourceExpression();
       const normalizedJob = String(job || '').replace(/\s+/g, '');
-      return `concat('|', regexp_replace(coalesce("${col}", ''), '\\s+', '', 'g'), '|') LIKE ${sqlLiteral('%|' + normalizedJob + '|%')}`;
+      return `concat('|', regexp_replace(${sourceExpr}, '\\s+', '', 'g'), '|') LIKE ${sqlLiteral('%|' + normalizedJob + '|%')}`;
     }
 
     function freeWordKeywordClause(keyword) {
@@ -11748,9 +11760,7 @@
         const aggregateSql = `WITH src AS (SELECT * FROM ${source} ${where}) SELECT COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM src;`;
         const totals = (await queryRows(conn, aggregateSql))[0] || {};
         latestTotals = totals;
-        const relatedSourceExpr = appState.hasIndeedJob
-          ? `concat(coalesce("関連職種", ''), CASE WHEN coalesce("Indeed職種", '') <> '' THEN concat('|', "Indeed職種") ELSE '' END)`
-          : `coalesce("関連職種", '')`;
+        const relatedSourceExpr = relatedJobSourceExpression();
         const relatedSql = `WITH src AS (SELECT * FROM ${source} ${where}), exploded AS (SELECT trim(candidate) AS related_job, "消化金額", "表示回数", "クリック数", "応募開始数", "応募数" FROM src, UNNEST(string_split(${relatedSourceExpr}, '|')) AS t(candidate)) SELECT related_job, COUNT(*) AS count, COALESCE(SUM("消化金額"),0) AS cost, COALESCE(SUM("表示回数"),0) AS impressions, COALESCE(SUM("クリック数"),0) AS clicks, COALESCE(SUM("応募開始数"),0) AS apply_starts, COALESCE(SUM("応募数"),0) AS applies FROM exploded WHERE related_job <> '' GROUP BY related_job ORDER BY count DESC, applies DESC, clicks DESC, related_job ASC LIMIT 500;`;
         const relatedRaw = await queryRows(conn, relatedSql);
         renderRelated(relatedRaw.filter(r => isUsefulCandidate(r.related_job)).slice(0,50));
